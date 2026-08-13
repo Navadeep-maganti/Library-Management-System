@@ -1,10 +1,9 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import LandingPage from "./pages/LandingPage";
-import LoginPage from "./pages/RegistrationPage";
-import './App.css'
+import RegistrationPage from "./pages/RegistrationPage";
+import "./App.css";
 
 function App() {
-
   return (
     <BrowserRouter>
       <Routes>
@@ -12,7 +11,7 @@ function App() {
         <Route path="/register" element={<RegistrationPage />} />
       </Routes>
     </BrowserRouter>
-  )
+  );
 }
 
-export default App
+export default App;
