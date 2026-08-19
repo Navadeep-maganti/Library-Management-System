@@ -13,9 +13,9 @@ const transporter = nodemailer.createTransport({
 
 export const sendOTPEmail = async (toEmail, otp) => {
     const mailOptions = {
-        from: `"NIT Andhra Library" <${process.env.EMAIL_USER}>`,
+        from: `"Library management system" <${process.env.EMAIL_USER}>`,
         to: toEmail,
-        subject: "Your Email Verification OTP - NIT Andhra Library System",
+        subject: "Your Email Verification OTP - Library management system",
         html: `
             <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
                 <h2>Email Verification</h2>
