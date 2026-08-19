@@ -19,15 +19,19 @@ const roleContent = {
 function RegistrationPage() {
     const [selectedRole, setSelectedRole] = useState("student");
     const [formData, setFormData] = useState({
-        student: { identifier: "", email: "", password: "" },
-        librarian: { identifier: "", email: "", password: "" },
+        student: { name: "", identifier: "", email: "", password: "" },
+        librarian: { name: "", identifier: "", email: "", password: "" },
     });
     const [otp, setOtp] = useState("");
-    const [generatedOtp, setGeneratedOtp] = useState("");
     const [otpSent, setOtpSent] = useState(false);
     const [otpVerified, setOtpVerified] = useState(false);
     const [message, setMessage] = useState("");
     const [submitted, setSubmitted] = useState(false);
+    const [loadingState, setLoadingState] = useState({
+        sendingOtp: false,
+        verifyingOtp: false,
+        submitting: false,
+    });
 
     const activeForm = formData[selectedRole];
     const details = roleContent[selectedRole];
@@ -35,7 +39,6 @@ function RegistrationPage() {
     const handleRoleChange = (role) => {
         setSelectedRole(role);
         setOtp("");
-        setGeneratedOtp("");
         setOtpSent(false);
         setOtpVerified(false);
         setSubmitted(false);
@@ -53,45 +56,111 @@ function RegistrationPage() {
 
         if (field === "email") {
             setOtp("");
-            setGeneratedOtp("");
             setOtpSent(false);
             setOtpVerified(false);
             setSubmitted(false);
         }
     };
 
-    const handleSendOtp = () => {
-        const { identifier, email, password } = activeForm;
+    const readResponse = async (response, fallbackMessage) => {
+        try {
+            const data = await response.json();
+            return {
+                ok: response.ok,
+                data,
+                message: data?.message || fallbackMessage,
+            };
+        } catch {
+            return {
+                ok: response.ok,
+                data: null,
+                message: fallbackMessage,
+            };
+        }
+    };
 
-        if (!identifier || !email || !password) {
+    const handleSendOtp = async () => {
+        const { name, identifier, email, password } = activeForm;
+
+        if (!name || !identifier || !email || !password) {
             setMessage("Fill in all fields before sending the OTP.");
             return;
         }
 
-        const nextOtp = String(Math.floor(100000 + Math.random() * 900000));
-        setGeneratedOtp(nextOtp);
-        setOtpSent(true);
-        setOtpVerified(false);
-        setSubmitted(false);
-        setMessage(`OTP sent to ${email}. Demo OTP: ${nextOtp}`);
+        setLoadingState((prev) => ({ ...prev, sendingOtp: true }));
+
+        try {
+            const response = await fetch("/api/auth/send-otp", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    email,
+                    role: selectedRole,
+                }),
+            });
+
+            const result = await readResponse(response, "Failed to send OTP. Please try again.");
+
+            if (!result.ok) {
+                setOtpSent(false);
+                setOtpVerified(false);
+                setSubmitted(false);
+                setMessage(result.message);
+                return;
+            }
+
+            setOtpSent(true);
+            setOtpVerified(false);
+            setSubmitted(false);
+            setMessage(result.message);
+        } catch {
+            setMessage("Unable to connect to the server. Please try again.");
+        } finally {
+            setLoadingState((prev) => ({ ...prev, sendingOtp: false }));
+        }
     };
 
-    const handleVerifyOtp = () => {
+    const handleVerifyOtp = async () => {
         if (!otpSent) {
             setMessage("Send the OTP first.");
             return;
         }
 
-        if (otp === generatedOtp) {
-            setOtpVerified(true);
-            return;
-        }
+        setLoadingState((prev) => ({ ...prev, verifyingOtp: true }));
 
-        setOtpVerified(false);
-        setMessage("Invalid OTP. Please try again.");
+        try {
+            const response = await fetch("/api/auth/verify-otp", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    email: activeForm.email,
+                    otp,
+                }),
+            });
+
+            const result = await readResponse(response, "Failed to verify OTP. Please try again.");
+
+            if (!result.ok) {
+                setOtpVerified(false);
+                setMessage(result.message);
+                return;
+            }
+
+            setOtpVerified(true);
+            setMessage(result.message);
+        } catch {
+            setOtpVerified(false);
+            setMessage("Unable to connect to the server. Please try again.");
+        } finally {
+            setLoadingState((prev) => ({ ...prev, verifyingOtp: false }));
+        }
     };
 
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
 
         if (!otpVerified) {
@@ -99,8 +168,50 @@ function RegistrationPage() {
             return;
         }
 
-        setSubmitted(true);
-        setMessage(`${details.label} registration details are ready to be submitted.`);
+        setLoadingState((prev) => ({ ...prev, submitting: true }));
+
+        try {
+            const payload = {
+                email: activeForm.email,
+                username: activeForm.name.trim(),
+                password: activeForm.password,
+                role: selectedRole,
+            };
+
+            if (selectedRole === "student") {
+                payload.roll_no = activeForm.identifier;
+            } else {
+                payload.staff_id = activeForm.identifier;
+            }
+
+            const response = await fetch("/api/auth/register", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(payload),
+            });
+
+            const result = await readResponse(response, "Registration failed. Please try again.");
+
+            if (!result.ok) {
+                setSubmitted(false);
+                setMessage(result.message);
+                return;
+            }
+
+            if (result.data?.token) {
+                localStorage.setItem("libraryToken", result.data.token);
+            }
+
+            setSubmitted(true);
+            setMessage(result.message);
+        } catch {
+            setSubmitted(false);
+            setMessage("Unable to connect to the server. Please try again.");
+        } finally {
+            setLoadingState((prev) => ({ ...prev, submitting: false }));
+        }
     };
 
     return (
@@ -135,6 +246,16 @@ function RegistrationPage() {
                     </div>
 
                     <label className="field-group">
+                        <span>Name</span>
+                        <input
+                            type="text"
+                            value={activeForm.name}
+                            onChange={(event) => handleInputChange("name", event.target.value)}
+                            placeholder="Enter your full name"
+                        />
+                    </label>
+
+                    <label className="field-group">
                         <span>{details.idLabel}</span>
                         <input
                             type="text"
@@ -166,7 +287,7 @@ function RegistrationPage() {
 
                     <div className="otp-actions">
                         <button type="button" className="secondary-button" onClick={handleSendOtp}>
-                            Send OTP
+                            {loadingState.sendingOtp ? "Sending OTP..." : "Send OTP"}
                         </button>
                         <span className={otpVerified ? "status-chip verified" : "status-chip pending"}>
                             {otpVerified ? "Verified" : otpSent ? "Awaiting verification" : "Not verified"}
@@ -185,19 +306,19 @@ function RegistrationPage() {
                                 placeholder="Enter 6-digit OTP"
                             />
                             <button type="button" className="ghost-button" onClick={handleVerifyOtp}>
-                                Verify OTP
+                                {loadingState.verifyingOtp ? "Verifying..." : "Verify OTP"}
                             </button>
                         </div>
                     </label>
 
                     <button type="submit" className="primary-button" disabled={!otpVerified}>
-                        Submit Registration
+                        {loadingState.submitting ? "Submitting..." : "Submit Registration"}
                     </button>
 
                     {message ? <p className="form-message">{message}</p> : null}
                     {submitted ? (
                         <p className="success-note">
-                            Frontend flow complete for {details.label.toLowerCase()} registration.
+                            {details.label} account created successfully.
                         </p>
                     ) : null}
                 </form>
