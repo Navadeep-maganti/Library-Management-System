@@ -1,307 +1,188 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import "../styles/LoginPage.css";
 
-const LoginPage = () => {
-  const [role, setRole] = useState('student');
-  const [identifier, setIdentifier] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
+const LoginPage = ({ onAuthSuccess }) => {
+  const navigate = useNavigate();
+  const [role, setRole] = useState("student");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setSuccessMessage('');
+    setError("");
+    setSuccessMessage("");
 
-    if (!identifier.trim() || !password.trim()) {
-      setError('All fields are required.');
+    if (!email.trim() || !password.trim()) {
+      setError("Email address and password are required.");
       return;
     }
 
-    const loginPayload = {
-      role,
-      password,
-      ...(role === 'student' ? { student_roll_no: identifier } : { email: identifier })
-    };
+    const cleanEmail = email.trim().toLowerCase();
+
+    if (role === "student" && !cleanEmail.endsWith("@student.nitandhra.ac.in")) {
+      setError("Student login requires email ending with @student.nitandhra.ac.in");
+      return;
+    }
+
+    if (role === "librarian" && !cleanEmail.endsWith("@nitandhra.ac.in")) {
+      setError("Librarian login requires email ending with @nitandhra.ac.in");
+      return;
+    }
+
+    setIsSubmitting(true);
 
     try {
-      const response = await fetch('http://localhost:5000/api/auth/login', {
-        method: 'POST',
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(loginPayload),
+        body: JSON.stringify({
+          email: cleanEmail,
+          password,
+          role,
+        }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Login failed.');
+        throw new Error(data.message || "Login failed. Please verify your credentials.");
       }
 
-      setSuccessMessage(data.message || 'Login successful.');
-      console.log('Authentication payload generated:', loginPayload);
-      console.log('Server response:', data);
+      setSuccessMessage(data.message || "Login successful! Redirecting...");
+
+      if (data.token) {
+        localStorage.setItem("libraryToken", data.token);
+      }
+      if (data.user) {
+        localStorage.setItem("libraryUser", JSON.stringify(data.user));
+        if (onAuthSuccess) {
+          onAuthSuccess(data.user);
+        }
+      }
+
+      const targetPath = data.user?.role === "librarian" ? "/librarian-dashboard" : "/student-dashboard";
+
+      setTimeout(() => {
+        navigate(targetPath);
+      }, 1000);
     } catch (err) {
-      setError(err.message || 'Something went wrong while logging in.');
+      setError(err.message || "Something went wrong while logging in.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const getIdentifierLabel = () => {
-    if (role === 'student') return 'Student Email Address';
-    if (role === 'librarian') return 'Librarian Email Address';
-    return 'Admin Email Address';
+  const getEmailPlaceholder = () => {
+    if (role === "student") return "e.g., 421101@student.nitandhra.ac.in";
+    return "e.g., staffname@nitandhra.ac.in";
   };
 
-  const getIdentifierPlaceholder = () => {
-    if (role === 'student') return 'e.g., STU12345';
-    return 'e.g., name@library.com';
+  const getEmailHint = () => {
+    if (role === "student") return "Must end with @student.nitandhra.ac.in";
+    return "Must end with @nitandhra.ac.in";
   };
 
   return (
-    <div style={styles.pageShell}>
-      <div style={styles.card}>
-        <div style={styles.cardHeader}>
-          <p style={styles.cardTag}>LIBRARY MANAGEMENT SYSTEM</p>
-          <h2 style={styles.title}>Sign in to your account</h2>
-          <p style={styles.subtitle}>Choose your role, complete your details, and verify securely.</p>
+    <div className="login-page-shell">
+      <div className="login-card">
+        <div className="login-card-header">
+          <p className="login-card-tag">NIT AP LIBRARY MANAGEMENT SYSTEM</p>
+          <h2 className="login-title">Sign in to your account</h2>
+          <p className="login-subtitle">Select your role and enter your official credentials.</p>
         </div>
 
-        {error && <div style={styles.errorBanner}>{error}</div>}
-        {successMessage && <div style={styles.successBanner}>{successMessage}</div>}
+        {error && <div className="login-error-banner">{error}</div>}
+        {successMessage && <div className="login-success-banner">{successMessage}</div>}
 
-        <form onSubmit={handleSubmit} style={styles.form}>
-          <div style={styles.inputGroup}>
-            {/* Dynamic Role Selection Bar from Figma Layout */}
-            <div style={styles.toggleGroup}>
+        <form onSubmit={handleSubmit} className="login-form">
+          <div className="login-input-group">
+            {/* Role Selection Toggle */}
+            <div className="login-toggle-group">
               <button
                 type="button"
                 onClick={() => {
-                  setRole('student');
-                  setIdentifier('');
+                  setRole("student");
+                  setError("");
                 }}
-                style={role === 'student' ? { ...styles.toggleButton, ...styles.toggleButtonActive } : styles.toggleButton}
+                className={role === "student" ? "login-toggle-button active" : "login-toggle-button"}
               >
-                Student
+                Student Sign In
               </button>
               <button
                 type="button"
                 onClick={() => {
-                  setRole('librarian');
-                  setIdentifier('');
+                  setRole("librarian");
+                  setError("");
                 }}
-                style={role === 'librarian' ? { ...styles.toggleButton, ...styles.toggleButtonActive } : styles.toggleButton}
+                className={role === "librarian" ? "login-toggle-button active" : "login-toggle-button"}
               >
-                Librarian
+                Librarian Sign In
               </button>
             </div>
           </div>
 
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>{getIdentifierLabel()}</label>
+          <div className="login-input-group">
+            <label className="login-label">
+              Official Email ({getEmailHint()})
+            </label>
             <input
-              type={role === 'student' ? 'text' : 'email'}
-              placeholder={getIdentifierPlaceholder()}
-              value={identifier}
-              onChange={(e) => setIdentifier(e.target.value)}
-              style={styles.input}
+              type="email"
+              placeholder={getEmailPlaceholder()}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="login-input"
+              required
             />
           </div>
 
-          <div style={styles.inputGroup}>
-            <div style={styles.labelRow}>
-              <label style={styles.label}>Password</label>
-              <a
-                href="#forgot-password"
-                onClick={() => alert('Routing client to account recovery endpoint...')}
-                style={styles.link}
-              >
-                Forgot password?
-              </a>
+          <div className="login-input-group">
+            <div className="login-label-row">
+              <label className="login-label">Password</label>
             </div>
-            <input
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              style={styles.input}
-            />
+            <div className="password-input-wrapper">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="login-input"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="password-toggle-btn"
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            </div>
           </div>
 
-          <button type="submit" style={styles.button}>
-            Submit Login
+          <button
+            type="submit"
+            className="login-submit-button"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Authenticating..." : `Sign In as ${role.charAt(0).toUpperCase() + role.slice(1)}`}
           </button>
         </form>
 
-        <div style={styles.footer}>
-          <span>Need access? </span>
-          <a
-            href="#register"
-            onClick={() => alert(`Routing client to registration portal for role: ${role}`)}
-            style={styles.registerLink}
-          >
-            Register as {role.charAt(0).toUpperCase() + role.slice(1)}
-          </a>
+        <div className="login-footer">
+          <span>New to NIT AP Library? </span>
+          <Link to="/register" className="login-register-link">
+            Create an Account &rarr;
+          </Link>
         </div>
       </div>
     </div>
   );
-};
-
-const styles = {
-  pageShell: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    minHeight: '100vh',
-    background: 'linear-gradient(180deg, #E3F6F5 0%, #C4EDEC 100%)',
-    fontFamily: 'Inter, "Segoe UI", sans-serif',
-    padding: '20px',
-  },
-  card: {
-    backgroundColor: '#ffffff',
-    padding: '40px',
-    borderRadius: '16px',
-    width: '100%',
-    maxWidth: '560px', 
-    boxShadow: '0 4px 30px rgba(0, 0, 0, 0.03)',
-    border: '1px solid #E2E8F0',
-  },
-  cardHeader: {
-    textAlign: 'center',
-    marginBottom: '32px',
-  },
-  cardTag: {
-    margin: '0 0 8px 0',
-    fontSize: '0.75rem',
-    fontWeight: '700',
-    letterSpacing: '0.05em',
-    color: '#006A6D',
-  },
-  title: {
-    margin: '0 0 8px 0',
-    fontSize: '1.75rem',
-    fontWeight: '700',
-    color: '#1A2D32',
-  },
-  subtitle: {
-    margin: 0,
-    fontSize: '0.85rem',
-    color: '#718096',
-    lineHeight: '1.5',
-  },
-  errorBanner: {
-    backgroundColor: '#FFF5F5',
-    color: '#C53030',
-    padding: '12px',
-    borderRadius: '8px',
-    fontSize: '0.85rem',
-    marginBottom: '20px',
-    textAlign: 'center',
-    border: '1px solid #FED7D7',
-  },
-  successBanner: {
-    backgroundColor: '#F0FFF4',
-    color: '#22543D',
-    padding: '12px',
-    borderRadius: '8px',
-    fontSize: '0.85rem',
-    marginBottom: '20px',
-    textAlign: 'center',
-    border: '1px solid #C6F6D5',
-  },
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '20px',
-  },
-  inputGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
-    width: '100%',
-    alignItems: 'stretch',
-  },
-  toggleGroup: {
-    display: 'flex',
-    backgroundColor: '#E6F4F4',
-    borderRadius: '30px',
-    padding: '4px',
-    marginBottom: '10px',
-    width: '100%',
-  },
-  toggleButton: {
-    flex: 1,
-    padding: '10px 20px',
-    borderRadius: '30px',
-    border: 'none',
-    background: 'transparent',
-    fontSize: '0.9rem',
-    fontWeight: '600',
-    color: '#4A5568',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-  },
-  toggleButtonActive: {
-    background: '#16A34A',
-    color: '#ffffff',
-    boxShadow: '0 6px 16px rgba(22, 163, 74, 0.25)',
-  },
-  labelRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    width: '100%',
-  },
-  label: {
-    fontSize: '0.85rem',
-    fontWeight: '600',
-    color: '#2D3748',
-    textAlign: 'left',
-    width: '100%',
-    marginBottom: '2px',
-    display: 'block',
-  },
-  input: {
-    padding: '12px 16px',
-    borderRadius: '8px',
-    border: '1px solid #CBD5E0',
-    fontSize: '0.95rem',
-    color: '#2D3748',
-    outline: 'none',
-    backgroundColor: '#F8FAFC',
-    transition: 'border-color 0.2s',
-    width: '100%',
-    boxSizing: 'border-box',
-  },
-  button: {
-    background: 'linear-gradient(180deg, #008084 0%, #006A6D 100%)',
-    color: '#ffffff',
-    padding: '14px',
-    borderRadius: '8px',
-    fontSize: '0.95rem',
-    fontWeight: '600',
-    border: 'none',
-    cursor: 'pointer',
-    marginTop: '10px',
-    boxShadow: '0 2px 4px rgba(0, 106, 109, 0.2)',
-  },
-  link: {
-    fontSize: '0.8rem',
-    color: '#006A6D',
-    textDecoration: 'none',
-    fontWeight: '500',
-  },
-  footer: {
-    marginTop: '24px',
-    textAlign: 'center',
-    fontSize: '0.9rem',
-    color: '#4A5568',
-  },
-  registerLink: {
-    color: '#006A6D',
-    textDecoration: 'none',
-    fontWeight: '600',
-  }
 };
 
 export default LoginPage;
