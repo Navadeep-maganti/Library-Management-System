@@ -1,0 +1,383 @@
+.registration-shell {
+  min-height: 100vh;
+  padding: 20px 16px;
+  background:
+    radial-gradient(circle at 14% 12%, rgba(96, 165, 250, 0.2), transparent 24%),
+    radial-gradient(circle at 82% 18%, rgba(45, 212, 191, 0.16), transparent 22%),
+    linear-gradient(145deg, #f5fbff 0%, #ebf8fb 48%, #e4f5f0 100%);
+  display: grid;
+  place-items: center;
+  gap: 12px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.registration-hero {
+  width: min(470px, 100%);
+  text-align: center;
+}
+
+.eyebrow {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(15, 118, 110, 0.1);
+  color: #0f766e;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.registration-hero h1 {
+  margin: 10px 0 8px;
+  font-size: clamp(1.7rem, 3vw, 2.45rem);
+  line-height: 1.02;
+  color: #18324d;
+}
+
+.registration-hero p {
+  max-width: 420px;
+  margin: 0 auto;
+  color: #5d7688;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.registration-card {
+  width: min(660px, 100%);
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(125, 211, 252, 0.24);
+  border-radius: 22px;
+  box-shadow: 0 24px 52px rgba(27, 71, 104, 0.12);
+  backdrop-filter: blur(16px);
+  overflow: hidden;
+}
+
+.toast-message {
+  position: fixed;
+  top: 22px;
+  right: 22px;
+  z-index: 10;
+  width: min(360px, calc(100vw - 32px));
+  padding: 14px 16px;
+  border-radius: 16px;
+  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.16);
+  font-weight: 700;
+  line-height: 1.4;
+  animation: toast-slide-in 0.22s ease;
+}
+
+.toast-message.success {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #86efac;
+}
+
+.toast-message.error {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fca5a5;
+}
+
+.toast-message.info {
+  background: #dbeafe;
+  color: #1d4ed8;
+  border: 1px solid #93c5fd;
+}
+
+.role-toggle {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  padding: 12px;
+  background: rgba(239, 250, 251, 0.88);
+  border-bottom: 1px solid rgba(125, 211, 252, 0.2);
+}
+
+.role-pill {
+  border: 0;
+  border-radius: 14px;
+  padding: 11px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  background: #e3f3f2;
+  color: #295c67;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.role-pill:hover {
+  transform: translateY(-1px);
+}
+
+.role-pill.active {
+  background: linear-gradient(135deg, #0f766e, #2563eb);
+  color: #fff;
+  box-shadow: 0 18px 32px rgba(37, 99, 235, 0.22);
+}
+
+.registration-form {
+  padding: 18px;
+  display: grid;
+  gap: 14px;
+}
+
+.form-intro {
+  display: grid;
+  gap: 4px;
+}
+
+.form-intro h2 {
+  margin: 0;
+  color: #183852;
+  font-size: 1.08rem;
+}
+
+.form-intro p {
+  margin: 0;
+  color: #648091;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.field-group {
+  display: grid;
+  gap: 6px;
+}
+
+.form-grid-two {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.verification-block {
+  display: grid;
+  gap: 10px;
+}
+
+.field-group > span {
+  color: #29536f;
+  font-weight: 700;
+  font-size: 0.92rem;
+  line-height: 1.2;
+  padding-left: 4px;
+  text-align: left;
+}
+
+.field-group input,
+.inline-button,
+.countdown-chip,
+.primary-button {
+  min-height: 52px;
+  box-sizing: border-box;
+}
+
+.field-group input {
+  width: 100%;
+  border: 1px solid #cfe8f3;
+  border-radius: 18px;
+  padding: 0 16px;
+  font-size: 0.95rem;
+  font-weight: 400;
+  background: #ffffff;
+  color: #31485c;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.field-group input::placeholder {
+  color: #7f7f7f;
+  opacity: 1;
+}
+
+.field-group input:focus {
+  outline: none;
+  border-color: #b9ddea;
+  box-shadow: 0 0 0 3px rgba(207, 232, 243, 0.45);
+}
+
+.field-group input.input-invalid {
+  border-color: #fca5a5;
+  box-shadow: 0 0 0 3px rgba(252, 165, 165, 0.2);
+}
+
+.field-group input:disabled {
+  background: #eef6f8;
+  color: #7a92a1;
+  cursor: not-allowed;
+}
+
+.inline-control-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: stretch;
+}
+
+.otp-row-balanced {
+  grid-template-columns: minmax(0, 1fr) auto auto;
+}
+
+.inline-button,
+.primary-button,
+.secondary-button,
+.ghost-button {
+  border: 0;
+  border-radius: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.inline-button,
+.secondary-button,
+.ghost-button {
+  padding: 0 18px;
+  font-size: 0.88rem;
+  white-space: nowrap;
+}
+
+.primary-button:hover,
+.secondary-button:hover,
+.ghost-button:hover {
+  transform: translateY(-1px);
+}
+
+.secondary-button {
+  background: #0f766e;
+  color: #fff;
+}
+
+.ghost-button {
+  background: #e7f5f8;
+  color: #215067;
+}
+
+.countdown-chip {
+  min-width: 78px;
+  padding: 0 16px;
+  border-radius: 18px;
+  background: #ecfeff;
+  color: #0f766e;
+  border: 1px solid #bae6fd;
+  font-size: 0.84rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.otp-feedback-note {
+  margin: -1px 0 1px;
+  color: #547085;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  padding-left: 2px;
+}
+
+.password-stack {
+  display: grid;
+  gap: 6px;
+}
+
+.field-helper {
+  margin: 0;
+  color: #6a8397;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.primary-button {
+  width: 100%;
+  padding: 0 18px;
+  background: linear-gradient(135deg, #0f766e, #2563eb);
+  color: #fff;
+  box-shadow: 0 18px 30px rgba(37, 99, 235, 0.2);
+  margin-top: 2px;
+}
+
+.primary-button:disabled,
+.secondary-button:disabled,
+.ghost-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  transform: none;
+  box-shadow: none;
+}
+
+.auth-switch-note {
+  margin: 4px 0 0;
+  text-align: center;
+  color: #648091;
+  font-size: 0.84rem;
+}
+
+.auth-switch-note a {
+  color: #1d4ed8;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.auth-switch-note a:hover {
+  text-decoration: underline;
+}
+
+@keyframes toast-slide-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -10px, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@media (max-width: 640px) {
+  .registration-shell {
+    padding: 16px 12px;
+  }
+
+  .registration-card {
+    border-radius: 18px;
+  }
+
+  .registration-form {
+    padding: 16px;
+  }
+
+  .registration-hero h1 {
+    font-size: clamp(1.55rem, 8vw, 2.1rem);
+  }
+
+  .toast-message {
+    top: 16px;
+    right: 16px;
+    left: 16px;
+    width: auto;
+  }
+
+  .role-toggle,
+  .form-grid-two,
+  .inline-control-row,
+  .otp-row-balanced {
+    grid-template-columns: 1fr;
+  }
+
+  .inline-button,
+  .countdown-chip {
+    width: 100%;
+  }
+}

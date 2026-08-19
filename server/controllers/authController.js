@@ -7,31 +7,54 @@ import { validateEmailDomain } from "../utils/authHelpers.js";
  * Register User (Student or Librarian)
  */
 export const registerUser = async (req, res) => {
-    const { email, username, password, role, year_of_study, staff_id } = req.body;
+    const { email, username, password, role } = req.body;
+    const passwordRule = /^(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,}$/;
 
     try {
         // 1. Basic validation
-        if (!email || !username || !password || !role) {
-            return res.status(400).json({ message: "Email, username, password, and role are required." });
+        if (!email || !username || !password) {
+            return res.status(400).json({ message: "Email, username, and password are required." });
         }
 
-        const normalizedRole = role.toLowerCase();
-        if (normalizedRole !== "student" && normalizedRole !== "librarian") {
-            return res.status(400).json({ message: "Role must be either 'student' or 'librarian'." });
+        if (!passwordRule.test(password)) {
+            return res.status(400).json({
+                message: "Password must be at least 8 characters and include 1 uppercase letter and 1 special character."
+            });
         }
 
-        // 2. Validate role-specific fields
-        if (normalizedRole === "student") {
-            if (!roll_no || !department || !year_of_study) {
-                return res.status(400).json({
-                    message: "Student registration requires roll_no, department, and year_of_study."
-                });
-            }
-        } else if (normalizedRole === "librarian") {
-            const staffIdToUse = staff_id || req.body.faculty_id;
-            if (!staffIdToUse) {
-                return res.status(400).json({ message: "Librarian registration requires staff_id / faculty_id." });
-            }
+        const cleanEmail = email.trim().toLowerCase();
+
+        // 2. Determine and verify role from email domain (Do not blindly trust req.body.role)
+        let derivedRole;
+        if (cleanEmail.endsWith("@student.nitandhra.ac.in")) {
+            derivedRole = "student";
+        } else if (cleanEmail.endsWith("@nitandhra.ac.in")) {
+            derivedRole = "librarian";
+        } else {
+            return res.status(400).json({ 
+                message: "Invalid email domain. Must be @student.nitandhra.ac.in or @nitandhra.ac.in." 
+            });
+        }
+
+        // If role was explicitly sent in body, verify it matches derivedRole
+        if (role && role.toLowerCase() !== derivedRole) {
+            return res.status(400).json({ 
+                message: `Role mismatch: The email ${cleanEmail} belongs to role '${derivedRole}'.` 
+            });
+        }
+
+        // 3. Extract role-specific fields flexibly
+        const rollNo = req.body.roll_no || req.body.rollNo;
+        const department = req.body.department || "General";
+        const yearOfStudy = req.body.year_of_study || req.body.yearOfStudy || 1;
+        const staffId = req.body.staff_id || req.body.staffId || req.body.faculty_id || req.body.facultyId;
+
+        if (derivedRole === "student" && !rollNo) {
+            return res.status(400).json({ message: "Student registration requires roll_no." });
+        }
+
+        if (derivedRole === "librarian" && !staffId) {
+            return res.status(400).json({ message: "Librarian registration requires faculty/staff ID." });
         }
 
         // 3. Verify that the email was verified via OTP
