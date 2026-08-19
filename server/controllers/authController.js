@@ -7,11 +7,18 @@ import jwt from "jsonwebtoken";
  */
 export const registerUser = async (req, res) => {
     const { email, username, password, role } = req.body;
+    const passwordRule = /^(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,}$/;
 
     try {
         // 1. Basic validation
         if (!email || !username || !password) {
             return res.status(400).json({ message: "Email, username, and password are required." });
+        }
+
+        if (!passwordRule.test(password)) {
+            return res.status(400).json({
+                message: "Password must be at least 8 characters and include 1 uppercase letter and 1 special character."
+            });
         }
 
         const cleanEmail = email.trim().toLowerCase();
