@@ -1,7 +1,10 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "../styles/StudentDashboard.css";
 
 const StudentDashboard = ({ user }) => {
+  const navigate = useNavigate();
+
   const currentUser =
     user ||
     (() => {
@@ -12,6 +15,16 @@ const StudentDashboard = ({ user }) => {
         return null;
       }
     })();
+
+  useEffect(() => {
+    if (!currentUser) {
+      navigate("/", { replace: true });
+    }
+  }, [currentUser, navigate]);
+
+  if (!currentUser) {
+    return null;
+  }
 
   return (
     <div className="student-dashboard-shell">
