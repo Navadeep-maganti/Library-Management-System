@@ -93,7 +93,7 @@ const LoginPage = ({ onAuthSuccess }) => {
     <div className="login-page-shell">
       <div className="login-card">
         <div className="login-card-header">
-          <p className="login-card-tag">NIT AP LIBRARY MANAGEMENT SYSTEM</p>
+          <p className="login-card-tag">CENTRAL LIBRARY MANAGEMENT SYSTEM</p>
           <h2 className="login-title">Sign in to your account</h2>
           <p className="login-subtitle">Select your role and enter your official credentials.</p>
         </div>
@@ -187,7 +187,7 @@ const LoginPage = ({ onAuthSuccess }) => {
         </form>
 
         <div className="login-footer">
-          <span>New to NIT AP Library? </span>
+          <span>New to Central Library? </span>
           <Link to="/register" className="login-register-link">
             Create an Account &rarr;
           </Link>

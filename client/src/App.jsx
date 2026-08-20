@@ -61,7 +61,7 @@ function App() {
 
         <footer className="app-footer">
           <div className="footer-content">
-            <span>© 2026 NIT Andhra Pradesh - Library Management System</span>
+            <span>© 2026 Central Library Management System</span>
             <span>Secure Domain OTP & Role-Based Access Control</span>
           </div>
         </footer>

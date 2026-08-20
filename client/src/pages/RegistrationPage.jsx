@@ -339,7 +339,7 @@ function RegistrationPage({ onAuthSuccess }) {
       ) : null}
 
       <div className="registration-hero">
-        <span className="eyebrow">NIT AP LIBRARY</span>
+        <span className="eyebrow">CENTRAL LIBRARY</span>
         <h1>Create your Library Account</h1>
         <p>
           Select your academic role, complete your details, verify your email with OTP, and access your library profile.

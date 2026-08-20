@@ -31,7 +31,7 @@ const LibrarianDashboard = ({ user }) => {
       {/* Librarian Profile Overview */}
       <div className="librarian-header-card">
         <h2 className="librarian-title">Librarian Management Dashboard</h2>
-        <p className="librarian-sub">NIT AP Central Library Staff Operations Portal</p>
+        <p className="librarian-sub">Central Library Staff Operations Portal</p>
 
         <div className="librarian-info-box">
           <div className="librarian-info-item">

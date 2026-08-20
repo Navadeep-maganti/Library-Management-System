@@ -31,7 +31,7 @@ const StudentDashboard = ({ user }) => {
       {/* Student Profile Overview */}
       <div className="student-header-card">
         <h2 className="student-title">Student Library Dashboard</h2>
-        <p className="student-sub">Welcome to your NIT AP Central Library Student Account</p>
+        <p className="student-sub">Welcome to your Central Library Student Account</p>
         
         <div className="student-info-box">
           <div className="student-info-item">
