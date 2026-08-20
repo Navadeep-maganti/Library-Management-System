@@ -40,5 +40,54 @@ CREATE TABLE otps(
 CREATE TABLE books (
     id SERIAL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
-    author VARCHAR(100) NOT NULL
+    author VARCHAR(100) NOT NULL,
+    isbn VARCHAR(13) UNIQUE NOT NULL,
+    category_id INT,
+    description text,
+    department_id INT,
+    published_year INT,
+
+    FOREIGN KEY(category_id)
+        REFERENCES category(id)
+        ON DELETE SET NULL
+        ON UPDATE CASCADE,
+        
+    FOREIGN KEY (department_id)
+        REFERENCES department(id)
+        ON DELETE SET NULL
+        ON UPDATE CASCADE
+);   
+
+CREATE TABLE category(
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL 
+);
+
+CREATE TABLE department (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE book_availability(
+    id SERIAL PRIMARY KEY,
+    book_id INT,
+    total_copies INT NOT NULL,
+    available_copies INT NOT NULL,
+    shelf_id INT
+
+    FOREIGN KEY (book_id)
+        REFERENCES books(id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+
+    FOREIGN KEY (shelf_id)
+        REFERENCES shelf(id)
+        ON DELETE SET NULL
+        ON UPDATE CASCADE
+);
+
+CREATE TABLE shelf(
+    id SERIAL PRIMARY KEY,
+    section VARCHAR(50) NOT NULL,
+    rack_number VARCHAR(10) NOT NULL
 );
