@@ -9,7 +9,7 @@ const LandingPage = () => {
       <section className="hero-section">
         <div className="hero-badge">
           <span className="hero-badge-dot"></span>
-          NIT Andhra Pradesh • Central Library System
+          Central Library • Management System
         </div>
         <h1 className="hero-title">
           Empowering Learning through <span className="hero-gradient-text">Smart Library Access</span>
@@ -35,7 +35,7 @@ const LandingPage = () => {
           </div>
           <div className="stat-card">
             <h3 className="stat-value">100% Secure</h3>
-            <p className="stat-label">NIT Domain OTP Verification</p>
+            <p className="stat-label">Domain OTP Verification</p>
           </div>
           <div className="stat-card">
             <h3 className="stat-value">2 Roles</h3>
@@ -49,7 +49,7 @@ const LandingPage = () => {
         <div className="section-header">
           <h2 className="section-title">Tailored Access Portals</h2>
           <p className="section-subtitle">
-            Registration and login are automatically configured based on your official NIT Andhra email address.
+            Registration and login are automatically configured based on your official email address.
           </p>
         </div>
 
@@ -91,7 +91,7 @@ const LandingPage = () => {
             <span className="feature-icon">🔒</span>
             <div>
               <h4 className="feature-title">Email Domain Security</h4>
-              <p className="feature-desc">Only authorized NIT AP domain emails can complete registration.</p>
+              <p className="feature-desc">Only authorized domain emails can complete registration.</p>
             </div>
           </div>
           <div className="feature-item">

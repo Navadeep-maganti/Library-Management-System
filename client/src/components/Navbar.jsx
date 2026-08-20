@@ -26,7 +26,7 @@ const Navbar = ({ user, onLogout }) => {
         <Link to="/" className="brand-logo">
           <div className="brand-icon-box">📚</div>
           <div className="brand-text">
-            <span className="brand-title">NIT AP Library</span>
+            <span className="brand-title">Central Library</span>
             <span className="brand-subtitle">Central Management Portal</span>
           </div>
         </Link>
