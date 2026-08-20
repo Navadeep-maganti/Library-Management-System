@@ -1,113 +1,160 @@
 .student-dashboard-shell {
-  max-width: 1000px;
+  max-width: 1180px;
+  width: 100%;
   margin: 0 auto;
-  padding: 30px 20px;
+  padding: 44px 32px 64px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 26px;
 }
 
-.student-header-card {
-  background: #ffffff;
-  border-radius: 14px;
-  padding: 24px;
-  border: 1px solid #cbd5e1;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+.student-welcome {
+  display: grid;
+  gap: 6px;
+  padding: 12px 4px 0;
 }
-
-.student-title {
-  font-size: 1.5rem;
+.student-welcome h1 {
+  font-family: Georgia, serif;
+  font-size: 3.25rem;
+  line-height: 1.05;
   font-weight: 700;
   color: #0f172a;
-  margin: 0 0 6px 0;
-}
-
-.student-sub {
-  font-size: 0.9rem;
-  color: #64748b;
   margin: 0;
 }
+.student-welcome > p:last-child { font-size: 1rem; color: #64748b; }
+.student-kicker { color: #0f766e; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.12em; }
 
-.student-info-box {
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid #e2e8f0;
-}
-
-.student-info-item {
-  font-size: 0.88rem;
-  color: #334155;
-}
-
-.student-info-item strong {
-  color: #0f766e;
-}
-
-.student-section {
-  background: #ffffff;
-  border-radius: 14px;
-  padding: 24px;
-  border: 1px solid #cbd5e1;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-}
-
-.section-heading {
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: #0f172a;
-  margin: 0 0 16px 0;
-  border-bottom: 2px solid #0f766e;
-  padding-bottom: 8px;
-  display: inline-block;
-}
-
-.dummy-books-list {
-  display: flex;
-  flex-direction: column;
+.student-action-nav {
+  display: grid;
   gap: 12px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.student-action {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  color: #475569;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  font-size: 0.9rem;
+  gap: 8px;
+  min-height: 48px;
+  padding: 12px 14px;
+  transition: 0.2s ease;
+  white-space: nowrap;
+}
+.student-action span { color: #0f766e; font-size: 1.1rem; font-weight: 700; }
+.student-action:hover, .student-action.active { background: #0f766e; border-color: #0f766e; color: #ffffff; }
+.student-action:hover span, .student-action.active span { color: #ffffff; }
+
+.catalog-section {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  padding: 32px;
+}
+.catalog-heading { align-items: end; display: flex; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+.catalog-heading h2 { color: #0f172a; font-size: 1.45rem; margin-top: 4px; }
+.book-count { color: #64748b; font-size: 0.85rem; }
+.book-search { align-items: center; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; display: flex; gap: 10px; margin-bottom: 24px; padding: 12px 16px; }
+.book-search span { color: #0f766e; font-size: 1.5rem; line-height: 1; }
+.book-search input { background: transparent; border: 0; color: #0f172a; flex: 1; font-size: 0.95rem; outline: 0; }
+
+.book-grid { display: grid; gap: 18px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.book-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; }
+.book-cover { align-items: center; background: #0f766e; color: #ccfbf1; display: flex; font-family: Georgia, serif; font-size: 3rem; height: 112px; justify-content: center; }
+.book-card-content { display: flex; flex: 1; flex-direction: column; padding: 17px; }
+.book-category { color: #0f766e; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
+.book-card h3 { color: #0f172a; font-size: 1.05rem; margin: 8px 0 5px; }
+.book-card p { color: #64748b; font-size: 0.84rem; margin-bottom: 16px; }
+.book-button { background: #ffffff; border: 1px solid #0f766e; border-radius: 6px; color: #0f766e; cursor: pointer; font-size: 0.82rem; font-weight: 700; margin-top: auto; padding: 9px 12px; }
+.book-button:hover { background: #ccfbf1; }
+.book-button:disabled { background: #dcfce7; border-color: #86efac; color: #166534; cursor: default; }
+.empty-search { color: #64748b; padding: 20px 0; }
+
+.student-info-panel {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  padding: 32px;
 }
 
-.dummy-book-item {
+.student-detail-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.student-detail-grid p {
   background: #f8fafc;
   border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 14px 18px;
+  border-radius: 8px;
+  color: #334155;
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 88px;
+  padding: 16px;
+}
+
+.student-detail-grid strong {
+  color: #0f766e;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.student-empty-state {
   align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
+  background: #f8fafc;
+  border: 1px dashed #94a3b8;
+  border-radius: 8px;
+  color: #334155;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 42px 20px;
+  text-align: center;
 }
 
-.book-info h4 {
-  margin: 0 0 4px 0;
-  font-size: 0.95rem;
-  color: #0f172a;
-}
-
-.book-info p {
-  margin: 0;
-  font-size: 0.82rem;
+.student-empty-state span,
+.history-list span {
   color: #64748b;
 }
 
-.due-badge {
-  font-size: 0.78rem;
-  font-weight: 700;
-  background: #dbeafe;
-  color: #1d4ed8;
-  padding: 4px 10px;
-  border-radius: 8px;
+.history-list {
+  display: grid;
+  gap: 14px;
 }
 
-.notice-list {
-  list-style-type: disc;
-  padding-left: 20px;
-  margin: 0;
-  color: #475569;
-  font-size: 0.9rem;
-  line-height: 1.6;
+.history-list article {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px;
+}
+
+.history-list strong {
+  color: #0f172a;
+}
+
+@media (max-width: 600px) {
+  .student-dashboard-shell { padding: 28px 16px 42px; }
+  .student-welcome h1 { font-size: 2.1rem; }
+  .student-action-nav { grid-template-columns: 1fr; }
+  .catalog-section, .student-info-panel { padding: 20px; }
+  .catalog-heading { align-items: start; flex-direction: column; }
+  .book-grid, .student-detail-grid { grid-template-columns: 1fr; }
+}
+
+@media (min-width: 601px) and (max-width: 980px) {
+  .student-action-nav { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .book-grid, .student-detail-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
