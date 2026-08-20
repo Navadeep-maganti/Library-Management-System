@@ -20,9 +20,9 @@ const roleContent = {
     label: "Librarian",
     idLabel: "Staff / Faculty ID",
     idPlaceholder: "e.g., LIB-2024-01",
-    emailPlaceholder: "e.g., staffname@nitandhra.ac.in",
-    domainHint: "Must end with @nitandhra.ac.in",
-    helper: "Use your official staff email address to receive the verification OTP.",
+    emailPlaceholder: "e.g., staffname@nitandhra.ac.in or name@gmail.com",
+    domainHint: "Official email or Gmail",
+    helper: "Use your official staff or personal email address to receive the verification OTP.",
   },
 };
 
@@ -173,8 +173,8 @@ function RegistrationPage({ onAuthSuccess }) {
       return;
     }
 
-    if (selectedRole === "librarian" && !email.toLowerCase().endsWith("@nitandhra.ac.in")) {
-      showToast("error", "Librarian email must end with @nitandhra.ac.in");
+    if (selectedRole === "librarian" && email.toLowerCase().endsWith("@student.nitandhra.ac.in")) {
+      showToast("error", "Librarian registration requires official staff or personal email (not @student.nitandhra.ac.in)");
       return;
     }
 
@@ -455,30 +455,33 @@ function RegistrationPage({ onAuthSuccess }) {
           <label className="field-group">
             <span>Password *</span>
             <div className="password-stack">
-              <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+              <div className="password-input-wrapper">
                 <input
                   type={showPassword ? "text" : "password"}
                   value={activeForm.password}
                   onChange={(event) => handleInputChange("password", event.target.value)}
                   placeholder="Create strong password"
-                  className={activeForm.password && !isPasswordValid ? "input-invalid" : ""}
+                  className={activeForm.password && !isPasswordValid ? "input-invalid password-input-field" : "password-input-field"}
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  style={{
-                    position: "absolute",
-                    right: "16px",
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    fontSize: "0.85rem",
-                    color: "#475569",
-                    fontWeight: "600",
-                  }}
+                  className="password-toggle-btn"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
-                  {showPassword ? "Hide" : "Show"}
+                  {showPassword ? (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                      <line x1="1" y1="1" x2="23" y2="23"></line>
+                    </svg>
+                  ) : (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                  )}
+                  <span>{showPassword ? "Hide" : "Show"}</span>
                 </button>
               </div>
               <p className="field-helper" style={activeForm.password && !isPasswordValid ? { color: "#b91c1c" } : {}}>

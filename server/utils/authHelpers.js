@@ -6,7 +6,8 @@ export const validateEmailDomain = (email, role) => {
         return email.endsWith('@student.nitandhra.ac.in');
     }
     else if (role.toLowerCase() == 'librarian') {
-        return email.endsWith('@nitandhra.ac.in') && !email.endsWith('@student.nitandhra.ac.in');
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email) && !email.endsWith('@student.nitandhra.ac.in');
     }
     else {
         return false;

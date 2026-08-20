@@ -72,10 +72,10 @@ const LandingPage = () => {
             <div className="card-icon librarian">📚</div>
             <h3 className="card-title">Librarian Portal</h3>
             <p className="card-text">
-              Requires official staff email (e.g. <code>staff@nitandhra.ac.in</code>), staff ID, and OTP verification. Manage library records and book checkout logs.
+              Requires official staff email or personal email (e.g. <code>staff@nitandhra.ac.in</code> or Gmail), staff ID, and OTP verification. Manage library records and book checkout logs.
             </p>
             <div className="domain-tag librarian">
-              @nitandhra.ac.in
+              @nitandhra.ac.in / Gmail
             </div>
             <Link to="/register" className="card-button">
               Register as Librarian

@@ -23,12 +23,8 @@ export const registerUser = async (req, res) => {
         let derivedRole;
         if (cleanEmail.endsWith("@student.nitandhra.ac.in")) {
             derivedRole = "student";
-        } else if (cleanEmail.endsWith("@nitandhra.ac.in")) {
-            derivedRole = "librarian";
         } else {
-            return res.status(400).json({
-                message: "Invalid email domain. Must be @student.nitandhra.ac.in or @nitandhra.ac.in."
-            });
+            derivedRole = "librarian";
         }
 
         if (role && role.toLowerCase() !== derivedRole) {

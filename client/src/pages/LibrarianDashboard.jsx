@@ -1,7 +1,10 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "../styles/LibrarianDashboard.css";
 
 const LibrarianDashboard = ({ user }) => {
+  const navigate = useNavigate();
+
   const currentUser =
     user ||
     (() => {
@@ -12,6 +15,16 @@ const LibrarianDashboard = ({ user }) => {
         return null;
       }
     })();
+
+  useEffect(() => {
+    if (!currentUser) {
+      navigate("/", { replace: true });
+    }
+  }, [currentUser, navigate]);
+
+  if (!currentUser) {
+    return null;
+  }
 
   return (
     <div className="librarian-dashboard-shell">

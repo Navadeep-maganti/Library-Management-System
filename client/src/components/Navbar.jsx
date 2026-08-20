@@ -12,8 +12,8 @@ const Navbar = ({ user, onLogout }) => {
     } else {
       localStorage.removeItem("libraryToken");
       localStorage.removeItem("libraryUser");
-      navigate("/login");
     }
+    navigate("/", { replace: true });
   };
 
   const isActive = (path) => location.pathname === path;
