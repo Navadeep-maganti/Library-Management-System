@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import pool from "./config/db.js";
+import prisma from "./config/db.js";
 
 const app = express();
 
@@ -22,7 +22,7 @@ app.post("/api/auth/login", async (req, res) => {
     }
 
     try {
-        await pool.query("SELECT 1");
+        await prisma.$queryRaw`SELECT 1`;
     } catch (dbError) {
         console.warn("Database not connected; continuing in mock login mode.", dbError.message);
     }

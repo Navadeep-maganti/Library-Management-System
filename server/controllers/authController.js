@@ -1,4 +1,4 @@
-import pool from "../config/db.js";
+import prisma from "../config/db.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { validateEmailDomain } from "../utils/authHelpers.js";
@@ -46,53 +46,61 @@ export const registerUser = async (req, res) => {
             return res.status(400).json({ message: "Librarian registration requires faculty/staff ID." });
         }
 
-        const otpCheck = await pool.query(
-            "SELECT is_verified FROM otps WHERE email = $1 AND is_verified = TRUE",
-            [cleanEmail]
-        );
+        const verifiedOtp = await prisma.otp.findFirst({
+            where: {
+                email: cleanEmail,
+                isVerified: true
+            }
+        });
 
-        if (otpCheck.rows.length === 0) {
+        if (!verifiedOtp) {
             return res.status(400).json({
                 message: "Email has not been verified via OTP. Please verify your email first."
             });
         }
 
-        const userExist = await pool.query("SELECT email FROM users WHERE email = $1", [cleanEmail]);
-        if (userExist.rows.length > 0) {
+        const userExist = await prisma.user.findUnique({
+            where: { email: cleanEmail }
+        });
+
+        if (userExist) {
             return res.status(400).json({ message: "User is already registered with this email." });
         }
 
         const passwordHash = await bcrypt.hash(password, 10);
 
-        const client = await pool.connect();
-        try {
-            await client.query("BEGIN");
-
-            await client.query(
-                "INSERT INTO users (email, username, role, password_hash) VALUES ($1, $2, $3, $4)",
-                [cleanEmail, username, derivedRole, passwordHash]
-            );
+        await prisma.$transaction(async (tx) => {
+            await tx.user.create({
+                data: {
+                    email: cleanEmail,
+                    username,
+                    role: derivedRole,
+                    passwordHash
+                }
+            });
 
             if (derivedRole === "student") {
-                await client.query(
-                    "INSERT INTO students (email, roll_no, department, year_of_study) VALUES ($1, $2, $3, $4)",
-                    [cleanEmail, rollNo, department, yearOfStudy]
-                );
+                await tx.student.create({
+                    data: {
+                        email: cleanEmail,
+                        rollNo: String(rollNo),
+                        department,
+                        yearOfStudy: Number(yearOfStudy)
+                    }
+                });
             } else {
-                await client.query(
-                    "INSERT INTO librarian (email, staff_id) VALUES ($1, $2)",
-                    [cleanEmail, staffId]
-                );
+                await tx.librarian.create({
+                    data: {
+                        email: cleanEmail,
+                        staffId: String(staffId)
+                    }
+                });
             }
 
-            await client.query("DELETE FROM otps WHERE email = $1", [cleanEmail]);
-            await client.query("COMMIT");
-        } catch (txnError) {
-            await client.query("ROLLBACK");
-            throw txnError;
-        } finally {
-            client.release();
-        }
+            await tx.otp.deleteMany({
+                where: { email: cleanEmail }
+            });
+        });
 
         const token = jwt.sign(
             { email: cleanEmail, role: derivedRole, username },
@@ -134,36 +142,38 @@ export const loginUser = async (req, res) => {
             return res.status(400).json({ message: "Role mismatch. Please select correct role." });
         }
 
-        const userResult = await pool.query("SELECT * FROM users WHERE email = $1", [cleanEmail]);
-        if (userResult.rows.length === 0) {
+        const user = await prisma.user.findUnique({
+            where: { email: cleanEmail }
+        });
+
+        if (!user) {
             return res.status(400).json({ message: "Invalid email or password." });
         }
 
-        const user = userResult.rows[0];
-        const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+        const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
         if (!isPasswordValid) {
             return res.status(400).json({ message: "Invalid email or password." });
         }
 
         const extraDetails = {};
         if (user.role === "student") {
-            const studentRes = await pool.query(
-                "SELECT roll_no, department, year_of_study FROM students WHERE email = $1",
-                [cleanEmail]
-            );
+            const student = await prisma.student.findUnique({
+                where: { email: cleanEmail }
+            });
 
-            if (studentRes.rows.length === 0) {
+            if (!student) {
                 return res.status(400).json({ message: "Student details not found. Please complete registration." });
             }
 
-            const student = studentRes.rows[0];
-            extraDetails.roll_no = student.roll_no;
+            extraDetails.roll_no = student.rollNo;
             extraDetails.department = student.department;
-            extraDetails.year_of_study = student.year_of_study;
+            extraDetails.year_of_study = student.yearOfStudy;
         } else if (user.role === "librarian") {
-            const librarianRes = await pool.query("SELECT staff_id FROM librarian WHERE email = $1", [cleanEmail]);
-            if (librarianRes.rows.length > 0) {
-                extraDetails.staff_id = librarianRes.rows[0].staff_id;
+            const librarian = await prisma.librarian.findUnique({
+                where: { email: cleanEmail }
+            });
+            if (librarian) {
+                extraDetails.staff_id = librarian.staffId;
             }
         }
 

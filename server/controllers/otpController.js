@@ -1,4 +1,4 @@
-import pool from "../config/db.js";
+import prisma from "../config/db.js";
 import { validateEmailDomain, generateOTP } from "../utils/authHelpers.js";
 import { sendOTPEmail } from "../services/emailService.js";
 
@@ -12,18 +12,29 @@ export const sendOTP = async (req, res) => {
             return res.status(400).json({ success: false, message: "Invalid email domain" });
         }
 
-        //CHeck if user already exists
-        const userCheck = await pool.query("SELECT email FROM users WHERE email = $1", [email]);
-        if (userCheck.rows.length > 0) {
+        // Check if user already exists
+        const existingUser = await prisma.user.findUnique({
+            where: { email }
+        });
+        if (existingUser) {
             return res.status(400).json({ message: "User with this email already exists" });
         }
 
-        //OTP generation and expiration (10min)
+        // OTP generation and expiration (10min)
         const otp = generateOTP();
         const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
-        await pool.query("DELETE FROM otps WHERE email = $1", [email]);
-        await pool.query("INSERT INTO otps (email,otp,expires_at) VALUES ($1, $2, $3)", [email, otp, expiresAt]);
+        await prisma.otp.deleteMany({
+            where: { email }
+        });
+
+        await prisma.otp.create({
+            data: {
+                email,
+                otp,
+                expiresAt
+            }
+        });
 
         await sendOTPEmail(email, otp);
 
@@ -34,27 +45,36 @@ export const sendOTP = async (req, res) => {
     }
 };
 
-
 export const verifyOTP = async (req, res) => {
     const { email, otp } = req.body;
 
     try {
         if (!email || !otp) {
             return res.status(400).json({ message: "Email and OTP are required." });
-
         }
 
-        const result = await pool.query("SELECT * FROM otps WHERE email = $1 AND otp = $2 AND expires_at > NOW()", [email, otp]);
-        if (result.rows.length === 0) {
+        const validOtp = await prisma.otp.findFirst({
+            where: {
+                email,
+                otp,
+                expiresAt: {
+                    gt: new Date()
+                }
+            }
+        });
+
+        if (!validOtp) {
             return res.status(400).json({ message: "Invalid or expired OTP." });
         }
 
-        await pool.query("UPDATE otps SET is_verified = TRUE WHERE email = $1", [email]);
+        await prisma.otp.updateMany({
+            where: { email },
+            data: { isVerified: true }
+        });
 
         res.status(200).json({ message: "OTP verified successfully. You can now proceed to register." });
 
-    }
-    catch (error) {
+    } catch (error) {
         console.log("Error in OTP verification:", error);
         res.status(500).json({ message: "Failed to verify OTP. Please try again." });
     }
