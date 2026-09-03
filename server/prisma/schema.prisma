@@ -7,6 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// 1. User & Authentication
 model User {
   email        String     @id @db.VarChar(100)
   username     String     @db.VarChar(255)
@@ -19,19 +20,24 @@ model User {
 }
 
 model Student {
-  rollNo      String @id @map("roll_no") @db.VarChar(20)
-  email       String @unique @db.VarChar(100)
-  department  String @db.VarChar(100)
-  yearOfStudy Int    @map("year_of_study")
-  user        User   @relation(fields: [email], references: [email], onDelete: Cascade, onUpdate: Cascade)
+  rollNo          String            @id @map("student_roll_no") @db.VarChar(20)
+  email           String            @unique @db.VarChar(100)
+  department      String            @db.VarChar(100)
+  yearOfStudy     Int               @map("year_of_study")
+  user            User              @relation(fields: [email], references: [email], onDelete: Cascade, onUpdate: Cascade)
+  issuedBooks     IssuedBook[]
+  borrowHistories BorrowHistory[]
+  reservations    BookReservation[]
+  fines           Fine[]
 
   @@map("students")
 }
 
 model Librarian {
-  staffId String @id @map("staff_id") @db.VarChar(20)
-  email   String @unique @db.VarChar(100)
-  user    User   @relation(fields: [email], references: [email], onDelete: Cascade, onUpdate: Cascade)
+  staffId       String         @id @map("librarian_id") @db.VarChar(20)
+  email         String         @unique @db.VarChar(100)
+  user          User           @relation(fields: [email], references: [email], onDelete: Cascade, onUpdate: Cascade)
+  announcements Announcement[]
 
   @@map("librarian")
 }
@@ -47,6 +53,7 @@ model Otp {
   @@map("otps")
 }
 
+// 2. Books, Categories, Departments & Shelves
 model Category {
   id    Int    @id @default(autoincrement())
   name  String @db.VarChar(50)
@@ -63,22 +70,6 @@ model Department {
   @@map("department")
 }
 
-model Book {
-  id             Int                @id @default(autoincrement())
-  title          String             @db.VarChar(255)
-  author         String             @db.VarChar(100)
-  isbn           String             @unique @db.VarChar(13)
-  categoryId     Int?               @map("category_id")
-  description    String?            @db.Text
-  departmentId   Int?               @map("department_id")
-  publishedYear  Int?               @map("published_year")
-  category       Category?          @relation(fields: [categoryId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-  department     Department?        @relation(fields: [departmentId], references: [id], onDelete: SetNull, onUpdate: Cascade)
-  availabilities BookAvailability[]
-
-  @@map("books")
-}
-
 model Shelf {
   id             Int                @id @default(autoincrement())
   section        String             @db.VarChar(50)
@@ -86,6 +77,25 @@ model Shelf {
   availabilities BookAvailability[]
 
   @@map("shelf")
+}
+
+model Book {
+  id              Int                @id @default(autoincrement()) @map("book_id")
+  title           String             @db.VarChar(255)
+  author          String             @db.VarChar(100)
+  isbn            String             @unique @db.VarChar(13)
+  categoryId      Int?               @map("category_id")
+  description     String?            @db.Text
+  departmentId    Int?               @map("department_id")
+  publishedYear   Int?               @map("published_year")
+  category        Category?          @relation(fields: [categoryId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  department      Department?        @relation(fields: [departmentId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  availabilities  BookAvailability[]
+  issuedBooks     IssuedBook[]
+  borrowHistories BorrowHistory[]
+  reservations    BookReservation[]
+
+  @@map("books")
 }
 
 model BookAvailability {
@@ -98,4 +108,120 @@ model BookAvailability {
   shelf           Shelf? @relation(fields: [shelfId], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
   @@map("book_availability")
+}
+
+// 3. Status
+model Status {
+  id           Int               @id @default(autoincrement())
+  status       String            @db.VarChar(50)
+  reservations BookReservation[]
+
+  @@map("statuses")
+}
+
+// 4. Circulation & Reservations
+model IssuedBook {
+  id           Int       @id @default(autoincrement())
+  bookId       Int?      @map("book_id")
+  studentId    String    @map("student_id") @db.VarChar(20)
+  issueDate    DateTime  @default(now()) @map("issue_date")
+  dueDate      DateTime  @map("due_date")
+  returnDate   DateTime? @map("return_date")
+  isReturned   Boolean   @default(false) @map("is_returned")
+  renewalCount Int       @default(0) @map("renewal_count")
+  book         Book?     @relation(fields: [bookId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  student      Student   @relation(fields: [studentId], references: [rollNo], onDelete: Cascade, onUpdate: Cascade)
+  fines        Fine[]
+
+  @@map("issued_books")
+}
+
+model BorrowHistory {
+  id         Int       @id @default(autoincrement())
+  studentId  String    @map("student_id") @db.VarChar(20)
+  bookId     Int?      @map("book_id")
+  issueDate  DateTime  @map("issue_date")
+  returnDate DateTime? @map("return_date")
+  student    Student   @relation(fields: [studentId], references: [rollNo], onDelete: Cascade, onUpdate: Cascade)
+  book       Book?     @relation(fields: [bookId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@map("borrow_history")
+}
+
+model BookReservation {
+  id            Int      @id @default(autoincrement())
+  studentId     String   @map("student_id") @db.VarChar(20)
+  bookId        Int?     @map("book_id")
+  reservedDate  DateTime @default(now()) @map("reserved_date")
+  queuePosition Int      @map("queue_position")
+  statusId      Int?     @map("status_id")
+  student       Student  @relation(fields: [studentId], references: [rollNo], onDelete: Cascade, onUpdate: Cascade)
+  book          Book?    @relation(fields: [bookId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  status        Status?  @relation(fields: [statusId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@map("book_reservations")
+}
+
+// 5. Fines & Fine Types & Fine Payments
+model FineType {
+  id    Int    @id @default(autoincrement())
+  type  String @db.VarChar(50)
+  fines Fine[]
+
+  @@map("fine_types")
+}
+
+model Fine {
+  id           Int           @id @default(autoincrement())
+  studentId    String        @map("student_id") @db.VarChar(20)
+  issuedBookId Int?          @map("issued_book_id")
+  fineTypeId   Int?          @map("fine_type_id")
+  amount       Decimal       @db.Decimal(10, 2)
+  issueDate    DateTime      @default(now()) @map("issue_date")
+  isPaid       Boolean       @default(false) @map("is_paid")
+  description  String?       @db.Text
+  student      Student       @relation(fields: [studentId], references: [rollNo], onDelete: Cascade, onUpdate: Cascade)
+  issuedBook   IssuedBook?   @relation(fields: [issuedBookId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  fineType     FineType?     @relation(fields: [fineTypeId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  payments     FinePayment[]
+
+  @@map("fines")
+}
+
+model FinePayment {
+  id            Int      @id @default(autoincrement())
+  fineId        Int      @map("fine_id")
+  paymentDate   DateTime @default(now()) @map("payment_date")
+  amountPaid    Decimal  @map("amount_paid") @db.Decimal(10, 2)
+  paymentMethod String   @map("payment_method") @db.VarChar(50)
+  transactionId String?  @map("transaction_id") @db.VarChar(100)
+  fine          Fine     @relation(fields: [fineId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@map("fine_payments")
+}
+
+// 6. System Constants & Announcements
+model LibraryConstants {
+  id                 Int     @id @default(autoincrement())
+  maxBorrowDays      Int     @map("max_borrow_days")
+  maxBooksPerStudent Int     @map("max_books_per_student")
+  overdueFinePerDay  Decimal @map("overdue_fine_per_day") @db.Decimal(10, 2)
+  maxRenewals        Int     @map("max_renewals")
+  renewalExtendsDays Int     @map("renewal_extends_days")
+
+  @@map("library_constants")
+}
+
+model Announcement {
+  id          Int        @id @default(autoincrement())
+  title       String     @db.VarChar(255)
+  content     String     @db.Text
+  librarianId String?    @map("librarian_id") @db.VarChar(20)
+  isActive    Boolean    @default(true) @map("is_active")
+  imageUrl    String?    @map("image_url") @db.VarChar(500)
+  createdAt   DateTime   @default(now()) @map("created_at")
+  expiresAt   DateTime?  @map("expires_at")
+  librarian   Librarian? @relation(fields: [librarianId], references: [staffId], onDelete: SetNull, onUpdate: Cascade)
+
+  @@map("announcements")
 }
