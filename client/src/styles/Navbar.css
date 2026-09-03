@@ -120,19 +120,29 @@
 }
 
 .user-badge-group {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 14px;
 }
 
-.user-chip {
-  display: flex;
+.profile-trigger {
   align-items: center;
+  background: #ffffff;
+  border: 1px solid #dbe4ec;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
   gap: 10px;
-  padding: 6px 14px 6px 8px;
-  background: #f1f5f9;
-  border: 1px solid #e2e8f0;
-  border-radius: 30px;
+  padding: 6px 10px 6px 7px;
+  text-align: left;
+  transition: 0.2s ease;
+}
+
+.profile-trigger:hover,
+.profile-trigger.open {
+  border-color: #0f766e;
+  box-shadow: 0 4px 14px rgba(15, 118, 110, 0.12);
 }
 
 .user-avatar {
@@ -149,10 +159,40 @@
 }
 
 .user-name {
+  display: block;
   font-weight: 700;
   font-size: 0.85rem;
   color: #1e293b;
 }
+
+.profile-trigger-copy { display: block; }
+.profile-trigger-label { color: #64748b; display: block; font-size: 0.68rem; margin-top: 1px; }
+.profile-chevron { color: #0f766e; font-size: 1.1rem; line-height: 1; }
+
+.profile-menu {
+  background: #ffffff;
+  border: 1px solid #dbe4ec;
+  border-radius: 12px;
+  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.14);
+  min-width: 290px;
+  padding: 16px;
+  position: absolute;
+  right: 74px;
+  top: calc(100% + 12px);
+  z-index: 110;
+}
+
+.profile-menu-header { align-items: center; border-bottom: 1px solid #e2e8f0; display: flex; gap: 11px; padding-bottom: 14px; }
+.profile-menu-avatar { align-items: center; background: #ccfbf1; border-radius: 10px; color: #0f766e; display: flex; font-size: 1.2rem; font-weight: 800; height: 42px; justify-content: center; width: 42px; }
+.profile-menu-header strong, .profile-menu-header span { display: block; }
+.profile-menu-header strong { color: #0f172a; font-size: 0.9rem; }
+.profile-menu-header span { color: #64748b; font-size: 0.72rem; margin-top: 3px; max-width: 190px; overflow: hidden; text-overflow: ellipsis; }
+.profile-menu-details { display: grid; gap: 10px; padding: 14px 0; }
+.profile-menu-details p { display: flex; justify-content: space-between; gap: 16px; margin: 0; }
+.profile-menu-details span { color: #64748b; font-size: 0.75rem; }
+.profile-menu-details strong { color: #334155; font-size: 0.78rem; text-align: right; }
+.profile-menu-logout { background: #fff1f2; border: 1px solid #fecdd3; border-radius: 7px; color: #be123c; cursor: pointer; font-size: 0.8rem; font-weight: 700; padding: 9px 12px; width: 100%; }
+.profile-menu-logout:hover { background: #ffe4e6; }
 
 .role-badge {
   font-size: 0.68rem;
