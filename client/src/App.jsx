@@ -1,15 +1,22 @@
 import { useState, useEffect } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import LandingPage from "./pages/LandingPage";
 import RegistrationPage from "./pages/RegistrationPage";
 import LoginPage from "./pages/LoginPage";
-import StudentDashboard from "./pages/StudentDashboard";
+import StudentDashboard from "./pages/student/StudentDashboard";
+import PayFinePage from "./pages/student/PayFinePage";
+import ViewHistoryPage from "./pages/student/ViewHistoryPage";
+import ReturnBookPage from "./pages/student/ReturnBookPage";
+import AlertsPage from "./pages/student/AlertsPage";
+import ProfilePage from "./pages/student/ProfilePage";
+import RequestsPage from "./pages/student/RequestsPage";
 import LibrarianDashboard from "./pages/LibrarianDashboard";
 import "./App.css";
 
-function App() {
+function AppContent() {
   const [user, setUser] = useState(null);
+  const location = useLocation();
 
   useEffect(() => {
     const storedUser = localStorage.getItem("libraryUser");
@@ -32,10 +39,13 @@ function App() {
     setUser(null);
   };
 
+  const isStudentDashboard = location.pathname.startsWith("/student-dashboard");
+
   return (
-    <BrowserRouter>
-      <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+    <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+        {!isStudentDashboard && (
         <Navbar user={user} onLogout={handleLogout} />
+        )}
         
         <main className="main-content">
           <Routes>
@@ -48,10 +58,14 @@ function App() {
               path="/login"
               element={<LoginPage onAuthSuccess={handleAuthSuccess} />}
             />
-            <Route
-              path="/student-dashboard"
-              element={<StudentDashboard user={user} />}
-            />
+            <Route path="/student-dashboard" element={<StudentDashboard user={user} onLogout={handleLogout} />}>
+              <Route path="payfine" element={<PayFinePage />} />
+              <Route path="history" element={<ViewHistoryPage />} />
+              <Route path="requests" element={<RequestsPage />} />
+              <Route path="return" element={<ReturnBookPage />} />
+              <Route path="alerts" element={<AlertsPage />} />
+              <Route path="profile" element={<ProfilePage />} />
+            </Route>
             <Route
               path="/librarian-dashboard"
               element={<LibrarianDashboard user={user} />}
@@ -66,6 +80,13 @@ function App() {
           </div>
         </footer>
       </div>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <AppContent />
     </BrowserRouter>
   );
 }
