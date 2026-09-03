@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import "../../styles/RegistrationPage.css";
+import "../styles/RegistrationPage.css";
 
 const OTP_VALIDITY_MINUTES = 10;
 const OTP_VALIDITY_MS = OTP_VALIDITY_MINUTES * 60 * 1000;
@@ -60,6 +60,9 @@ function RegistrationPage({ onAuthSuccess }) {
     submitting: false,
   });
 
+  const hasWarnedExpiredRef = useRef(false);
+  const isOtpExpired = Boolean(otpSent && !otpVerified && otpExpiresAt && timeLeftMs <= 0);
+
   const activeForm = formData[selectedRole];
   const details = roleContent[selectedRole];
 
@@ -70,13 +73,19 @@ function RegistrationPage({ onAuthSuccess }) {
     }
 
     const updateTimeLeft = () => {
-      setTimeLeftMs(Math.max(otpExpiresAt - Date.now(), 0));
+      const remaining = Math.max(otpExpiresAt - Date.now(), 0);
+      setTimeLeftMs(remaining);
+
+      if (remaining === 0 && !otpVerified && !hasWarnedExpiredRef.current) {
+        hasWarnedExpiredRef.current = true;
+        showToast("warning", "Previous OTP is invalid (expired). Please try resending OTP.");
+      }
     };
 
     updateTimeLeft();
     const intervalId = setInterval(updateTimeLeft, 1000);
     return () => clearInterval(intervalId);
-  }, [otpExpiresAt]);
+  }, [otpExpiresAt, otpVerified]);
 
   useEffect(() => {
     if (!otpResendAvailableAt) {
@@ -121,6 +130,7 @@ function RegistrationPage({ onAuthSuccess }) {
     setOtpVerified(false);
     setOtpExpiresAt(null);
     setOtpResendAvailableAt(null);
+    hasWarnedExpiredRef.current = false;
   };
 
   const handleRoleChange = (role) => {
@@ -161,6 +171,11 @@ function RegistrationPage({ onAuthSuccess }) {
   };
 
   const handleSendOtp = async () => {
+    if (otpVerified) {
+      showToast("info", "Your email is already verified.");
+      return;
+    }
+
     const { name, identifier, email } = activeForm;
 
     if (!name || !identifier || !email) {
@@ -210,6 +225,8 @@ function RegistrationPage({ onAuthSuccess }) {
       setOtpVerified(false);
       setOtpExpiresAt(Date.now() + OTP_VALIDITY_MS);
       setOtpResendAvailableAt(Date.now() + OTP_RESEND_LOCK_MS);
+      setOtp("");
+      hasWarnedExpiredRef.current = false;
       showToast("success", result.message);
     } catch {
       showToast("error", "Unable to connect to the server. Please try again.");
@@ -221,6 +238,11 @@ function RegistrationPage({ onAuthSuccess }) {
   const handleVerifyOtp = async () => {
     if (!otpSent) {
       showToast("info", "Request the OTP first.");
+      return;
+    }
+
+    if (isOtpExpired || timeLeftMs <= 0) {
+      showToast("error", "Previous OTP is invalid (expired). Please try resending OTP.");
       return;
     }
 
@@ -403,24 +425,36 @@ function RegistrationPage({ onAuthSuccess }) {
                 />
                 <button
                   type="button"
-                  className="secondary-button inline-button"
+                  className={`secondary-button inline-button ${otpVerified ? "button-verified" : ""}`}
                   onClick={handleSendOtp}
                   disabled={loadingState.sendingOtp || resendTimeLeftMs > 0 || otpVerified}
                 >
                   {loadingState.sendingOtp
                     ? "Sending..."
-                    : otpSent && resendTimeLeftMs === 0
-                      ? "Resend OTP"
-                      : "Send OTP"}
+                    : otpVerified
+                      ? "✓ Verified"
+                      : otpSent && (resendTimeLeftMs === 0 || isOtpExpired)
+                        ? "Resend OTP"
+                        : "Send OTP"}
                 </button>
               </div>
             </label>
 
             {otpSent ? (
-              <p className="otp-feedback-note">
-                OTP valid for {formatTimeLeft(timeLeftMs)}
-                {resendTimeLeftMs > 0 ? ` | Resend locked for ${formatTimeLeft(resendTimeLeftMs)}` : ""}
-              </p>
+              otpVerified ? (
+                <p className="otp-feedback-note otp-success-note">
+                  <span>✓</span> Email verified successfully! Please set your password to complete registration.
+                </p>
+              ) : isOtpExpired ? (
+                <p className="otp-feedback-note otp-warning-note">
+                  <span>⚠️</span> Previous OTP has expired and is invalid. Please click &ldquo;Resend OTP&rdquo; to receive a new verification code.
+                </p>
+              ) : (
+                <p className="otp-feedback-note">
+                  OTP valid for {formatTimeLeft(timeLeftMs)}
+                  {resendTimeLeftMs > 0 ? ` | Resend locked for ${formatTimeLeft(resendTimeLeftMs)}` : ""}
+                </p>
+              )
             ) : null}
 
             <label className="field-group">
@@ -433,13 +467,13 @@ function RegistrationPage({ onAuthSuccess }) {
                   value={otp}
                   onChange={(event) => setOtp(event.target.value)}
                   placeholder="Enter 6-digit OTP"
-                  disabled={otpVerified}
+                  disabled={otpVerified || isOtpExpired}
                 />
                 <button
                   type="button"
                   className="ghost-button inline-button"
                   onClick={handleVerifyOtp}
-                  disabled={loadingState.verifyingOtp || otpVerified || !otpSent}
+                  disabled={loadingState.verifyingOtp || otpVerified || !otpSent || isOtpExpired}
                   style={otpVerified ? { background: "#dcfce7", color: "#166534" } : {}}
                 >
                   {loadingState.verifyingOtp

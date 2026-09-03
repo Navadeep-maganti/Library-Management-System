@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import "../../styles/LibrarianDashboard.css";
+import "../styles/LibrarianDashboard.css";
 
 const LibrarianDashboard = ({ user }) => {
   const navigate = useNavigate();

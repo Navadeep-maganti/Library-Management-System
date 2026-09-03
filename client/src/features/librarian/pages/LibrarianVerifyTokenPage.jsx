@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import "../../styles/LibrarianPages.css";
+import "../styles/LibrarianPages.css";
 
 const LibrarianVerifyTokenPage = () => {
   const navigate = useNavigate();

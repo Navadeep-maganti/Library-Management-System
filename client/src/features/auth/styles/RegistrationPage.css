@@ -86,6 +86,12 @@
   border: 1px solid #93c5fd;
 }
 
+.toast-message.warning {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fcd34d;
+}
+
 .role-toggle {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -284,6 +290,30 @@
   font-size: 0.8rem;
   line-height: 1.4;
   padding-left: 2px;
+}
+
+.otp-feedback-note.otp-warning-note {
+  color: #b91c1c;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.otp-feedback-note.otp-success-note {
+  color: #15803d;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.secondary-button.button-verified {
+  background: #dcfce7 !important;
+  color: #166534 !important;
+  border: 1px solid #86efac !important;
+  cursor: not-allowed !important;
+  opacity: 0.9 !important;
 }
 
 .password-stack {

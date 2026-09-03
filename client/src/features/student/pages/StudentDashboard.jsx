@@ -1,9 +1,9 @@
 import React, { useMemo, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 
-import StudentNavbar from "./StudentNavbar";
-import { booksByDepartment, dummyStudentUser } from "./studentData";
-import "../../styles/StudentDashboard.css";
+import StudentNavbar from "../components/StudentNavbar";
+import { booksByDepartment, dummyStudentUser } from "../data/studentData";
+import "../styles/StudentDashboard.css";
 
 /*
 |--------------------------------------------------------------------------

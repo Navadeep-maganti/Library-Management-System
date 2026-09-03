@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import "../../styles/LibrarianPages.css";
+import "../styles/LibrarianPages.css";
 
 const LibrarianIssueBookPage = () => {
   const navigate = useNavigate();

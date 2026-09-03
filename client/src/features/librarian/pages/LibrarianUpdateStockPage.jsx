@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "../../styles/LibrarianPages.css";
+import "../styles/LibrarianPages.css";
 
 const LibrarianUpdateStockPage = () => {
   const [catalog, setCatalog] = useState([
