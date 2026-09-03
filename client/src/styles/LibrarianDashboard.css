@@ -54,6 +54,69 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
+.librarian-section-sub {
+  font-size: 0.88rem;
+  color: #64748b;
+  margin: -10px 0 16px 0;
+}
+
+.flow-steps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.flow-step-card {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.flow-step-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(22, 101, 52, 0.12);
+  border-color: #86efac;
+}
+
+.flow-step-number {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #166534;
+  background: #dcfce7;
+  padding: 2px 8px;
+  border-radius: 10px;
+  align-self: flex-start;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.flow-step-icon {
+  font-size: 1.8rem;
+  margin-bottom: 8px;
+}
+
+.flow-step-title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 4px 0;
+}
+
+.flow-step-desc {
+  font-size: 0.8rem;
+  color: #475569;
+  margin: 0;
+  line-height: 1.3;
+}
+
 .librarian-heading {
   font-size: 1.15rem;
   font-weight: 700;

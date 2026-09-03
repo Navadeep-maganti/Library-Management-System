@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
+import LibrarianNavbar from "./components/LibrarianNavbar";
 import LandingPage from "./pages/LandingPage";
 import RegistrationPage from "./pages/RegistrationPage";
 import LoginPage from "./pages/LoginPage";
@@ -12,6 +13,10 @@ import AlertsPage from "./pages/student/AlertsPage";
 import ProfilePage from "./pages/student/ProfilePage";
 import RequestsPage from "./pages/student/RequestsPage";
 import LibrarianDashboard from "./pages/LibrarianDashboard";
+import LibrarianRequestsPage from "./pages/Librarian/LibrarianRequestsPage";
+import LibrarianVerifyTokenPage from "./pages/Librarian/LibrarianVerifyTokenPage";
+import LibrarianIssueBookPage from "./pages/Librarian/LibrarianIssueBookPage";
+import LibrarianUpdateStockPage from "./pages/Librarian/LibrarianUpdateStockPage";
 import "./App.css";
 
 function AppContent() {
@@ -42,6 +47,12 @@ function AppContent() {
   const isStudentDashboard = location.pathname.startsWith("/student-dashboard");
 
   return (
+    <BrowserRouter>
+      <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+        {user?.role === "librarian" ? (
+          <LibrarianNavbar user={user} onLogout={handleLogout} />
+        ) : (
+          <Navbar user={user} onLogout={handleLogout} />
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
         {!isStudentDashboard && (
         <Navbar user={user} onLogout={handleLogout} />
@@ -69,6 +80,22 @@ function AppContent() {
             <Route
               path="/librarian-dashboard"
               element={<LibrarianDashboard user={user} />}
+            />
+            <Route
+              path="/librarian/requests"
+              element={<LibrarianRequestsPage />}
+            />
+            <Route
+              path="/librarian/verify-token"
+              element={<LibrarianVerifyTokenPage />}
+            />
+            <Route
+              path="/librarian/issue-book"
+              element={<LibrarianIssueBookPage />}
+            />
+            <Route
+              path="/librarian/update-stock"
+              element={<LibrarianUpdateStockPage />}
             />
           </Routes>
         </main>
