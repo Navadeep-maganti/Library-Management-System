@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import "../styles/LibrarianDashboard.css";
 
 const LibrarianDashboard = ({ user }) => {
@@ -31,7 +31,7 @@ const LibrarianDashboard = ({ user }) => {
       {/* Librarian Profile Overview */}
       <div className="librarian-header-card">
         <h2 className="librarian-title">Librarian Management Dashboard</h2>
-        <p className="librarian-sub">Central Library Staff Operations Portal</p>
+        <p className="librarian-sub">Central Library Staff Overview Hub & Operations Portal</p>
 
         <div className="librarian-info-box">
           <div className="librarian-info-item">
@@ -49,28 +49,64 @@ const LibrarianDashboard = ({ user }) => {
         </div>
       </div>
 
-      {/* Quick Action Controls (Dummy Buttons) */}
+      {/* Librarian User Flow Overview Cards */}
+      <div className="librarian-section">
+        <h3 className="librarian-heading">Librarian Operations Workflow</h3>
+        <p className="librarian-section-sub">Follow the step-by-step branch for staff operations:</p>
+
+        <div className="flow-steps-grid">
+          <Link to="/librarian/requests" className="flow-step-card">
+            <div className="flow-step-number">Step 1</div>
+            <div className="flow-step-icon">📋</div>
+            <h4 className="flow-step-title">View Requests</h4>
+            <p className="flow-step-desc">Pending bookings list from students</p>
+          </Link>
+
+          <Link to="/librarian/verify-token" className="flow-step-card">
+            <div className="flow-step-number">Step 2</div>
+            <div className="flow-step-icon">🔑</div>
+            <h4 className="flow-step-title">Verify Token</h4>
+            <p className="flow-step-desc">Scan or enter student OTP code</p>
+          </Link>
+
+          <Link to="/librarian/issue-book" className="flow-step-card">
+            <div className="flow-step-number">Step 3</div>
+            <div className="flow-step-icon">📖</div>
+            <h4 className="flow-step-title">Issue Book</h4>
+            <p className="flow-step-desc">Update status to "Issued" & set due date</p>
+          </Link>
+
+          <Link to="/librarian/update-stock" className="flow-step-card">
+            <div className="flow-step-number">Step 4</div>
+            <div className="flow-step-icon">📦</div>
+            <h4 className="flow-step-title">Update Stock</h4>
+            <p className="flow-step-desc">Final inventory synchronization</p>
+          </Link>
+        </div>
+      </div>
+
+      {/* Quick Action Controls */}
       <div className="librarian-section">
         <h3 className="librarian-heading">Quick Actions</h3>
         <div className="actions-row">
-          <button type="button" className="dummy-btn primary">
+          <button type="button" className="dummy-btn primary" onClick={() => navigate("/librarian/issue-book")}>
             + Issue New Book
           </button>
-          <button type="button" className="dummy-btn">
-            Return Book
+          <button type="button" className="dummy-btn" onClick={() => navigate("/librarian/verify-token")}>
+            🔑 Verify Student Code
           </button>
-          <button type="button" className="dummy-btn">
-            Add New Title to Catalog
+          <button type="button" className="dummy-btn" onClick={() => navigate("/librarian/update-stock")}>
+            📦 Catalog Inventory
           </button>
-          <button type="button" className="dummy-btn">
-            View Overdue Notices
+          <button type="button" className="dummy-btn" onClick={() => navigate("/librarian/requests")}>
+            📋 View Pending Bookings
           </button>
         </div>
       </div>
 
-      {/* Recent Transactions Table (Dummy Data) */}
+      {/* Recent Transactions Table */}
       <div className="librarian-section">
-        <h3 className="librarian-heading">Recent Library Transactions (Dummy Data)</h3>
+        <h3 className="librarian-heading">Recent Library Transactions</h3>
         <div className="dummy-table-wrapper">
           <table className="dummy-table">
             <thead>

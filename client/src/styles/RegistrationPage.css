@@ -161,7 +161,7 @@
   gap: 10px;
 }
 
-.field-group > span {
+.field-group>span {
   color: #29536f;
   font-weight: 700;
   font-size: 0.92rem;

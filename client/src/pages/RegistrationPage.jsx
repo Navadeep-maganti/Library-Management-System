@@ -410,8 +410,8 @@ function RegistrationPage({ onAuthSuccess }) {
                   {loadingState.sendingOtp
                     ? "Sending..."
                     : otpSent && resendTimeLeftMs === 0
-                    ? "Resend OTP"
-                    : "Send OTP"}
+                      ? "Resend OTP"
+                      : "Send OTP"}
                 </button>
               </div>
             </label>
@@ -445,8 +445,8 @@ function RegistrationPage({ onAuthSuccess }) {
                   {loadingState.verifyingOtp
                     ? "Verifying..."
                     : otpVerified
-                    ? "✓ Verified"
-                    : "Verify OTP"}
+                      ? "✓ Verified"
+                      : "Verify OTP"}
                 </button>
               </div>
             </label>
