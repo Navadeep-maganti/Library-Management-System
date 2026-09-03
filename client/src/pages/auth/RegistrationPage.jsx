@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import "../styles/RegistrationPage.css";
+import "../../styles/RegistrationPage.css";
 
 const OTP_VALIDITY_MINUTES = 10;
 const OTP_VALIDITY_MS = OTP_VALIDITY_MINUTES * 60 * 1000;

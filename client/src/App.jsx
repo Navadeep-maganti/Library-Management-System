@@ -3,8 +3,8 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import LibrarianNavbar from "./components/LibrarianNavbar";
 import LandingPage from "./pages/LandingPage";
-import RegistrationPage from "./pages/RegistrationPage";
-import LoginPage from "./pages/LoginPage";
+import RegistrationPage from "./pages/auth/RegistrationPage";
+import LoginPage from "./pages/auth/LoginPage";
 import StudentDashboard from "./pages/student/StudentDashboard";
 import PayFinePage from "./pages/student/PayFinePage";
 import ViewHistoryPage from "./pages/student/ViewHistoryPage";
@@ -12,7 +12,7 @@ import ReturnBookPage from "./pages/student/ReturnBookPage";
 import AlertsPage from "./pages/student/AlertsPage";
 import ProfilePage from "./pages/student/ProfilePage";
 import RequestsPage from "./pages/student/RequestsPage";
-import LibrarianDashboard from "./pages/LibrarianDashboard";
+import LibrarianDashboard from "./pages/Librarian/LibrarianDashboard";
 import LibrarianRequestsPage from "./pages/Librarian/LibrarianRequestsPage";
 import LibrarianVerifyTokenPage from "./pages/Librarian/LibrarianVerifyTokenPage";
 import LibrarianIssueBookPage from "./pages/Librarian/LibrarianIssueBookPage";
@@ -47,18 +47,16 @@ function AppContent() {
   const isStudentDashboard = location.pathname.startsWith("/student-dashboard");
 
   return (
-    <BrowserRouter>
-      <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-        {user?.role === "librarian" ? (
+    <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+      {!isStudentDashboard && (
+        user?.role === "librarian" ? (
           <LibrarianNavbar user={user} onLogout={handleLogout} />
         ) : (
           <Navbar user={user} onLogout={handleLogout} />
-    <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-        {!isStudentDashboard && (
-        <Navbar user={user} onLogout={handleLogout} />
-        )}
-        
-        <main className="main-content">
+        )
+      )}
+      
+      <main className="main-content">
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route
