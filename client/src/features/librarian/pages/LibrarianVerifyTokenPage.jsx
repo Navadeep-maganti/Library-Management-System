@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import "../styles/LibrarianPages.css";
+import "../styles/LibrarianVerifyTokenPage.css";
 
 const LibrarianVerifyTokenPage = () => {
   const navigate = useNavigate();
@@ -81,37 +81,37 @@ const LibrarianVerifyTokenPage = () => {
   };
 
   return (
-    <div className="librarian-flow-page">
-      <div className="flow-page-header">
-        <div className="flow-badge">Step 2: Verify Token</div>
+    <div className="verify-page-container">
+      <div className="verify-header">
+        <div className="verify-badge">Step 2: Verify Token</div>
         <h2>Scan or Enter Student Verification Code</h2>
         <p>Validate student code before issuing physical books</p>
       </div>
 
-      <div className="flow-card max-w-600">
+      <div className="verify-card">
         <form onSubmit={handleVerify} className="verify-form">
-          <label htmlFor="token-input" className="form-label">
+          <label htmlFor="token-input" className="verify-form-label">
             Student Token / OTP Code
           </label>
-          <div className="input-group">
+          <div className="verify-input-group">
             <input
               id="token-input"
               type="text"
-              className="token-input"
+              className="verify-input"
               placeholder="e.g. TOK-9821 or 6-digit OTP"
               value={inputToken}
               onChange={(e) => setInputToken(e.target.value)}
             />
-            <button type="submit" className="btn-action primary">
+            <button type="submit" className="verify-submit-btn">
               Verify Code
             </button>
           </div>
-          {errorMsg && <p className="error-text">{errorMsg}</p>}
+          {errorMsg && <p className="verify-error-text">{errorMsg}</p>}
         </form>
 
         {verificationResult && (
-          <div className="verification-success-box">
-            <div className="success-header">
+          <div className="verify-success-box">
+            <div className="verify-success-header">
               <span className="icon">✅</span>
               <div>
                 <h4>Verification Successful</h4>
@@ -119,20 +119,20 @@ const LibrarianVerifyTokenPage = () => {
               </div>
             </div>
 
-            <div className="details-grid">
-              <div className="detail-item">
+            <div className="verify-details-grid">
+              <div className="verify-detail-item">
                 <span className="label">Student Name</span>
                 <span className="value">{verificationResult.studentName}</span>
               </div>
-              <div className="detail-item">
+              <div className="verify-detail-item">
                 <span className="label">Roll Number</span>
                 <span className="value">{verificationResult.rollNo}</span>
               </div>
-              <div className="detail-item">
+              <div className="verify-detail-item">
                 <span className="label">Book Requested</span>
                 <span className="value">{verificationResult.bookTitle}</span>
               </div>
-              <div className="detail-item">
+              <div className="verify-detail-item">
                 <span className="label">ISBN</span>
                 <span className="value">{verificationResult.isbn}</span>
               </div>
@@ -140,7 +140,7 @@ const LibrarianVerifyTokenPage = () => {
 
             <button
               type="button"
-              className="btn-action primary full-width"
+              className="verify-proceed-btn"
               onClick={handleProceedToIssue}
             >
               📖 Proceed to Issue Book &rarr;

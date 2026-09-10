@@ -1,0 +1,207 @@
+/* LibrarianIssueBookPage.css - Dedicated Styles for Issue Book Page */
+
+.issue-page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.issue-header {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(203, 213, 225, 0.7);
+  border-left: 6px solid #0f766e;
+  border-radius: 18px;
+  padding: 26px 28px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+}
+
+.issue-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ccfbf1;
+  color: #0f766e;
+  font-weight: 800;
+  font-size: 0.78rem;
+  padding: 4px 12px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 10px;
+  border: 1px solid rgba(15, 118, 110, 0.2);
+}
+
+.issue-header h2 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 6px 0;
+}
+
+.issue-header p {
+  color: #64748b;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.issue-card {
+  background: #ffffff;
+  border-radius: 20px;
+  border: 1px solid #e2e8f0;
+  padding: 32px;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.06);
+  max-width: 620px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.issue-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.issue-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.issue-form-label {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: #334155;
+}
+
+.issue-input {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  font-size: 0.92rem;
+  outline: none;
+  background: #ffffff;
+  color: #0f172a;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.issue-input:focus {
+  border-color: #0f766e;
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
+}
+
+.issue-submit-btn {
+  width: 100%;
+  padding: 13px;
+  font-size: 0.95rem;
+  margin-top: 10px;
+  border-radius: 10px;
+  border: 0;
+  cursor: pointer;
+  background: linear-gradient(135deg, #0f766e, #2563eb);
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.2);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.issue-submit-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.3);
+}
+
+.issue-success-box {
+  background: rgba(240, 253, 250, 0.8);
+  border: 1px solid #99f6e4;
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.issue-success-header {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 18px;
+}
+
+.issue-success-header .icon {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.issue-success-header h4 {
+  margin: 0;
+  color: #0f766e;
+  font-weight: 800;
+  font-size: 1.15rem;
+}
+
+.issue-success-header p {
+  margin: 2px 0 0 0;
+  color: #115e59;
+  font-size: 0.85rem;
+}
+
+.issue-details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  background: #ffffff;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid #ccfbf1;
+}
+
+.issue-detail-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.issue-detail-item .label {
+  font-size: 0.72rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+}
+
+.issue-detail-item .value {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-top: 2px;
+}
+
+.issue-next-btn {
+  width: 100%;
+  padding: 13px;
+  font-size: 0.95rem;
+  margin-top: 18px;
+  border-radius: 10px;
+  border: 0;
+  cursor: pointer;
+  background: linear-gradient(135deg, #0f766e, #2563eb);
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.2);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.issue-next-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.3);
+}
