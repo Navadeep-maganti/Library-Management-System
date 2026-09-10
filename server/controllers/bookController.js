@@ -392,6 +392,9 @@ export const deleteBook = async (req, res) => {
             include: {
                 issuedBooks: {
                     where: { isReturned: false }
+                },
+                reservations: {
+                    where: { status: { status: "Reserved" } }
                 }
             }
         });
@@ -407,6 +410,13 @@ export const deleteBook = async (req, res) => {
             return res.status(400).json({
                 success: false,
                 message: `Cannot delete book. There are currently ${existingBook.issuedBooks.length} unreturned active issue(s) for this book.`
+            });
+        }
+
+        if (existingBook.reservations && existingBook.reservations.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: `Cannot delete book. There are currently ${existingBook.reservations.length} active reservation(s) for this book.`
             });
         }
 

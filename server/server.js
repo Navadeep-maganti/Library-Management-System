@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import path from "path";
 import authRoutes from "./routes/authRoutes.js";
 import bookRoutes from "./routes/bookRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
@@ -29,6 +30,16 @@ app.use("/api/reservations", reservationRoutes);
 app.use("/api/fines", fineRoutes);
 app.use("/api/announcements", announcementRoutes);
 app.use("/api/constants", constantRoutes);
+
+// Endpoint to download the generated Test Report Word Document
+app.get("/api/test-report/download", (req, res) => {
+    const reportPath = path.resolve("./API_Test_Report_Auth_and_Books.docx");
+    res.download(reportPath, "API_Test_Report_Auth_and_Books.docx", (err) => {
+        if (err) {
+            res.status(404).json({ message: "Test report document not found. Run 'npm run test:report' first." });
+        }
+    });
+});
 
 const PORT = process.env.PORT || 5000;
 
