@@ -17,31 +17,32 @@ export const getAllBooks = async (req, res) => {
         } = req.query;
 
         const isFetchAll = limit === "all" || limit === "0";
-        const pageNum = parseInt(page, 10) || 1;
-        const limitNum = isFetchAll ? undefined : (parseInt(limit, 10) || 10);
+        const pageNum = Math.max(1, parseInt(page, 10) || 1);
+        const limitNum = isFetchAll ? undefined : Math.max(1, parseInt(limit, 10) || 10);
         const skip = isFetchAll ? undefined : (pageNum - 1) * limitNum;
 
         const whereClause = {};
 
-        if (search) {
+        const trimmedSearch = typeof search === "string" ? search.trim() : "";
+        if (trimmedSearch) {
             whereClause.OR = [
-                { title: { contains: search, mode: "insensitive" } },
-                { author: { contains: search, mode: "insensitive" } },
-                { isbn: { contains: search, mode: "insensitive" } }
+                { title: { contains: trimmedSearch, mode: "insensitive" } },
+                { author: { contains: trimmedSearch, mode: "insensitive" } },
+                { isbn: { contains: trimmedSearch, mode: "insensitive" } }
             ];
         }
 
-        if (categoryId) {
+        if (categoryId && !isNaN(parseInt(categoryId, 10))) {
             whereClause.categoryId = parseInt(categoryId, 10);
         }
 
-        if (departmentId) {
+        if (departmentId && !isNaN(parseInt(departmentId, 10))) {
             whereClause.departmentId = parseInt(departmentId, 10);
         }
 
         const validSortFields = ["id", "title", "author", "publishedYear"];
         const sortField = validSortFields.includes(sortBy) ? sortBy : "id";
-        const sortOrder = order.toLowerCase() === "desc" ? "desc" : "asc";
+        const sortOrder = order && order.toLowerCase() === "desc" ? "desc" : "asc";
 
         const [totalBooks, books] = await Promise.all([
             prisma.book.count({ where: whereClause }),
@@ -68,7 +69,7 @@ export const getAllBooks = async (req, res) => {
             success: true,
             totalBooks,
             totalPages,
-            currentPage: pageNum,
+            currentPage: isFetchAll ? 1 : pageNum,
             limit: isFetchAll ? totalBooks : limitNum,
             books
         });
@@ -107,8 +108,34 @@ export const getBookById = async (req, res) => {
                         shelf: true
                     }
                 },
+                issuedBooks: {
+                    where: { isReturned: false },
+                    select: {
+                        id: true,
+                        studentId: true,
+                        issueDate: true,
+                        dueDate: true,
+                        renewalCount: true,
+                        student: {
+                            select: {
+                                rollNo: true,
+                                department: true,
+                                user: { select: { username: true, email: true } }
+                            }
+                        }
+                    }
+                },
                 reservations: {
-                    include: { status: true }
+                    include: {
+                        status: true,
+                        student: {
+                            select: {
+                                rollNo: true,
+                                department: true,
+                                user: { select: { username: true, email: true } }
+                            }
+                        }
+                    }
                 }
             }
         });
@@ -150,37 +177,46 @@ export const createBook = async (req, res) => {
             });
         }
 
-        const existingBook = await prisma.book.findUnique({ where: { isbn } });
+        const cleanIsbn = isbn.toString().trim();
+        const existingBook = await prisma.book.findUnique({ where: { isbn: cleanIsbn } });
         if (existingBook) {
             return res.status(409).json({
                 success: false,
-                message: `Book with ISBN ${isbn} already exists.`
+                message: `Book with ISBN ${cleanIsbn} already exists.`
             });
         }
 
-        const numCopies = parseInt(totalCopies, 10) || 1;
+        const numCopies = Math.max(0, parseInt(totalCopies, 10) || 1);
+        const parsedShelfId = shelfId ? parseInt(shelfId, 10) : null;
+        const parsedCategoryId = categoryId ? parseInt(categoryId, 10) : null;
+        const parsedDepartmentId = departmentId ? parseInt(departmentId, 10) : null;
+        const parsedYear = publishedYear ? parseInt(publishedYear, 10) : null;
 
         const newBook = await prisma.book.create({
             data: {
-                title,
-                author,
-                isbn,
-                categoryId: categoryId ? parseInt(categoryId, 10) : null,
-                departmentId: departmentId ? parseInt(departmentId, 10) : null,
-                publishedYear: publishedYear ? parseInt(publishedYear, 10) : null,
-                description,
+                title: title.trim(),
+                author: author.trim(),
+                isbn: cleanIsbn,
+                categoryId: parsedCategoryId && !isNaN(parsedCategoryId) ? parsedCategoryId : null,
+                departmentId: parsedDepartmentId && !isNaN(parsedDepartmentId) ? parsedDepartmentId : null,
+                publishedYear: parsedYear && !isNaN(parsedYear) ? parsedYear : null,
+                description: description ? description.trim() : null,
                 availabilities: {
                     create: {
                         totalCopies: numCopies,
                         availableCopies: numCopies,
-                        shelfId: shelfId ? parseInt(shelfId, 10) : null
+                        shelfId: parsedShelfId && !isNaN(parsedShelfId) ? parsedShelfId : null
                     }
                 }
             },
             include: {
                 category: true,
                 department: true,
-                availabilities: true
+                availabilities: {
+                    include: {
+                        shelf: true
+                    }
+                }
             }
         });
 
@@ -201,7 +237,7 @@ export const createBook = async (req, res) => {
 };
 
 /**
- * @desc Update a book by ID
+ * @desc Update a book by ID (dynamically updates book info, category, department, shelf, and stock copies)
  * @route PUT /api/books/:id
  */
 export const updateBook = async (req, res) => {
@@ -211,24 +247,117 @@ export const updateBook = async (req, res) => {
             return res.status(400).json({ success: false, message: "Invalid book ID." });
         }
 
-        const { title, author, isbn, categoryId, departmentId, publishedYear, description } = req.body;
-
-        const updatedBook = await prisma.book.update({
+        const existingBook = await prisma.book.findUnique({
             where: { id: bookId },
-            data: {
-                ...(title && { title }),
-                ...(author && { author }),
-                ...(isbn && { isbn }),
-                ...(categoryId !== undefined && { categoryId: categoryId ? parseInt(categoryId, 10) : null }),
-                ...(departmentId !== undefined && { departmentId: departmentId ? parseInt(departmentId, 10) : null }),
-                ...(publishedYear !== undefined && { publishedYear: publishedYear ? parseInt(publishedYear, 10) : null }),
-                ...(description !== undefined && { description })
-            },
-            include: {
-                category: true,
-                department: true,
-                availabilities: true
+            include: { availabilities: true }
+        });
+
+        if (!existingBook) {
+            return res.status(404).json({
+                success: false,
+                message: `Book with ID ${bookId} not found.`
+            });
+        }
+
+        const {
+            title,
+            author,
+            isbn,
+            categoryId,
+            departmentId,
+            publishedYear,
+            description,
+            totalCopies,
+            availableCopies,
+            shelfId
+        } = req.body;
+
+        // Check ISBN uniqueness if changed
+        if (isbn && isbn.toString().trim() !== existingBook.isbn) {
+            const cleanIsbn = isbn.toString().trim();
+            const conflict = await prisma.book.findUnique({ where: { isbn: cleanIsbn } });
+            if (conflict && conflict.id !== bookId) {
+                return res.status(409).json({
+                    success: false,
+                    message: `Another book with ISBN ${cleanIsbn} already exists.`
+                });
             }
+        }
+
+        // Perform book and availability updates inside a transaction
+        const updatedBook = await prisma.$transaction(async (tx) => {
+            const bookUpdateData = {};
+            if (title !== undefined) bookUpdateData.title = title.trim();
+            if (author !== undefined) bookUpdateData.author = author.trim();
+            if (isbn !== undefined) bookUpdateData.isbn = isbn.toString().trim();
+            if (categoryId !== undefined) {
+                bookUpdateData.categoryId = categoryId ? parseInt(categoryId, 10) : null;
+            }
+            if (departmentId !== undefined) {
+                bookUpdateData.departmentId = departmentId ? parseInt(departmentId, 10) : null;
+            }
+            if (publishedYear !== undefined) {
+                bookUpdateData.publishedYear = publishedYear ? parseInt(publishedYear, 10) : null;
+            }
+            if (description !== undefined) {
+                bookUpdateData.description = description ? description.trim() : null;
+            }
+
+            // Update main book record
+            await tx.book.update({
+                where: { id: bookId },
+                data: bookUpdateData
+            });
+
+            // Handle availability / stock / shelf updates
+            const hasAvailabilityUpdate = totalCopies !== undefined || availableCopies !== undefined || shelfId !== undefined;
+            if (hasAvailabilityUpdate) {
+                const existingAvailability = existingBook.availabilities?.[0];
+
+                if (existingAvailability) {
+                    const availUpdateData = {};
+                    if (totalCopies !== undefined) {
+                        availUpdateData.totalCopies = Math.max(0, parseInt(totalCopies, 10) || 0);
+                    }
+                    if (availableCopies !== undefined) {
+                        availUpdateData.availableCopies = Math.max(0, parseInt(availableCopies, 10) || 0);
+                    }
+                    if (shelfId !== undefined) {
+                        availUpdateData.shelfId = shelfId ? parseInt(shelfId, 10) : null;
+                    }
+
+                    await tx.bookAvailability.update({
+                        where: { id: existingAvailability.id },
+                        data: availUpdateData
+                    });
+                } else {
+                    const numTotal = totalCopies !== undefined ? Math.max(0, parseInt(totalCopies, 10) || 0) : 1;
+                    const numAvail = availableCopies !== undefined ? Math.max(0, parseInt(availableCopies, 10) || 0) : numTotal;
+                    const parsedShelf = shelfId ? parseInt(shelfId, 10) : null;
+
+                    await tx.bookAvailability.create({
+                        data: {
+                            bookId,
+                            totalCopies: numTotal,
+                            availableCopies: numAvail,
+                            shelfId: parsedShelf && !isNaN(parsedShelf) ? parsedShelf : null
+                        }
+                    });
+                }
+            }
+
+            return await tx.book.findUnique({
+                where: { id: bookId },
+                include: {
+                    category: true,
+                    department: true,
+                    availabilities: {
+                        include: {
+                            shelf: true
+                        }
+                    }
+                }
+            });
         });
 
         return res.status(200).json({
@@ -258,11 +387,44 @@ export const deleteBook = async (req, res) => {
             return res.status(400).json({ success: false, message: "Invalid book ID." });
         }
 
+        const existingBook = await prisma.book.findUnique({
+            where: { id: bookId },
+            include: {
+                issuedBooks: {
+                    where: { isReturned: false }
+                },
+                reservations: {
+                    where: { status: { status: "Reserved" } }
+                }
+            }
+        });
+
+        if (!existingBook) {
+            return res.status(404).json({
+                success: false,
+                message: `Book with ID ${bookId} not found.`
+            });
+        }
+
+        if (existingBook.issuedBooks && existingBook.issuedBooks.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: `Cannot delete book. There are currently ${existingBook.issuedBooks.length} unreturned active issue(s) for this book.`
+            });
+        }
+
+        if (existingBook.reservations && existingBook.reservations.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: `Cannot delete book. There are currently ${existingBook.reservations.length} active reservation(s) for this book.`
+            });
+        }
+
         await prisma.book.delete({ where: { id: bookId } });
 
         return res.status(200).json({
             success: true,
-            message: `Book ID ${bookId} deleted successfully.`
+            message: `Book "${existingBook.title}" (ID: ${bookId}) deleted successfully.`
         });
 
     } catch (error) {
@@ -274,3 +436,4 @@ export const deleteBook = async (req, res) => {
         });
     }
 };
+

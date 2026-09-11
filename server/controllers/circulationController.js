@@ -66,13 +66,30 @@ export const issueBook = async (req, res) => {
             });
         }
 
-        // 4. Check book availability
+        // 4. Check if student has an active reservation for this book
+        let reservedStatus = await prisma.status.findFirst({ where: { status: "Reserved" } });
+        let completedStatus = await prisma.status.findFirst({ where: { status: "Completed" } });
+        if (!completedStatus) {
+            completedStatus = await prisma.status.create({ data: { status: "Completed" } });
+        }
+
+        const activeReservation = reservedStatus ? await prisma.bookReservation.findFirst({
+            where: {
+                studentId,
+                bookId: parsedBookId,
+                statusId: reservedStatus.id
+            }
+        }) : null;
+
         const availability = await prisma.bookAvailability.findFirst({
             where: { bookId: parsedBookId }
         });
 
-        if (!availability || availability.availableCopies <= 0) {
-            return res.status(400).json({ success: false, message: "Book is currently out of stock / unavailable." });
+        // If not previously reserved, verify stock is available
+        if (!activeReservation) {
+            if (!availability || availability.availableCopies <= 0) {
+                return res.status(400).json({ success: false, message: "Book is currently out of stock / unavailable." });
+            }
         }
 
         // 5. Calculate due date
@@ -82,11 +99,21 @@ export const issueBook = async (req, res) => {
 
         // Perform transaction
         const result = await prisma.$transaction(async (tx) => {
-            // Decrement available copies
-            await tx.bookAvailability.update({
-                where: { id: availability.id },
-                data: { availableCopies: availability.availableCopies - 1 }
-            });
+            // Decrement available copies ONLY if the copy was not already held by an active reservation
+            if (!activeReservation && availability) {
+                await tx.bookAvailability.update({
+                    where: { id: availability.id },
+                    data: { availableCopies: Math.max(0, availability.availableCopies - 1) }
+                });
+            }
+
+            // If the student had an active reservation, mark it as Completed so it doesn't expire later
+            if (activeReservation) {
+                await tx.bookReservation.update({
+                    where: { id: activeReservation.id },
+                    data: { statusId: completedStatus.id }
+                });
+            }
 
             // Create IssuedBook
             const issued = await tx.issuedBook.create({
@@ -118,8 +145,11 @@ export const issueBook = async (req, res) => {
 
         return res.status(201).json({
             success: true,
-            message: "Book issued successfully.",
-            issuedBook: result
+            message: activeReservation
+                ? "Book issued successfully and reservation marked as completed."
+                : "Book issued successfully.",
+            issuedBook: result,
+            reservationClaimed: !!activeReservation
         });
 
     } catch (error) {
