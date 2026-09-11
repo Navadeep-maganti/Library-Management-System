@@ -15,7 +15,7 @@ import "../styles/StudentDashboard.css";
 
 const normalizeReservation = (reservation) => ({
   id: reservation.id,
-  token: `RES-${String(reservation.id).padStart(6, "0")}`,
+  token: reservation.token || `TOK-${String(reservation.id).padStart(4, "0")}`,
   book: {
     ...reservation.book,
     category: reservation.book?.category?.name || reservation.book?.category || "Reserved title",
@@ -23,6 +23,9 @@ const normalizeReservation = (reservation) => ({
   },
   bookedOn: reservation.reservedDate,
   reservedDate: reservation.reservedDate,
+  expiresAt: reservation.expiresAt,
+  remainingMs: reservation.remainingMs,
+  formattedRemaining: reservation.formattedRemaining,
   queuePosition: reservation.queuePosition,
   status: reservation.status?.status || "Reserved",
 });
@@ -40,6 +43,7 @@ const StudentDashboard = ({ user, onLogout }) => {
   const [issuanceNoticeBook, setIssuanceNoticeBook] = useState(null);
   const [requests, setRequests] = useState([]);
   const [requestsError, setRequestsError] = useState("");
+  const [requestingBookId, setRequestingBookId] = useState(null);
   const [catalogBooks, setCatalogBooks] = useState([]);
   const [borrowedBooks, setBorrowedBooks] = useState([]);
   const [dashboardStats, setDashboardStats] = useState({ borrowed: 0, overdue: 0, pendingFine: 0, finePaid: 0 });
@@ -190,8 +194,14 @@ const StudentDashboard = ({ user, onLogout }) => {
       (request) => request.book?.id === book.id && ["Requested", "Booked", "Reserved"].includes(request.status),
     );
 
-    if (!rollNo || alreadyReserved) return;
+    if (!rollNo) {
+      setRequestsError("Your student roll number is not available. Please sign in again.");
+      return;
+    }
+    if (alreadyReserved || requestingBookId === book.id) return;
 
+    setRequestingBookId(book.id);
+    setRequestsError("");
     try {
       const response = await fetch("/api/reservations", {
         body: JSON.stringify({ studentId: rollNo, bookId: book.id }),
@@ -206,6 +216,8 @@ const StudentDashboard = ({ user, onLogout }) => {
       setIssuanceNoticeBook(book);
     } catch (requestError) {
       setRequestsError(requestError.message);
+    } finally {
+      setRequestingBookId(null);
     }
   };
 
@@ -686,6 +698,7 @@ const StudentDashboard = ({ user, onLogout }) => {
             filteredBooks,
             requests,
             requestBook,
+            requestingBookId,
             cancelReservation,
             searchTerm,
           }}

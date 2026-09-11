@@ -437,3 +437,104 @@ export const deleteBook = async (req, res) => {
     }
 };
 
+export const getInventorySummary = async (req, res) => {
+    try {
+        const books = await prisma.book.findMany({
+            include: {
+                category: { select: { id: true, name: true } },
+                department: { select: { id: true, name: true } },
+                availabilities: { select: { totalCopies: true, availableCopies: true } }
+            },
+            orderBy: { title: "asc" }
+        });
+
+        const summary = books.reduce((totals, book) => {
+            const totalCopies = book.availabilities.reduce((sum, item) => sum + item.totalCopies, 0);
+            const availableCopies = book.availabilities.reduce((sum, item) => sum + item.availableCopies, 0);
+            totals.totalCopies += totalCopies;
+            totals.availableCopies += availableCopies;
+            totals.issuedCopies += Math.max(0, totalCopies - availableCopies);
+            return totals;
+        }, { titleCount: books.length, totalCopies: 0, availableCopies: 0, issuedCopies: 0 });
+
+        return res.status(200).json({ success: true, summary, books });
+    } catch (error) {
+        console.error("Error fetching inventory summary:", error);
+        return res.status(500).json({ success: false, message: "Failed to fetch inventory summary.", error: error.message });
+    }
+};
+
+export const syncInventory = async (req, res) => {
+    try {
+        const availabilities = await prisma.bookAvailability.findMany({
+            select: { id: true, totalCopies: true, availableCopies: true }
+        });
+        let adjustedCount = 0;
+
+        for (const availability of availabilities) {
+            const availableCopies = Math.min(
+                Math.max(0, availability.availableCopies),
+                Math.max(0, availability.totalCopies),
+            );
+            if (availableCopies !== availability.availableCopies) {
+                await prisma.bookAvailability.update({
+                    where: { id: availability.id },
+                    data: { availableCopies },
+                });
+                adjustedCount += 1;
+            }
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Inventory synchronized successfully.",
+            adjustedCount,
+        });
+    } catch (error) {
+        console.error("Error synchronizing inventory:", error);
+        return res.status(500).json({ success: false, message: "Failed to synchronize inventory.", error: error.message });
+    }
+};
+
+export const updateBookStock = async (req, res) => {
+    try {
+        const bookId = parseInt(req.params.id, 10);
+        if (isNaN(bookId)) return res.status(400).json({ success: false, message: "Invalid book ID." });
+
+        const availability = await prisma.bookAvailability.findFirst({ where: { bookId } });
+        if (!availability) return res.status(404).json({ success: false, message: "Book inventory record not found." });
+
+        const { delta, totalCopies, availableCopies, shelfId } = req.body;
+        const parsedDelta = delta === undefined ? 0 : parseInt(delta, 10);
+        if (delta !== undefined && isNaN(parsedDelta)) {
+            return res.status(400).json({ success: false, message: "delta must be a valid number." });
+        }
+
+        const nextTotal = totalCopies === undefined
+            ? availability.totalCopies + parsedDelta
+            : parseInt(totalCopies, 10);
+        const nextAvailable = availableCopies === undefined
+            ? availability.availableCopies + parsedDelta
+            : parseInt(availableCopies, 10);
+
+        if (isNaN(nextTotal) || isNaN(nextAvailable) || nextTotal < 0 || nextAvailable < 0 || nextAvailable > nextTotal) {
+            return res.status(400).json({ success: false, message: "Stock values must be valid and available copies cannot exceed total copies." });
+        }
+
+        const updatedAvailability = await prisma.bookAvailability.update({
+            where: { id: availability.id },
+            data: {
+                totalCopies: nextTotal,
+                availableCopies: nextAvailable,
+                ...(shelfId !== undefined && { shelfId: shelfId ? parseInt(shelfId, 10) : null })
+            },
+            include: { shelf: true }
+        });
+
+        return res.status(200).json({ success: true, message: "Book stock updated successfully.", availability: updatedAvailability });
+    } catch (error) {
+        console.error("Error updating book stock:", error);
+        return res.status(500).json({ success: false, message: "Failed to update book stock.", error: error.message });
+    }
+};
+

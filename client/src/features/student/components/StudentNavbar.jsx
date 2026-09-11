@@ -17,6 +17,7 @@ const StudentNavbar = ({
   searchResults = [],
   requestedBooks = [],
   onRequestBook,
+  requestingBookId,
   onLogout,
 }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -107,8 +108,8 @@ const StudentNavbar = ({
                         >
                           View details
                         </button>
-                        <button className="student-search-request" type="button" disabled={isRequested} onClick={() => onRequestBook(book)}>
-                          {isRequested ? "Requested" : "Request book"}
+                        <button className="student-search-request" type="button" disabled={isRequested || requestingBookId === book.id} onClick={() => onRequestBook(book)}>
+                          {requestingBookId === book.id ? "Requesting..." : isRequested ? "Requested" : "Request book"}
                         </button>
                       </div>
                     </article>
