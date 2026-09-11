@@ -140,6 +140,38 @@
   box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
 }
 
+.student-email-input {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  display: flex;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.student-email-input:focus-within {
+  border-color: #0f766e;
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
+}
+
+.student-email-input .login-input {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  min-width: 0;
+}
+
+.student-email-suffix {
+  background: #f1f5f9;
+  border-left: 1px solid #e2e8f0;
+  color: #475569;
+  flex: 0 0 auto;
+  font-size: 0.88rem;
+  padding: 12px 13px;
+  white-space: nowrap;
+}
+
 .password-input-wrapper {
   position: relative;
   width: 100%;

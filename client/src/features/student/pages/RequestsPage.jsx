@@ -1,59 +1,41 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 
-const demoReturnRequests = [
-  {
-    id: "return-request-1",
-    token: "RET-OSC82A10",
-    book: { title: "Operating System Concepts", author: "Abraham Silberschatz", category: "Systems", copies: 1 },
-    issuedOn: "18 Aug 2026",
-    dueDate: "30 Aug 2026",
-    status: "Pending",
-  },
-  {
-    id: "return-request-2",
-    token: "RET-CC41D72B",
-    book: { title: "Clean Code", author: "Robert C. Martin", category: "Software Engineering", copies: 1 },
-    issuedOn: "04 Aug 2026",
-    dueDate: "18 Aug 2026",
-    status: "Returned",
-  },
-];
-
+const RESERVATION_WINDOW_MS = 30 * 60 * 1000;
 const formatDate = (value) => new Date(value).toLocaleString();
-const formatRemaining = (expiresAt, now) => {
-  const remaining = Math.max(0, new Date(expiresAt).getTime() - now);
-  const minutes = Math.floor(remaining / 60000).toString().padStart(2, "0");
-  const seconds = Math.floor((remaining % 60000) / 1000).toString().padStart(2, "0");
+const isActiveReservation = (status) => ["Reserved", "Requested", "Booked"].includes(status);
+const getRemainingMs = (reservedDate, now) => Math.max(0, new Date(reservedDate).getTime() + RESERVATION_WINDOW_MS - now);
+const formatTimer = (remainingMs) => {
+  const totalSeconds = Math.ceil(remainingMs / 1000);
+  const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, "0");
+  const seconds = (totalSeconds % 60).toString().padStart(2, "0");
   return `${minutes}:${seconds}`;
 };
 
-const RequestsTable = ({ requests, emptyMessage, showTimer = false, now }) => (
+const RequestsTable = ({ requests, emptyMessage, now, expiringIds }) => (
   requests.length ? (
-    <div className={`requests-table ${showTimer ? "requests-timer-table" : ""}`} role="table">
+    <div className="requests-table" role="table">
       <div className="requests-row requests-header" role="row">
         <span>Requested token</span>
-        {showTimer && <span>Claim timer</span>}
+        <span>Queue position</span>
         <span>Book details</span>
-        <span>Issued on</span>
-        <span>Due date</span>
+        <span>Reserved on</span>
+        <span>Claim window</span>
         <span>Status</span>
       </div>
       {requests.map((request) => (
         <div className="requests-row" role="row" key={request.id}>
           <span className="request-token">{request.token}</span>
-          {showTimer && (
-            <span className={`request-timer ${new Date(request.expiresAt).getTime() <= now ? "timer-expired" : ""}`}>
-              {formatRemaining(request.expiresAt, now)}
-            </span>
-          )}
+          <span>{request.queuePosition || "-"}</span>
           <span className="request-book-details">
             <strong>{request.book.title}</strong>
-            <small>{request.book.author} · {request.book.category} · {request.book.copies} {request.book.copies === 1 ? "copy" : "copies"}</small>
+            <small>{request.book.author} · {request.book.category}</small>
           </span>
-          <span>{request.issuedOn || "Not issued"}</span>
-          <span>{request.dueDate}</span>
-          <span><strong className={`status-badge ${request.status.toLowerCase()}`}>{request.status}</strong></span>
+          <span>{formatDate(request.reservedDate)}</span>
+          <span className={`request-countdown ${getRemainingMs(request.reservedDate, now) === 0 && isActiveReservation(request.status) ? "request-countdown-expired" : ""}`}>
+            {isActiveReservation(request.status) ? formatTimer(getRemainingMs(request.reservedDate, now)) : "Closed"}
+          </span>
+          <span><strong className={`status-badge ${request.status.toLowerCase()}`}>{expiringIds.has(request.id) ? "Cancelling..." : request.status}</strong></span>
         </div>
       ))}
     </div>
@@ -61,27 +43,38 @@ const RequestsTable = ({ requests, emptyMessage, showTimer = false, now }) => (
 );
 
 const RequestsPage = () => {
-  const { requests } = useOutletContext();
+  const { requests, cancelReservation } = useOutletContext();
   const [now, setNow] = useState(Date.now());
+  const [expiringIds, setExpiringIds] = useState(() => new Set());
+  const cancelledIds = useRef(new Set());
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(timer);
   }, []);
 
-  const requestedBookRequests = requests.map((request) => ({
-    ...request,
-    status: "Pending",
-    issuedOn: "Not issued",
-    dueDate: formatDate(request.expiresAt),
-  }));
+  useEffect(() => {
+    requests.forEach((request) => {
+      if (!isActiveReservation(request.status) || getRemainingMs(request.reservedDate, now) > 0 || cancelledIds.current.has(request.id)) return;
+
+      cancelledIds.current.add(request.id);
+      setExpiringIds((current) => new Set(current).add(request.id));
+      cancelReservation(request.id)
+        .catch(() => cancelledIds.current.delete(request.id))
+        .finally(() => setExpiringIds((current) => {
+          const next = new Set(current);
+          next.delete(request.id);
+          return next;
+        }));
+    });
+  }, [now, requests, cancelReservation]);
 
   return (
     <main className="requests-page">
       <section className="student-info-panel requests-intro">
         <p className="student-kicker">LIBRARY REQUESTS</p>
         <h1>Requests</h1>
-        <p className="request-highlight">Please collect and return every requested book to the librarian before its due date. Late returns may affect your library access.</p>
+        <p className="request-highlight">Your reservations are held in the library queue. Check your position here for the latest status.</p>
       </section>
 
       <section className="student-info-panel requests-section">
@@ -90,21 +83,11 @@ const RequestsPage = () => {
             <p className="student-kicker">RESERVED TITLES</p>
             <h2>My Booking Requests</h2>
           </div>
-          <span className="book-count">{requestedBookRequests.length} requests</span>
+          <span className="book-count">{requests.length} requests</span>
         </div>
-        <RequestsTable requests={requestedBookRequests} emptyMessage="No book requests yet." now={now} showTimer />
+        <RequestsTable requests={requests} emptyMessage="No book requests yet." now={now} expiringIds={expiringIds} />
       </section>
 
-      <section className="student-info-panel requests-section">
-        <div className="catalog-heading">
-          <div>
-            <p className="student-kicker">RETURN DESK</p>
-            <h2>My Return Requests</h2>
-          </div>
-          <span className="book-count">{demoReturnRequests.length} requests</span>
-        </div>
-        <RequestsTable requests={demoReturnRequests} emptyMessage="No return requests yet." />
-      </section>
     </main>
   );
 };

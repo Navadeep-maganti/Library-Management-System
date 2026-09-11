@@ -3,11 +3,11 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 const navItems = [
-  { to: "/student-dashboard", label: "Dashboard", end: true },
+ 
+  { to: "/student-dashboard/books", label: "Browse Books" },
   { to: "/student-dashboard/payfine", label: "Pay Fine" },
   { to: "/student-dashboard/history", label: "View History" },
   { to: "/student-dashboard/requests", label: "Requests" },
-  { to: "/student-dashboard/return", label: "Return" },
 ];
 
 const StudentNavbar = ({
@@ -64,7 +64,7 @@ const StudentNavbar = ({
         </div>
         <div className="student-search-wrap">
           <label className="student-nav-search">
-          <span aria-hidden="true">Search</span>
+          <span aria-hidden="true"></span>
           <input
             value={searchTerm}
             onChange={(event) => {
@@ -77,6 +77,7 @@ const StudentNavbar = ({
             }}
             placeholder="Search books"
           />
+          <label>🔍</label>
           </label>
           {isSearchOpen && (
             <>
@@ -90,13 +91,13 @@ const StudentNavbar = ({
                   <button type="button" aria-label="Close search results" onClick={() => setIsSearchOpen(false)}>×</button>
                 </div>
                 {searchResults.length ? searchResults.map((book) => {
-                  const isRequested = requestedBooks.some((request) => request.book.title === book.title && request.status === "Requested");
+                  const isRequested = requestedBooks.some((request) => request.book?.id === book.id && ["Requested", "Booked", "Reserved"].includes(request.status));
                   return (
                     <article className="student-search-result" key={book.title}>
                       <div className="student-search-result-cover">{book.title.charAt(0)}</div>
                       <div className="student-search-result-copy">
                         <strong>{book.title}</strong>
-                        <span>{book.author} · {book.category}</span>
+                        <span>{book.author} · {book.category?.name || book.category || "Uncategorized"}</span>
                       </div>
                       <div className="student-search-actions">
                         <button
@@ -127,10 +128,10 @@ const StudentNavbar = ({
                   <div className="book-details-grid">
                     <div><span>Book ID</span><strong>{selectedBook.id}</strong></div>
                     <div><span>Available copies</span><strong>{selectedBook.availableCopies}</strong></div>
-                    <div><span>Category</span><strong>{selectedBook.category}</strong></div>
-                    <div><span>Department</span><strong>{selectedBook.department}</strong></div>
-                    <div><span>Shelf no.</span><strong>{selectedBook.location.shelfNo}</strong></div>
-                    <div><span>Rack no.</span><strong>{selectedBook.location.rackNo}</strong></div>
+                    <div><span>Category</span><strong>{selectedBook.category?.name || selectedBook.category || "Uncategorized"}</strong></div>
+                    <div><span>Department</span><strong>{selectedBook.department?.name || selectedBook.department || "General"}</strong></div>
+                    <div><span>Shelf no.</span><strong>{selectedBook.availabilities?.[0]?.shelf?.section || "Not assigned"}</strong></div>
+                    <div><span>Rack no.</span><strong>{selectedBook.availabilities?.[0]?.shelf?.rackNumber || "Not assigned"}</strong></div>
                   </div>
                 </div>
               )}

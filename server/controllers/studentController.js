@@ -23,10 +23,32 @@ export const getStudentByRollNo = async (req, res) => {
             include: {
                 user: { select: { username: true, email: true } },
                 issuedBooks: {
-                    include: { book: { select: { id: true, title: true, isbn: true } } }
+                    include: {
+                        book: {
+                            select: {
+                                id: true,
+                                title: true,
+                                author: true,
+                                isbn: true,
+                                category: { select: { name: true } },
+                                department: { select: { name: true } }
+                            }
+                        }
+                    }
                 },
                 borrowHistories: {
-                    include: { book: { select: { id: true, title: true } } }
+                    include: {
+                        book: {
+                            select: {
+                                id: true,
+                                title: true,
+                                author: true,
+                                isbn: true,
+                                category: { select: { name: true } },
+                                department: { select: { name: true } }
+                            }
+                        }
+                    }
                 },
                 reservations: {
                     include: { book: { select: { id: true, title: true } }, status: true }

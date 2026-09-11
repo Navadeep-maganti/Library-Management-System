@@ -1,39 +1,68 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { useOutletContext } from "react-router-dom";
 
-const historyItems = [
-  {
-    id: "history-1",
-    token: "REQ-HIST7A21F4",
-    title: "Introduction to Algorithms",
-    author: "Thomas H. Cormen",
-    category: "Algorithms",
-    copies: 1,
-    requestedOn: "10 Aug 2026, 09:42 AM",
-    issuedOn: "11 Aug 2026, 02:15 PM",
-    dueDate: "25 Aug 2026",
-    returnedOn: "12 Aug 2026, 04:30 PM",
-    status: "Returned",
-  },
-  {
-    id: "history-2",
-    token: "REQ-HIST3C98B2",
-    title: "Operating System Concepts",
-    author: "Abraham Silberschatz",
-    category: "Systems",
-    copies: 1,
-    requestedOn: "17 Aug 2026, 11:08 AM",
-    issuedOn: "18 Aug 2026, 10:20 AM",
-    dueDate: "01 Sep 2026",
-    returnedOn: null,
-    status: "Issued",
-  },
-];
+const formatDate = (value) => value ? new Date(value).toLocaleString() : "Not available";
+
+const normalizeHistory = (student) => {
+  const issuedBooks = student.issuedBooks || [];
+
+  return (student.borrowHistories || []).map((history) => {
+    const issuedRecord = issuedBooks.find(
+      (issuedBook) => issuedBook.bookId === history.bookId && new Date(issuedBook.issueDate).getTime() === new Date(history.issueDate).getTime(),
+    );
+    const book = history.book || issuedRecord?.book;
+    const returnedOn = history.returnDate || (issuedRecord?.isReturned ? issuedRecord.returnDate : null);
+
+    return {
+      id: history.id,
+      title: book?.title || "Book unavailable",
+      author: book?.author || "Unknown author",
+      category: book?.category?.name || "Uncategorized",
+      copies: 1,
+      requestedOn: null,
+      issuedOn: history.issueDate,
+      dueDate: issuedRecord?.dueDate,
+      returnedOn,
+      status: returnedOn ? "Returned" : "Issued",
+      token: null,
+    };
+  });
+};
 
 const ViewHistoryPage = () => {
+  const { currentUser } = useOutletContext();
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All");
+  const [historyItems, setHistoryItems] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const rollNo = currentUser.roll_no || currentUser.rollNo;
+    if (!rollNo) {
+      setIsLoading(false);
+      setError("Student roll number is not available.");
+      return;
+    }
+
+    const loadHistory = async () => {
+      try {
+        const response = await fetch(`/api/students/${encodeURIComponent(rollNo)}`);
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || "Could not load borrowing history.");
+        setHistoryItems(normalizeHistory(data.student));
+      } catch (loadError) {
+        setError(loadError.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadHistory();
+  }, [currentUser.rollNo, currentUser.roll_no]);
+
   const visibleItems = useMemo(() => historyItems.filter((item) =>
-    (status === "All" || item.status === status) && `${item.title} ${item.author} ${item.token}`.toLowerCase().includes(query.toLowerCase())), [query, status]);
+    (status === "All" || item.status === status) && `${item.title} ${item.author} ${item.token || ""}`.toLowerCase().includes(query.toLowerCase())), [historyItems, query, status]);
 
   return (
     <section className="student-info-panel">
@@ -56,7 +85,7 @@ const ViewHistoryPage = () => {
         </label>
       </div>
       <div className="history-timeline-list">
-        {visibleItems.length ? visibleItems.map((item) => (
+        {isLoading ? <p className="empty-search">Loading borrowing history...</p> : error ? <p className="browse-books-message">{error}</p> : visibleItems.length ? visibleItems.map((item) => (
           <article className="history-timeline-card" key={item.id}>
             <div className="history-book-summary">
               <div className="history-book-cover">{item.title.charAt(0)}</div>
@@ -64,18 +93,18 @@ const ViewHistoryPage = () => {
                 <span className="book-category">{item.category}</span>
                 <h3>{item.title}</h3>
                 <p>By {item.author} · {item.copies} {item.copies === 1 ? "copy" : "copies"}</p>
-                <span className="request-token-label">Requested token: {item.token}</span>
+                {item.token && <span className="request-token-label">Requested token: {item.token}</span>}
               </div>
               <span className={`status-badge ${item.status.toLowerCase()}`}>{item.status}</span>
             </div>
             <div className="history-timeline" aria-label={`History for ${item.title}`}>
               <div className="timeline-step complete">
                 <span className="timeline-marker">1</span>
-                <div><strong>Booking requested on</strong><span>{item.requestedOn}</span></div>
+                <div><strong>Borrowing record created</strong><span>{formatDate(item.issuedOn)}</span></div>
               </div>
               <div className="timeline-step complete">
                 <span className="timeline-marker">2</span>
-                <div><strong>Book issued on</strong><span>{item.issuedOn} · Due date: {item.dueDate}</span></div>
+                <div><strong>Book issued on</strong><span>{formatDate(item.issuedOn)}{item.dueDate ? ` · Due date: ${formatDate(item.dueDate)}` : ""}</span></div>
               </div>
               <div className={`timeline-step ${item.returnedOn ? "complete" : "current"}`}>
                 <span className="timeline-marker">3</span>

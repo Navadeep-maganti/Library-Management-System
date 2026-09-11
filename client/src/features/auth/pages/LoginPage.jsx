@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import "../styles/LoginPage.css";
 
 const LoginPage = ({ onAuthSuccess }) => {
+  const STUDENT_EMAIL_SUFFIX = "@student.nitandhra.ac.in";
   const navigate = useNavigate();
   const [role, setRole] = useState("student");
   const [email, setEmail] = useState("");
@@ -18,18 +19,23 @@ const LoginPage = ({ onAuthSuccess }) => {
     setSuccessMessage("");
 
     if (!email.trim() || !password.trim()) {
-      setError("Email address and password are required.");
+      setError(role === "student"
+        ? "Student roll number and password are required."
+        : "Email address and password are required.");
       return;
     }
 
-    const cleanEmail = email.trim().toLowerCase();
+    const cleanIdentifier = email.trim().toLowerCase();
+    const cleanEmail = role === "student"
+      ? `${cleanIdentifier}${STUDENT_EMAIL_SUFFIX}`
+      : cleanIdentifier;
 
-    if (role === "student" && !cleanEmail.endsWith("@student.nitandhra.ac.in")) {
-      setError("Student login requires email ending with @student.nitandhra.ac.in");
+    if (role === "student" && !cleanIdentifier) {
+      setError("Enter your student roll number.");
       return;
     }
 
-    if (role === "librarian" && cleanEmail.endsWith("@student.nitandhra.ac.in")) {
+    if (role === "librarian" && cleanEmail.endsWith(STUDENT_EMAIL_SUFFIX)) {
       setError("Librarian login requires official staff or personal email (e.g. Gmail)");
       return;
     }
@@ -109,6 +115,7 @@ const LoginPage = ({ onAuthSuccess }) => {
                 type="button"
                 onClick={() => {
                   setRole("student");
+                  setEmail("");
                   setError("");
                 }}
                 className={role === "student" ? "login-toggle-button active" : "login-toggle-button"}
@@ -119,6 +126,7 @@ const LoginPage = ({ onAuthSuccess }) => {
                 type="button"
                 onClick={() => {
                   setRole("librarian");
+                  setEmail("");
                   setError("");
                 }}
                 className={role === "librarian" ? "login-toggle-button active" : "login-toggle-button"}
@@ -130,16 +138,33 @@ const LoginPage = ({ onAuthSuccess }) => {
 
           <div className="login-input-group">
             <label className="login-label">
-              Official Email ({getEmailHint()})
+              {role === "student" ? "Student Roll Number" : `Official Email (${getEmailHint()})`}
             </label>
-            <input
-              type="email"
-              placeholder={getEmailPlaceholder()}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="login-input"
-              required
-            />
+            {role === "student" ? (
+              <div className="student-email-input">
+                <input
+                  type="text"
+                  inputMode="text"
+                  autoComplete="username"
+                  placeholder="e.g., 421101"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value.replace(/\s/g, ""))}
+                  className="login-input"
+                  aria-label="Student roll number"
+                  required
+                />
+                <span className="student-email-suffix" aria-hidden="true">@student.nitandhra.ac.in</span>
+              </div>
+            ) : (
+              <input
+                type="email"
+                placeholder={getEmailPlaceholder()}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="login-input"
+                required
+              />
+            )}
           </div>
 
           <div className="login-input-group">
