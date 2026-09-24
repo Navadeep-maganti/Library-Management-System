@@ -1,206 +1,464 @@
+/* Librarian Dashboard - Matching Landing Page CSS & Design System */
+
 .librarian-dashboard-shell {
-  max-width: 1000px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 30px 20px;
+  padding: 40px 24px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 40px;
 }
 
-.librarian-header-card {
-  background: #ffffff;
-  border-radius: 14px;
-  padding: 24px;
-  border: 1px solid #cbd5e1;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+/* Hero / Header Section */
+.librarian-hero-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
 }
 
-.librarian-title {
-  font-size: 1.5rem;
+.librarian-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  border-radius: 30px;
+  background: rgba(15, 118, 110, 0.08);
+  color: #0f766e;
+  font-size: 0.85rem;
   font-weight: 700;
-  color: #0f172a;
-  margin: 0 0 6px 0;
+  border: 1px solid rgba(15, 118, 110, 0.2);
 }
 
-.librarian-sub {
-  font-size: 0.9rem;
-  color: #64748b;
+.librarian-hero-badge-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #0f766e;
+  box-shadow: 0 0 8px rgba(15, 118, 110, 0.6);
+}
+
+.librarian-hero-title {
+  font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.2;
   margin: 0;
 }
 
-.librarian-info-box {
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid #e2e8f0;
+.librarian-gradient-text {
+  background: linear-gradient(135deg, #0f766e 0%, #2563eb 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-.librarian-info-item {
-  font-size: 0.88rem;
-  color: #334155;
+.librarian-hero-subtitle {
+  font-size: 1.05rem;
+  color: #475569;
+  max-width: 750px;
+  line-height: 1.6;
+  margin: 0;
 }
 
-.librarian-info-item strong {
-  color: #b45309;
-}
-
-.librarian-section {
-  background: #ffffff;
-  border-radius: 14px;
-  padding: 24px;
-  border: 1px solid #cbd5e1;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-}
-
-.librarian-section-sub {
-  font-size: 0.88rem;
-  color: #64748b;
-  margin: -10px 0 16px 0;
-}
-
-.flow-steps-grid {
+/* Staff Info / Stats Grid */
+.librarian-stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-  margin-bottom: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  width: 100%;
 }
 
-.flow-step-card {
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  border-radius: 12px;
-  padding: 16px;
+.librarian-stat-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  padding: 22px 24px;
+  border-radius: 18px;
+  border: 1px solid rgba(203, 213, 225, 0.7);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
   display: flex;
   flex-direction: column;
-  text-decoration: none;
-  transition: all 0.2s ease;
-  position: relative;
+  gap: 6px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.flow-step-card:hover {
+.librarian-stat-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(22, 101, 52, 0.12);
-  border-color: #86efac;
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
 }
 
-.flow-step-number {
-  font-size: 0.7rem;
-  font-weight: 800;
-  color: #166534;
-  background: #dcfce7;
-  padding: 2px 8px;
-  border-radius: 10px;
-  align-self: flex-start;
+.librarian-stat-label {
+  font-size: 0.82rem;
+  color: #64748b;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin-bottom: 8px;
+  font-weight: 700;
 }
 
-.flow-step-icon {
-  font-size: 1.8rem;
-  margin-bottom: 8px;
-}
-
-.flow-step-title {
-  font-size: 1rem;
+.librarian-stat-value {
+  font-size: 1.35rem;
   font-weight: 800;
   color: #0f172a;
-  margin: 0 0 4px 0;
+  word-break: break-word;
 }
 
-.flow-step-desc {
-  font-size: 0.8rem;
-  color: #475569;
+.librarian-stat-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: #ccfbf1;
+  color: #0f766e;
+  font-size: 0.78rem;
+  font-weight: 700;
+  width: fit-content;
+  margin-top: 4px;
+}
+
+/* General Section Styling */
+.librarian-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.librarian-section-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.librarian-section-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #0f172a;
   margin: 0;
-  line-height: 1.3;
 }
 
-.librarian-heading {
+.librarian-section-subtitle {
+  font-size: 0.95rem;
+  color: #64748b;
+  margin: 0;
+}
+
+/* Workflow Flow Step Cards */
+.librarian-flow-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.librarian-flow-card {
+  background: #ffffff;
+  padding: 26px 22px;
+  border-radius: 20px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  text-decoration: none;
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.librarian-flow-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 36px rgba(15, 118, 110, 0.12);
+  border-color: #0f766e;
+}
+
+.librarian-flow-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(135deg, #0f766e, #2563eb);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.librarian-flow-card:hover::before {
+  opacity: 1;
+}
+
+.librarian-flow-step-tag {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #0f766e;
+  background: #ccfbf1;
+  padding: 3px 10px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.librarian-flow-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  background: rgba(15, 118, 110, 0.1);
+  color: #0f766e;
+  transition: transform 0.2s ease;
+}
+
+.librarian-flow-card:hover .librarian-flow-icon {
+  transform: scale(1.08);
+}
+
+.librarian-flow-title {
   font-size: 1.15rem;
   font-weight: 700;
   color: #0f172a;
-  margin: 0 0 16px 0;
-  border-bottom: 2px solid #b45309;
-  padding-bottom: 8px;
-  display: inline-block;
+  margin: 0;
 }
 
-.actions-row {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.dummy-btn {
-  padding: 10px 18px;
-  border-radius: 8px;
-  border: 1px solid #cbd5e1;
-  background: #f8fafc;
-  color: #0f172a;
-  font-weight: 600;
+.librarian-flow-desc {
   font-size: 0.88rem;
+  color: #475569;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.librarian-flow-btn {
+  margin-top: auto;
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #f1f5f9;
+  color: #0f172a !important;
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.librarian-flow-card:hover .librarian-flow-btn {
+  background: #0f766e;
+  color: #ffffff !important;
+}
+
+/* Quick Action Controls */
+.librarian-actions-box {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  padding: 24px;
+  border-radius: 20px;
+  border: 1px solid rgba(203, 213, 225, 0.7);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+}
+
+.librarian-actions-row {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.librarian-btn-primary {
+  padding: 12px 22px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #0f766e, #2563eb);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.92rem;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.22);
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.librarian-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.32);
+}
+
+.librarian-btn-secondary {
+  padding: 12px 20px;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #0f172a;
+  font-weight: 700;
+  font-size: 0.92rem;
+  border: 1px solid #cbd5e1;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
   cursor: pointer;
   transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.dummy-btn:hover {
-  background: #e2e8f0;
+.librarian-btn-secondary:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  transform: translateY(-2px);
 }
 
-.dummy-btn.primary {
-  background: #b45309;
-  color: #ffffff;
-  border-color: #b45309;
+/* Table Section */
+.librarian-table-card {
+  background: #ffffff;
+  border-radius: 20px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.06);
+  padding: 24px;
+  overflow: hidden;
 }
 
-.dummy-btn.primary:hover {
-  background: #92400e;
+.librarian-table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
-.dummy-table-wrapper {
+.librarian-table-wrapper {
   overflow-x: auto;
 }
 
-.dummy-table {
+.librarian-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.88rem;
+  font-size: 0.9rem;
   text-align: left;
 }
 
-.dummy-table th {
-  background: #f1f5f9;
-  color: #334155;
-  padding: 10px 14px;
-  border-bottom: 2px solid #cbd5e1;
+.librarian-table th {
+  background: #f8fafc;
+  color: #475569;
+  padding: 14px 16px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid #e2e8f0;
 }
 
-.dummy-table td {
-  padding: 12px 14px;
-  border-bottom: 1px solid #e2e8f0;
+.librarian-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #1e293b;
+  vertical-align: middle;
+}
+
+.librarian-table tbody tr {
+  transition: background 0.15s ease;
+}
+
+.librarian-table tbody tr:hover {
+  background: rgba(15, 118, 110, 0.02);
+}
+
+.librarian-table .txn-id {
+  font-family: monospace;
+  font-weight: 700;
+  color: #0f766e;
+}
+
+.librarian-table .student-cell {
+  font-weight: 600;
   color: #0f172a;
 }
 
-.status-badge {
-  font-size: 0.75rem;
-  font-weight: 700;
-  padding: 4px 8px;
-  border-radius: 6px;
+.librarian-table .book-cell {
+  font-weight: 600;
+  color: #334155;
 }
 
-.status-badge.issued {
+/* Status Badges */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+.status-pill.issued {
   background: #dbeafe;
   color: #1d4ed8;
+  border: 1px solid rgba(29, 78, 216, 0.15);
 }
 
-.status-badge.returned {
+.status-pill.returned {
   background: #dcfce7;
   color: #166534;
+  border: 1px solid rgba(22, 101, 52, 0.15);
 }
 
-.status-badge.overdue {
+.status-pill.overdue {
   background: #fee2e2;
   color: #991b1b;
+  border: 1px solid rgba(153, 27, 27, 0.15);
+}
+
+/* Operational Guidelines Box - matching landing feature box */
+.librarian-guidelines-box {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  border-radius: 24px;
+  padding: 36px 32px;
+  color: #ffffff;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 28px;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.2);
+}
+
+.librarian-guideline-item {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.librarian-guideline-icon {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.librarian-guideline-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0 0 6px 0;
+  color: #f8fafc;
+}
+
+.librarian-guideline-desc {
+  font-size: 0.88rem;
+  color: #94a3b8;
+  margin: 0;
+  line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+  .librarian-dashboard-shell {
+    padding: 24px 16px;
+    gap: 30px;
+  }
+  
+  .librarian-actions-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .librarian-btn-primary,
+  .librarian-btn-secondary {
+    justify-content: center;
+  }
 }
