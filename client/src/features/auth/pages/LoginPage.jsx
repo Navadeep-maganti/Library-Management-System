@@ -153,7 +153,6 @@ const LoginPage = ({ onAuthSuccess }) => {
                   aria-label="Student roll number"
                   required
                 />
-                <span className="student-email-suffix" aria-hidden="true">@student.nitandhra.ac.in</span>
               </div>
             ) : (
               <input

@@ -82,8 +82,8 @@ const BrowseBooksPage = () => {
 
   const visibleBooks = books;
 
-  const isRequested = (book) => requests.some(
-    (request) => request.book.id === book.id && ["Requested", "Booked", "Reserved"].includes(request.status),
+  const isRequested = (book) => (requests || []).some(
+    (request) => request?.book?.id === book.id && ["Requested", "Booked", "Reserved"].includes(request.status),
   );
 
   return (
