@@ -496,45 +496,400 @@ export const syncInventory = async (req, res) => {
     }
 };
 
+/**
+ * @desc Update total copies of a book (handles acquisition/restocking or decommissioning)
+ * @route PATCH /api/books/:id/total-copies OR PATCH /api/books/:id/stock/total
+ * @payload { totalCopies?: number, delta?: number, adjustAvailable?: boolean }
+ */
+export const updateTotalCopies = async (req, res) => {
+    try {
+        const bookId = parseInt(req.params.id, 10);
+        if (isNaN(bookId)) {
+            return res.status(400).json({ success: false, message: "Invalid book ID format." });
+        }
+
+        const { totalCopies, delta, adjustAvailable = true } = req.body;
+
+        if (totalCopies === undefined && delta === undefined) {
+            return res.status(400).json({
+                success: false,
+                message: "Either 'totalCopies' (absolute count) or 'delta' (relative count adjustment) is required."
+            });
+        }
+
+        if (totalCopies !== undefined && (isNaN(parseInt(totalCopies, 10)) || parseInt(totalCopies, 10) < 0)) {
+            return res.status(400).json({
+                success: false,
+                message: "'totalCopies' must be a non-negative integer (0 or greater)."
+            });
+        }
+
+        if (delta !== undefined && isNaN(parseInt(delta, 10))) {
+            return res.status(400).json({
+                success: false,
+                message: "'delta' must be a valid integer."
+            });
+        }
+
+        const result = await prisma.$transaction(async (tx) => {
+            const book = await tx.book.findUnique({
+                where: { id: bookId },
+                include: {
+                    availabilities: { include: { shelf: true } },
+                    issuedBooks: { where: { isReturned: false } }
+                }
+            });
+
+            if (!book) {
+                const error = new Error(`Book with ID ${bookId} not found.`);
+                error.statusCode = 404;
+                throw error;
+            }
+
+            const activeIssuedCount = book.issuedBooks ? book.issuedBooks.length : 0;
+            const existingAvailability = book.availabilities?.[0];
+
+            const currentTotal = existingAvailability ? existingAvailability.totalCopies : 0;
+            const currentAvailable = existingAvailability ? existingAvailability.availableCopies : 0;
+
+            let newTotalCopies;
+            if (totalCopies !== undefined) {
+                newTotalCopies = parseInt(totalCopies, 10);
+            } else {
+                newTotalCopies = currentTotal + parseInt(delta, 10);
+            }
+
+            // Edge Case 1: Total copies cannot be negative
+            if (newTotalCopies < 0) {
+                const error = new Error(`Total copies cannot be negative (calculated: ${newTotalCopies}).`);
+                error.statusCode = 400;
+                throw error;
+            }
+
+            // Edge Case 2: Cannot reduce total copies below active loans currently held by students
+            if (newTotalCopies < activeIssuedCount) {
+                const error = new Error(
+                    `Cannot reduce total copies to ${newTotalCopies}. There are currently ${activeIssuedCount} active book loan(s) issued to students.`
+                );
+                error.statusCode = 400;
+                throw error;
+            }
+
+            // Edge Case 3: Calculate new available copies within boundaries
+            const maxPossibleAvailable = newTotalCopies - activeIssuedCount;
+            let newAvailableCopies;
+            if (totalCopies !== undefined) {
+                const totalDelta = newTotalCopies - currentTotal;
+                if (adjustAvailable) {
+                    newAvailableCopies = Math.max(0, Math.min(currentAvailable + totalDelta, maxPossibleAvailable));
+                } else {
+                    newAvailableCopies = Math.max(0, Math.min(currentAvailable, maxPossibleAvailable));
+                }
+            } else {
+                const parsedDelta = parseInt(delta, 10);
+                if (adjustAvailable) {
+                    newAvailableCopies = Math.max(0, Math.min(currentAvailable + parsedDelta, maxPossibleAvailable));
+                } else {
+                    newAvailableCopies = Math.max(0, Math.min(currentAvailable, maxPossibleAvailable));
+                }
+            }
+
+            let updatedAvailability;
+            if (existingAvailability) {
+                updatedAvailability = await tx.bookAvailability.update({
+                    where: { id: existingAvailability.id },
+                    data: {
+                        totalCopies: newTotalCopies,
+                        availableCopies: newAvailableCopies
+                    },
+                    include: { shelf: true }
+                });
+            } else {
+                updatedAvailability = await tx.bookAvailability.create({
+                    data: {
+                        bookId,
+                        totalCopies: newTotalCopies,
+                        availableCopies: newAvailableCopies
+                    },
+                    include: { shelf: true }
+                });
+            }
+
+            return {
+                bookId: book.id,
+                bookTitle: book.title,
+                activeIssuedCount,
+                previousTotal: currentTotal,
+                previousAvailable: currentAvailable,
+                availability: updatedAvailability
+            };
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: `Total copies for "${result.bookTitle}" updated successfully from ${result.previousTotal} to ${result.availability.totalCopies}.`,
+            data: result
+        });
+
+    } catch (error) {
+        console.error("Error in updateTotalCopies:", error);
+        return res.status(error.statusCode || 500).json({
+            success: false,
+            message: error.message || "Failed to update total copies.",
+            error: error.message
+        });
+    }
+};
+
+/**
+ * @desc Update available shelf copies of a book (handles shelf reconciliation, damaged copy isolation, manual audits)
+ * @route PATCH /api/books/:id/available-copies OR PATCH /api/books/:id/stock/available
+ * @payload { availableCopies?: number, delta?: number }
+ */
+export const updateAvailableCopies = async (req, res) => {
+    try {
+        const bookId = parseInt(req.params.id, 10);
+        if (isNaN(bookId)) {
+            return res.status(400).json({ success: false, message: "Invalid book ID format." });
+        }
+
+        const { availableCopies, delta } = req.body;
+
+        if (availableCopies === undefined && delta === undefined) {
+            return res.status(400).json({
+                success: false,
+                message: "Either 'availableCopies' (absolute count) or 'delta' (relative count adjustment) is required."
+            });
+        }
+
+        if (availableCopies !== undefined && (isNaN(parseInt(availableCopies, 10)) || parseInt(availableCopies, 10) < 0)) {
+            return res.status(400).json({
+                success: false,
+                message: "'availableCopies' must be a non-negative integer (0 or greater)."
+            });
+        }
+
+        if (delta !== undefined && isNaN(parseInt(delta, 10))) {
+            return res.status(400).json({
+                success: false,
+                message: "'delta' must be a valid integer."
+            });
+        }
+
+        const result = await prisma.$transaction(async (tx) => {
+            const book = await tx.book.findUnique({
+                where: { id: bookId },
+                include: {
+                    availabilities: { include: { shelf: true } },
+                    issuedBooks: { where: { isReturned: false } }
+                }
+            });
+
+            if (!book) {
+                const error = new Error(`Book with ID ${bookId} not found.`);
+                error.statusCode = 404;
+                throw error;
+            }
+
+            const activeIssuedCount = book.issuedBooks ? book.issuedBooks.length : 0;
+            const existingAvailability = book.availabilities?.[0];
+
+            const currentTotal = existingAvailability ? existingAvailability.totalCopies : 0;
+            const currentAvailable = existingAvailability ? existingAvailability.availableCopies : 0;
+
+            let newAvailableCopies;
+            if (availableCopies !== undefined) {
+                newAvailableCopies = parseInt(availableCopies, 10);
+            } else {
+                newAvailableCopies = currentAvailable + parseInt(delta, 10);
+            }
+
+            // Edge Case 1: Available copies cannot be negative
+            if (newAvailableCopies < 0) {
+                const error = new Error(`Available copies cannot be negative (calculated: ${newAvailableCopies}).`);
+                error.statusCode = 400;
+                throw error;
+            }
+
+            // Edge Case 2: Available copies cannot exceed total stock
+            if (newAvailableCopies > currentTotal) {
+                const error = new Error(
+                    `Available copies (${newAvailableCopies}) cannot exceed total stock (${currentTotal} copies).`
+                );
+                error.statusCode = 400;
+                throw error;
+            }
+
+            // Edge Case 3: Available copies cannot exceed total stock minus active loans
+            const maxShelfCapacity = Math.max(0, currentTotal - activeIssuedCount);
+            if (newAvailableCopies > maxShelfCapacity) {
+                const error = new Error(
+                    `Available copies (${newAvailableCopies}) exceeds maximum physical shelf capacity of ${maxShelfCapacity} (${activeIssuedCount} active loan(s) currently out of ${currentTotal} total stock).`
+                );
+                error.statusCode = 400;
+                throw error;
+            }
+
+            let updatedAvailability;
+            if (existingAvailability) {
+                updatedAvailability = await tx.bookAvailability.update({
+                    where: { id: existingAvailability.id },
+                    data: {
+                        availableCopies: newAvailableCopies
+                    },
+                    include: { shelf: true }
+                });
+            } else {
+                updatedAvailability = await tx.bookAvailability.create({
+                    data: {
+                        bookId,
+                        totalCopies: newAvailableCopies,
+                        availableCopies: newAvailableCopies
+                    },
+                    include: { shelf: true }
+                });
+            }
+
+            return {
+                bookId: book.id,
+                bookTitle: book.title,
+                totalStock: currentTotal,
+                activeIssuedCount,
+                previousAvailable: currentAvailable,
+                availability: updatedAvailability
+            };
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: `Available shelf copies for "${result.bookTitle}" updated successfully from ${result.previousAvailable} to ${result.availability.availableCopies}.`,
+            data: result
+        });
+
+    } catch (error) {
+        console.error("Error in updateAvailableCopies:", error);
+        return res.status(error.statusCode || 500).json({
+            success: false,
+            message: error.message || "Failed to update available copies.",
+            error: error.message
+        });
+    }
+};
+
+/**
+ * @desc Unified book stock update endpoint (supports total, available, delta, and shelfId)
+ * @route PATCH /api/books/:id/stock
+ */
 export const updateBookStock = async (req, res) => {
     try {
         const bookId = parseInt(req.params.id, 10);
-        if (isNaN(bookId)) return res.status(400).json({ success: false, message: "Invalid book ID." });
-
-        const availability = await prisma.bookAvailability.findFirst({ where: { bookId } });
-        if (!availability) return res.status(404).json({ success: false, message: "Book inventory record not found." });
+        if (isNaN(bookId)) return res.status(400).json({ success: false, message: "Invalid book ID format." });
 
         const { delta, totalCopies, availableCopies, shelfId } = req.body;
-        const parsedDelta = delta === undefined ? 0 : parseInt(delta, 10);
-        if (delta !== undefined && isNaN(parsedDelta)) {
-            return res.status(400).json({ success: false, message: "delta must be a valid number." });
-        }
 
-        const nextTotal = totalCopies === undefined
-            ? availability.totalCopies + parsedDelta
-            : parseInt(totalCopies, 10);
-        const nextAvailable = availableCopies === undefined
-            ? availability.availableCopies + parsedDelta
-            : parseInt(availableCopies, 10);
+        const result = await prisma.$transaction(async (tx) => {
+            const book = await tx.book.findUnique({
+                where: { id: bookId },
+                include: {
+                    availabilities: { include: { shelf: true } },
+                    issuedBooks: { where: { isReturned: false } }
+                }
+            });
 
-        if (isNaN(nextTotal) || isNaN(nextAvailable) || nextTotal < 0 || nextAvailable < 0 || nextAvailable > nextTotal) {
-            return res.status(400).json({ success: false, message: "Stock values must be valid and available copies cannot exceed total copies." });
-        }
+            if (!book) {
+                const error = new Error(`Book with ID ${bookId} not found.`);
+                error.statusCode = 404;
+                throw error;
+            }
 
-        const updatedAvailability = await prisma.bookAvailability.update({
-            where: { id: availability.id },
-            data: {
-                totalCopies: nextTotal,
-                availableCopies: nextAvailable,
-                ...(shelfId !== undefined && { shelfId: shelfId ? parseInt(shelfId, 10) : null })
-            },
-            include: { shelf: true }
+            const activeIssuedCount = book.issuedBooks ? book.issuedBooks.length : 0;
+            const existingAvailability = book.availabilities?.[0];
+
+            const currentTotal = existingAvailability ? existingAvailability.totalCopies : 0;
+            const currentAvailable = existingAvailability ? existingAvailability.availableCopies : 0;
+
+            const parsedDelta = delta === undefined ? 0 : parseInt(delta, 10);
+            if (delta !== undefined && isNaN(parsedDelta)) {
+                const error = new Error("'delta' must be a valid number.");
+                error.statusCode = 400;
+                throw error;
+            }
+
+            let nextTotal = totalCopies === undefined
+                ? currentTotal + parsedDelta
+                : parseInt(totalCopies, 10);
+
+            let nextAvailable = availableCopies === undefined
+                ? currentAvailable + parsedDelta
+                : parseInt(availableCopies, 10);
+
+            if (isNaN(nextTotal) || nextTotal < 0) {
+                const error = new Error("Total copies must be a non-negative number.");
+                error.statusCode = 400;
+                throw error;
+            }
+
+            if (isNaN(nextAvailable) || nextAvailable < 0) {
+                const error = new Error("Available copies must be a non-negative number.");
+                error.statusCode = 400;
+                throw error;
+            }
+
+            if (nextTotal < activeIssuedCount) {
+                const error = new Error(
+                    `Cannot reduce total copies below active loans (${activeIssuedCount} copies currently issued).`
+                );
+                error.statusCode = 400;
+                throw error;
+            }
+
+            const maxAvailable = nextTotal - activeIssuedCount;
+            if (nextAvailable > maxAvailable) {
+                const error = new Error(
+                    `Available copies (${nextAvailable}) cannot exceed available shelf capacity of ${maxAvailable} (${activeIssuedCount} currently issued out of ${nextTotal} total stock).`
+                );
+                error.statusCode = 400;
+                throw error;
+            }
+
+            let updatedAvailability;
+            if (existingAvailability) {
+                updatedAvailability = await tx.bookAvailability.update({
+                    where: { id: existingAvailability.id },
+                    data: {
+                        totalCopies: nextTotal,
+                        availableCopies: nextAvailable,
+                        ...(shelfId !== undefined && { shelfId: shelfId ? parseInt(shelfId, 10) : null })
+                    },
+                    include: { shelf: true }
+                });
+            } else {
+                updatedAvailability = await tx.bookAvailability.create({
+                    data: {
+                        bookId,
+                        totalCopies: nextTotal,
+                        availableCopies: nextAvailable,
+                        shelfId: shelfId ? parseInt(shelfId, 10) : null
+                    },
+                    include: { shelf: true }
+                });
+            }
+
+            return updatedAvailability;
         });
 
-        return res.status(200).json({ success: true, message: "Book stock updated successfully.", availability: updatedAvailability });
+        return res.status(200).json({
+            success: true,
+            message: "Book stock updated successfully.",
+            availability: result
+        });
     } catch (error) {
         console.error("Error updating book stock:", error);
-        return res.status(500).json({ success: false, message: "Failed to update book stock.", error: error.message });
+        return res.status(error.statusCode || 500).json({
+            success: false,
+            message: error.message || "Failed to update book stock.",
+            error: error.message
+        });
     }
 };
 

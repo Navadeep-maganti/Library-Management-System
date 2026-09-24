@@ -6,7 +6,17 @@ import AppRoutes from "./routes/AppRoutes";
 import "./App.css";
 
 function AppContent() {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    const storedUser = localStorage.getItem("libraryUser");
+    if (storedUser) {
+      try {
+        return JSON.parse(storedUser);
+      } catch {
+        localStorage.removeItem("libraryUser");
+      }
+    }
+    return null;
+  });
   const location = useLocation();
 
   useEffect(() => {

@@ -12,6 +12,7 @@ import reservationRoutes from "./routes/reservationRoutes.js";
 import fineRoutes from "./routes/fineRoutes.js";
 import announcementRoutes from "./routes/announcementRoutes.js";
 import constantRoutes from "./routes/constantRoutes.js";
+import { processExpiredReservations } from "./controllers/reservationController.js";
 
 const app = express();
 
@@ -47,6 +48,15 @@ async function startServer() {
     try {
         app.listen(PORT, () => {
             console.log(`🚀 Server running on port ${PORT}`);
+
+            // Periodically check and restore expired reservations every 60 seconds
+            setInterval(async () => {
+                try {
+                    await processExpiredReservations();
+                } catch (err) {
+                    console.error("Auto-expiry timer error:", err.message);
+                }
+            }, 60 * 1000);
         });
     } catch (err) {
         console.error("❌ Server failed to start");

@@ -1,6 +1,30 @@
 import prisma from "../config/db.js";
 
 /**
+ * Helper to generate a consistent 6-digit numeric token for a reservation ID
+ */
+export const formatReservationToken = (id) => {
+    if (!id) return "000000";
+    return String(100000 + id);
+};
+
+/**
+ * Helper to parse a reservation ID from a 6-digit token or formatted string
+ */
+export const parseReservationToken = (token) => {
+    if (!token) return null;
+    const clean = String(token).trim().toUpperCase().replace(/\D/g, "");
+    if (!clean) return null;
+    const num = parseInt(clean, 10);
+    if (isNaN(num)) return null;
+    // If token is in the 100000+ range, subtract 100000 to get ID
+    if (num > 100000) {
+        return num - 100000;
+    }
+    return num;
+};
+
+/**
  * Helper: Processes all active reservations older than 30 minutes,
  * marks them as 'Expired', and restores the reserved copy back into available stock.
  */
@@ -131,8 +155,8 @@ export const getReservations = async (req, res) => {
             const minutesRemaining = Math.floor(remainingMs / 60000);
             const secondsRemaining = Math.floor((remainingMs % 60000) / 1000);
 
-            // Generate user-friendly verification token
-            const token = `TOK-${resv.id.toString().padStart(4, "0")}`;
+            // 6-digit numeric token
+            const token = formatReservationToken(resv.id);
 
             return {
                 ...resv,
@@ -161,7 +185,7 @@ export const getReservations = async (req, res) => {
 };
 
 /**
- * @desc Create a new book reservation with 30-minute hold window and anti-spam constraints
+ * @desc Create a new book reservation with 30-minute hold window, stock decrement, and 6-digit token response
  * @route POST /api/reservations
  */
 export const createReservation = async (req, res) => {
@@ -204,7 +228,7 @@ export const createReservation = async (req, res) => {
             return res.status(404).json({ success: false, message: "Book not found." });
         }
 
-        // 3. Check stock availability
+        // 3. Check stock availability (must have available copies > 0)
         const availability = book.availabilities?.[0];
         if (!availability || availability.availableCopies <= 0) {
             return res.status(400).json({
@@ -223,7 +247,6 @@ export const createReservation = async (req, res) => {
         const startOfDay = new Date();
         startOfDay.setHours(0, 0, 0, 0);
 
-        // Constraint A: Maximum 5 reservation requests per student per day across all books
         const totalReservationsToday = await prisma.bookReservation.count({
             where: {
                 studentId,
@@ -241,7 +264,6 @@ export const createReservation = async (req, res) => {
             });
         }
 
-        // Constraint B: Maximum 2 reservation requests for the same book per student per day
         const bookReservationsToday = await prisma.bookReservation.count({
             where: {
                 studentId,
@@ -269,9 +291,10 @@ export const createReservation = async (req, res) => {
             }
         });
         if (existingActiveReservation) {
+            const activeToken = formatReservationToken(existingActiveReservation.id);
             return res.status(400).json({
                 success: false,
-                message: `You already have an active reservation for "${book.title}". Please claim it before it expires.`
+                message: `You already have an active reservation for "${book.title}". Your 6-digit verification code is ${activeToken}. Please claim it before it expires.`
             });
         }
 
@@ -283,7 +306,7 @@ export const createReservation = async (req, res) => {
         const reservedDate = new Date();
         const expiresAt = new Date(reservedDate.getTime() + 30 * 60 * 1000);
 
-        // 8. Atomically create reservation and decrement available stock by 1
+        // 8. Atomically create reservation and decrement available stock by 1 (making it unavailable)
         const result = await prisma.$transaction(async (tx) => {
             // Decrement available copies
             const updatedAvailability = await tx.bookAvailability.update({
@@ -310,11 +333,12 @@ export const createReservation = async (req, res) => {
             return { reservation: newReservation, availability: updatedAvailability };
         });
 
-        const token = `TOK-${result.reservation.id.toString().padStart(4, "0")}`;
+        // 6-digit numeric token
+        const token = formatReservationToken(result.reservation.id);
 
         return res.status(201).json({
             success: true,
-            message: `Book "${book.title}" reserved successfully! Please collect and claim it within 30 minutes.`,
+            message: `Book "${book.title}" reserved successfully! Your 6-digit verification code is ${token}. Please collect and claim it within 30 minutes.`,
             token,
             reservation: {
                 ...result.reservation,
@@ -423,40 +447,41 @@ export const cancelReservation = async (req, res) => {
 };
 
 /**
- * @desc Verify and validate a student reservation token
+ * @desc Verify a 6-digit reservation token AND update that book as Issued
  * @route POST /api/reservations/verify-token
+ * @payload { token: string, dueDate?: string, verifyOnly?: boolean }
  */
 export const verifyReservationToken = async (req, res) => {
     try {
         await processExpiredReservations();
 
-        const { token } = req.body;
+        const { token, dueDate: customDueDate, verifyOnly = false } = req.body;
         if (!token) {
-            return res.status(400).json({ success: false, message: "Token is required." });
+            return res.status(400).json({ success: false, message: "6-digit token is required." });
         }
 
-        // Clean token format: 'TOK-0042' -> 42
-        const rawToken = token.trim().toUpperCase();
-        const numericMatch = rawToken.match(/\d+/);
-        const reservationId = numericMatch ? parseInt(numericMatch[0], 10) : null;
-
-        let reservation = null;
-        if (reservationId) {
-            reservation = await prisma.bookReservation.findUnique({
-                where: { id: reservationId },
-                include: {
-                    student: {
-                        include: { user: { select: { username: true, email: true } } }
-                    },
-                    book: {
-                        include: {
-                            availabilities: { include: { shelf: true } }
-                        }
-                    },
-                    status: true
-                }
+        const reservationId = parseReservationToken(token);
+        if (!reservationId) {
+            return res.status(400).json({
+                success: false,
+                message: `Invalid token format. Please provide a valid 6-digit code.`
             });
         }
+
+        const reservation = await prisma.bookReservation.findUnique({
+            where: { id: reservationId },
+            include: {
+                student: {
+                    include: { user: { select: { username: true, email: true } } }
+                },
+                book: {
+                    include: {
+                        availabilities: { include: { shelf: true } }
+                    }
+                },
+                status: true
+            }
+        });
 
         if (!reservation) {
             return res.status(404).json({
@@ -474,7 +499,7 @@ export const verifyReservationToken = async (req, res) => {
             return res.status(400).json({
                 success: false,
                 isExpired: true,
-                message: "This reservation has expired (exceeded 30 minutes window). The book has been returned to available stock.",
+                message: "This reservation has expired (exceeded 30 minutes window). The book copy has already been returned to available stock.",
                 reservation
             });
         }
@@ -486,34 +511,114 @@ export const verifyReservationToken = async (req, res) => {
             });
         }
 
-        const remainingMs = Math.max(0, expiresTime - now);
+        // Fetch library constants for default loan duration (14 days)
+        const constants = await prisma.libraryConstants.findFirst() || { maxBorrowDays: 14 };
+        const issueDate = new Date();
+        const calculatedDueDate = customDueDate
+            ? new Date(customDueDate)
+            : new Date(Date.now() + (constants.maxBorrowDays || 14) * 24 * 60 * 60 * 1000);
+
+        // Fetch or create 'Issued' / 'Completed' status
+        let issuedStatus = await prisma.status.findFirst({ where: { status: "Issued" } });
+        if (!issuedStatus) {
+            issuedStatus = await prisma.status.create({ data: { status: "Issued" } });
+        }
+
+        if (verifyOnly) {
+            const formattedToken = formatReservationToken(reservation.id);
+            const remainingMs = Math.max(0, expiresTime - now);
+
+            return res.status(200).json({
+                success: true,
+                message: "Reservation token is valid and active!",
+                verificationDetails: {
+                    reservationId: reservation.id,
+                    token: formattedToken,
+                    studentName: reservation.student?.user?.username,
+                    rollNo: reservation.studentId,
+                    email: reservation.student?.user?.email,
+                    department: reservation.student?.department,
+                    bookId: reservation.book?.id,
+                    bookTitle: reservation.book?.title,
+                    author: reservation.book?.author,
+                    isbn: reservation.book?.isbn,
+                    shelf: reservation.book?.availabilities?.[0]?.shelf,
+                    reservedDate: reservation.reservedDate,
+                    expiresAt: new Date(expiresTime).toISOString(),
+                    minutesRemaining: Math.floor(remainingMs / 60000),
+                    secondsRemaining: Math.floor((remainingMs % 60000) / 1000)
+                }
+            });
+        }
+
+        // Perform atomic verification and issuance:
+        // 1. Create IssuedBook
+        // 2. Create BorrowHistory
+        // 3. Update reservation status to "Issued"
+        // Note: availableCopies was already decremented during reservation, so total stock and available stock remain consistent.
+        const result = await prisma.$transaction(async (tx) => {
+            // Create IssuedBook record
+            const issuedBookRecord = await tx.issuedBook.create({
+                data: {
+                    bookId: reservation.bookId,
+                    studentId: reservation.studentId,
+                    issueDate,
+                    dueDate: calculatedDueDate,
+                    isReturned: false,
+                    renewalCount: 0
+                },
+                include: {
+                    student: { select: { rollNo: true, department: true, user: { select: { username: true, email: true } } } },
+                    book: { select: { id: true, title: true, author: true, isbn: true } }
+                }
+            });
+
+            // Create BorrowHistory record
+            await tx.borrowHistory.create({
+                data: {
+                    studentId: reservation.studentId,
+                    bookId: reservation.bookId,
+                    issueDate
+                }
+            });
+
+            // Update reservation status to 'Issued'
+            const updatedReservation = await tx.bookReservation.update({
+                where: { id: reservation.id },
+                data: { statusId: issuedStatus.id },
+                include: { status: true }
+            });
+
+            return { issuedBookRecord, updatedReservation };
+        });
+
+        const formattedToken = formatReservationToken(reservation.id);
 
         return res.status(200).json({
             success: true,
-            message: "Reservation token verified successfully!",
-            verificationDetails: {
-                reservationId: reservation.id,
-                token: rawToken,
+            message: `Token ${formattedToken} verified successfully! Book "${reservation.book?.title}" has been issued to student ${reservation.studentId}.`,
+            isIssued: true,
+            transactionId: `TXN-${result.issuedBookRecord.id.toString().padStart(4, "0")}`,
+            token: formattedToken,
+            issuedBook: result.issuedBookRecord,
+            reservation: result.updatedReservation,
+            issueDetails: {
+                transactionId: `TXN-${result.issuedBookRecord.id.toString().padStart(4, "0")}`,
                 studentName: reservation.student?.user?.username,
                 rollNo: reservation.studentId,
                 email: reservation.student?.user?.email,
-                department: reservation.student?.department,
-                bookId: reservation.book?.id,
                 bookTitle: reservation.book?.title,
-                author: reservation.book?.author,
                 isbn: reservation.book?.isbn,
-                shelf: reservation.book?.availabilities?.[0]?.shelf,
-                reservedDate: reservation.reservedDate,
-                expiresAt: new Date(expiresTime).toISOString(),
-                minutesRemaining: Math.floor(remainingMs / 60000),
-                secondsRemaining: Math.floor((remainingMs % 60000) / 1000)
+                issueDate: issueDate.toISOString(),
+                dueDate: calculatedDueDate.toISOString()
             }
         });
 
     } catch (error) {
+        console.error("Error in verifyReservationToken:", error);
         return res.status(500).json({
             success: false,
-            message: "Failed to verify token.",
+            message: "Failed to verify token and issue book.",
             error: error.message
         });
     }
