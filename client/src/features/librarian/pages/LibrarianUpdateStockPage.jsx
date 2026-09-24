@@ -57,6 +57,12 @@ export default function LibrarianUpdateStockPage() {
   }, []);
 
   useEffect(() => { refresh(); }, [refresh]);
+  useEffect(() => {
+    if (!notice) return undefined;
+
+    const timeoutId = window.setTimeout(() => setNotice(null), 7000);
+    return () => window.clearTimeout(timeoutId);
+  }, [notice]);
   useEffect(() => { setPage(1); }, [search, category, status]);
   useEffect(() => {
     const invalidQuantity = Object.values(amounts).some((value) => {
@@ -128,7 +134,7 @@ export default function LibrarianUpdateStockPage() {
       }));
       setBooks((old) => old.map((item) => item.id === book.id ? { ...item, total: data.availability.totalCopies, available: data.availability.availableCopies } : item));
       setDrafts((old) => { const next = { ...old }; delete next[book.id]; return next; });
-      setNotice(`Stock saved for “${book.title}”.`);
+      setNotice({ type: "success", text: `Stock saved for “${book.title}”.` });
     } catch (err) {
       setNotice({
         type: "error",
