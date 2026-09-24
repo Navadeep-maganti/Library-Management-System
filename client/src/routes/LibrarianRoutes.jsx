@@ -1,7 +1,7 @@
 import React from "react";
 import { Route } from "react-router-dom";
 import LibrarianDashboard from "../features/librarian/pages/LibrarianDashboard";
-import LibrarianRequestsPage from "../features/librarian/pages/LibrarianRequestsPage";
+import LibrarianReservationsPage from "../features/librarian/pages/LibrarianReservationsPage";
 import LibrarianVerifyTokenPage from "../features/librarian/pages/LibrarianVerifyTokenPage";
 import LibrarianIssueBookPage from "../features/librarian/pages/LibrarianIssueBookPage";
 import LibrarianUpdateStockPage from "../features/librarian/pages/LibrarianUpdateStockPage";
@@ -13,9 +13,9 @@ export const getLibrarianRoutes = (user) => [
     element={<LibrarianDashboard user={user} />}
   />,
   <Route
-    key="librarian-requests"
-    path="/librarian/requests"
-    element={<LibrarianRequestsPage />}
+    key="librarian-reservations"
+    path="/librarian/reservations"
+    element={<LibrarianReservationsPage />}
   />,
   <Route
     key="librarian-verify-token"

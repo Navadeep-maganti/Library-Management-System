@@ -41,10 +41,10 @@ const LibrarianNavbar = ({ user, onLogout }) => {
 
         <nav className="librarian-nav-links">
           <Link
-            to="/librarian/requests"
-            className={`librarian-nav-link ${isActive("/librarian/requests") ? "active" : ""}`}
+            to="/librarian/reservations"
+            className={`librarian-nav-link ${isActive("/librarian/reservations") ? "active" : ""}`}
           >
-             Requests
+             Reservations
           </Link>
           <Link
             to="/librarian/verify-token"
@@ -56,7 +56,7 @@ const LibrarianNavbar = ({ user, onLogout }) => {
             to="/librarian/issue-book"
             className={`librarian-nav-link ${isActive("/librarian/issue-book") ? "active" : ""}`}
           >
-            Issue Book
+            Issued Books
           </Link>
           <Link
             to="/librarian/update-stock"
@@ -64,6 +64,9 @@ const LibrarianNavbar = ({ user, onLogout }) => {
           >
             Update Stock
           </Link>
+          <span className="librarian-nav-link librarian-nav-link-disabled" aria-disabled="true" title="Fines management is coming soon">
+            Fines
+          </span>
 
         </nav>
         <div className="librarian-profile-menu" ref={profileMenuRef}>

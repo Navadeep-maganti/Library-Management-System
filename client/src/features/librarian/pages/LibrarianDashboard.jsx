@@ -102,7 +102,7 @@ const LibrarianDashboard = ({ user }) => {
         </div>
 
         <div className="librarian-flow-grid">
-          <Link to="/librarian/requests" className="librarian-flow-card">
+          <Link to="/librarian/reservations" className="librarian-flow-card">
             <span className="librarian-flow-step-tag">Step 1</span>
             <div className="librarian-flow-icon">📋</div>
             <h3 className="librarian-flow-title">View Requests</h3>
@@ -149,7 +149,7 @@ const LibrarianDashboard = ({ user }) => {
           <button type="button" className="librarian-btn-secondary" onClick={() => navigate("/librarian/verify-token")}>
             <span>🔑</span> Verify Student OTP
           </button>
-          <button type="button" className="librarian-btn-secondary" onClick={() => navigate("/librarian/requests")}>
+          <button type="button" className="librarian-btn-secondary" onClick={() => navigate("/librarian/reservations")}>
             <span>📋</span> View Pending Requests
           </button>
           <button type="button" className="librarian-btn-secondary" onClick={() => navigate("/librarian/update-stock")}>
