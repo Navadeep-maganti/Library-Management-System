@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../styles/LibrarianPages.css";
+import "../styles/LibrarianRequestsPage.css";
 
 const LibrarianRequestsPage = () => {
   const navigate = useNavigate();
@@ -47,16 +47,16 @@ const LibrarianRequestsPage = () => {
   };
 
   return (
-    <div className="librarian-flow-page">
-      <div className="flow-page-header">
-        <div className="flow-badge">Step 1: View Requests</div>
+    <div className="requests-page-container">
+      <div className="requests-header">
+        <div className="requests-badge">Step 1: View Requests</div>
         <h2>Pending Bookings List</h2>
         <p>Review student book reservation requests and initiate verification</p>
       </div>
 
-      <div className="flow-card">
-        <div className="table-responsive">
-          <table className="flow-table">
+      <div className="requests-card">
+        <div className="requests-table-responsive">
+          <table className="requests-table">
             <thead>
               <tr>
                 <th>Request ID</th>
@@ -72,34 +72,34 @@ const LibrarianRequestsPage = () => {
               {requests.length > 0 ? (
                 requests.map((req) => (
                   <tr key={req.id}>
-                    <td className="font-mono">{req.id}</td>
+                    <td className="requests-font-mono">{req.id}</td>
                     <td>
                       <strong>{req.studentName}</strong>
-                      <div className="sub-text">Roll: {req.rollNo}</div>
+                      <div className="requests-sub-text">Roll: {req.rollNo}</div>
                     </td>
                     <td>
                       <strong>{req.bookTitle}</strong>
-                      <div className="sub-text">By {req.author}</div>
+                      <div className="requests-sub-text">By {req.author}</div>
                     </td>
                     <td>{req.requestDate}</td>
                     <td>
-                      <span className="token-code">{req.token}</span>
+                      <span className="requests-token-code">{req.token}</span>
                     </td>
                     <td>
-                      <span className="badge badge-pending">{req.status}</span>
+                      <span className="requests-badge-status">{req.status}</span>
                     </td>
                     <td>
-                      <div className="btn-group">
+                      <div className="requests-btn-group">
                         <button
                           type="button"
-                          className="btn-action primary"
+                          className="requests-btn-verify"
                           onClick={() => handleVerify(req.token)}
                         >
                           🔑 Verify Token
                         </button>
                         <button
                           type="button"
-                          className="btn-action danger"
+                          className="requests-btn-reject"
                           onClick={() => handleReject(req.id)}
                         >
                           Reject
@@ -110,7 +110,7 @@ const LibrarianRequestsPage = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="7" className="empty-state">
+                  <td colSpan="7" className="requests-empty-state">
                     No pending booking requests at this moment.
                   </td>
                 </tr>
