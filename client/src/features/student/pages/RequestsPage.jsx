@@ -72,7 +72,7 @@ const RequestsTable = ({ requests, emptyMessage, now, cancellingId, onCancel }) 
 );
 
 const RequestsPage = () => {
-  const { requests, cancelReservation } = useOutletContext();
+  const { requests, cancelReservation, reservationQuota = { totalUsedToday: 0, totalDailyLimit: 5 } } = useOutletContext();
   const [now, setNow] = useState(Date.now());
   const [cancellingId, setCancellingId] = useState(null);
   const [cancelError, setCancelError] = useState("");
@@ -136,6 +136,9 @@ const RequestsPage = () => {
             <h2>My Booking Requests</h2>
           </div>
           <span className="book-count">{requests.length} {requests.length === 1 ? "request" : "requests"}</span>
+        </div>
+        <div style={{ margin: "12px 0 18px", display: "inline-flex", alignItems: "center", gap: "8px", background: "#f3f4f6", color: "#111827", border: "1px solid #d1d5db", borderRadius: "999px", padding: "8px 14px", fontWeight: 700 }}>
+          Today: {reservationQuota.totalUsedToday}/{reservationQuota.totalDailyLimit}
         </div>
         <div className="requests-view-toolbar" aria-label="Group requests">
           <span className="requests-view-label">Organize by</span>

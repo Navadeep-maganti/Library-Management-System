@@ -13,9 +13,15 @@ import "../styles/StudentDashboard.css";
 | Later, these values will come from the backend API.
 */
 
+const formatReservationToken = (token) => {
+  if (token === null || token === undefined || token === "") return "";
+  const numericToken = String(token).replace(/^TOK-/i, "");
+  return `TOK-${numericToken}`;
+};
+
 const normalizeReservation = (reservation) => ({
   id: reservation.id,
-  token: reservation.token,
+  token: formatReservationToken(reservation.token),
   book: {
     ...reservation.book,
     category: reservation.book?.category?.name || reservation.book?.category || "Reserved title",
@@ -48,6 +54,7 @@ const StudentDashboard = ({ user, onLogout }) => {
   const [catalogBooks, setCatalogBooks] = useState([]);
   const [borrowedBooks, setBorrowedBooks] = useState([]);
   const [dashboardStats, setDashboardStats] = useState({ borrowed: 0, overdue: 0, pendingFine: 0, finePaid: 0 });
+  const [reservationQuota, setReservationQuota] = useState({ totalUsedToday: 0, totalDailyLimit: 5, totalRemainingToday: 5 });
   const [category, setCategory] = useState("All");
   const [sortBy, setSortBy] = useState("title");
 
@@ -76,11 +83,39 @@ const StudentDashboard = ({ user, onLogout }) => {
     ...user,
   };
 
+  const loadReservationQuota = async (studentId) => {
+    if (!studentId) return;
+
+    try {
+      const quotaResponse = await fetch(`/api/reservations/quota/${encodeURIComponent(studentId)}`);
+      const quotaData = await quotaResponse.json();
+
+      if (!quotaResponse.ok) {
+        throw new Error(quotaData.message || "Could not load reservation quota.");
+      }
+
+      const quota = quotaData.quota || {};
+      setReservationQuota({
+        totalUsedToday: Number(quota.totalUsedToday || 0),
+        totalDailyLimit: Number(quota.totalDailyLimit || 5),
+        totalRemainingToday: Number(quota.totalRemainingToday || 0),
+      });
+    } catch (quotaError) {
+      setRequestsError((prev) => prev || quotaError.message);
+    }
+  };
+
   useEffect(() => {
     const rollNo = currentUser.roll_no || currentUser.rollNo;
     if (!rollNo) return;
 
     const loadReservations = async () => {
+      try {
+        await fetch("/api/reservations/check-expired", { method: "POST" });
+      } catch (expiryError) {
+        console.warn("Reservation expiry check failed:", expiryError);
+      }
+
       try {
         const response = await fetch(`/api/reservations?studentId=${encodeURIComponent(rollNo)}`);
         const data = await response.json();
@@ -89,6 +124,8 @@ const StudentDashboard = ({ user, onLogout }) => {
       } catch (loadError) {
         setRequestsError(loadError.message);
       }
+
+      await loadReservationQuota(rollNo);
     };
 
     loadReservations();
@@ -214,7 +251,8 @@ const StudentDashboard = ({ user, onLogout }) => {
       const reservation = normalizeReservation(data.reservation);
       setRequests((current) => [...current, reservation]);
       setRequestsError("");
-      setIssuanceNoticeBook({ book, token: data.token || reservation.token });
+      setIssuanceNoticeBook({ book, token: formatReservationToken(data.token || reservation.token) });
+      await loadReservationQuota(rollNo);
     } catch (requestError) {
       setRequestsError(requestError.message);
     } finally {
@@ -229,11 +267,16 @@ const StudentDashboard = ({ user, onLogout }) => {
     const data = await response.json();
     if (!response.ok) throw new Error(data.message || "Could not cancel the reservation.");
 
+    const rollNo = currentUser.roll_no || currentUser.rollNo;
     setRequests((current) => current.map((request) => (
       request.id === reservationId
         ? { ...request, status: data.reservation?.status?.status || "Cancelled" }
         : request
     )));
+
+    if (rollNo) {
+      await loadReservationQuota(rollNo);
+    }
   };
 
   /*
@@ -312,6 +355,10 @@ const StudentDashboard = ({ user, onLogout }) => {
             <p>
               Here's an overview of your library activity.
             </p>
+
+            <div style={{ marginTop: "12px", display: "inline-flex", alignItems: "center", gap: "8px", background: "#eff6ff", color: "#1d4ed8", border: "1px solid #bfdbfe", borderRadius: "999px", padding: "8px 14px", fontWeight: 700 }}>
+              Daily reservation attempts: {reservationQuota.totalUsedToday}/{reservationQuota.totalDailyLimit}
+            </div>
 
           </section>
 
@@ -705,6 +752,7 @@ const StudentDashboard = ({ user, onLogout }) => {
             requestingBookId,
             cancelReservation,
             searchTerm,
+            reservationQuota,
           }}
         />
 
