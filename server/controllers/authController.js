@@ -111,7 +111,12 @@ export const registerUser = async (req, res) => {
         res.status(201).json({
             message: "User registered successfully!",
             token,
-            user: { email: cleanEmail, username, role: derivedRole }
+            user: {
+                email: cleanEmail,
+                username,
+                role: derivedRole,
+                ...(derivedRole === "student" && { roll_no: String(rollNo) })
+            }
         });
     } catch (error) {
         console.error("Error in registerUser:", error);
