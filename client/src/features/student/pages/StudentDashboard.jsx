@@ -15,7 +15,7 @@ import "../styles/StudentDashboard.css";
 
 const normalizeReservation = (reservation) => ({
   id: reservation.id,
-  token: reservation.token || `TOK-${String(reservation.id).padStart(4, "0")}`,
+  token: reservation.token,
   book: {
     ...reservation.book,
     category: reservation.book?.category?.name || reservation.book?.category || "Reserved title",
@@ -28,6 +28,7 @@ const normalizeReservation = (reservation) => ({
   formattedRemaining: reservation.formattedRemaining,
   queuePosition: reservation.queuePosition,
   status: reservation.status?.status || "Reserved",
+  isExpired: reservation.isExpired || false,
 });
 
 const StudentDashboard = ({ user, onLogout }) => {
@@ -91,6 +92,8 @@ const StudentDashboard = ({ user, onLogout }) => {
     };
 
     loadReservations();
+    const refreshTimer = window.setInterval(loadReservations, 30000);
+    return () => window.clearInterval(refreshTimer);
   }, [currentUser.rollNo, currentUser.roll_no]);
 
   useEffect(() => {
@@ -190,15 +193,12 @@ const StudentDashboard = ({ user, onLogout }) => {
 
   const requestBook = async (book) => {
     const rollNo = currentUser.roll_no || currentUser.rollNo;
-    const alreadyReserved = requests.some(
-      (request) => request.book?.id === book.id && ["Requested", "Booked", "Reserved"].includes(request.status),
-    );
 
     if (!rollNo) {
       setRequestsError("Your student roll number is not available. Please sign in again.");
       return;
     }
-    if (alreadyReserved || requestingBookId === book.id) return;
+    if (requestingBookId === book.id) return;
 
     setRequestingBookId(book.id);
     setRequestsError("");
@@ -211,9 +211,10 @@ const StudentDashboard = ({ user, onLogout }) => {
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || "Could not reserve this book.");
 
-      setRequests((current) => [...current, normalizeReservation(data.reservation)]);
+      const reservation = normalizeReservation(data.reservation);
+      setRequests((current) => [...current, reservation]);
       setRequestsError("");
-      setIssuanceNoticeBook(book);
+      setIssuanceNoticeBook({ book, token: data.token || reservation.token });
     } catch (requestError) {
       setRequestsError(requestError.message);
     } finally {
@@ -226,10 +227,12 @@ const StudentDashboard = ({ user, onLogout }) => {
       method: "PATCH",
     });
     const data = await response.json();
-    if (!response.ok) throw new Error(data.message || "Could not cancel the expired reservation.");
+    if (!response.ok) throw new Error(data.message || "Could not cancel the reservation.");
 
     setRequests((current) => current.map((request) => (
-      request.id === reservationId ? { ...request, status: "Cancelled" } : request
+      request.id === reservationId
+        ? { ...request, status: data.reservation?.status?.status || "Cancelled" }
+        : request
     )));
   };
 
@@ -262,6 +265,7 @@ const StudentDashboard = ({ user, onLogout }) => {
         searchResults={filteredBooks}
         requestedBooks={requests}
         onRequestBook={requestBook}
+        requestingBookId={requestingBookId}
         onLogout={onLogout}
       />
 
@@ -274,8 +278,8 @@ const StudentDashboard = ({ user, onLogout }) => {
             <div className="issuance-notice-icon" aria-hidden="true">✓</div>
             <div className="issuance-notice-copy">
               <span className="student-kicker">BOOKING CONFIRMED</span>
-              <h2 id="booking-notice-title">{issuanceNoticeBook.title} booking confirmed</h2>
-              <p>Please collect the issued book from the library within the given time. After the deadline, the request will be treated as failed.</p>
+              <h2 id="booking-notice-title"><span >"</span>{issuanceNoticeBook.book.title}<span >"---</span> booking confirmed</h2>
+              <p>Show token <strong>{issuanceNoticeBook.token}</strong> to the librarian within 30 minutes. After the deadline, the request will be treated as failed.</p>
             </div>
             <button className="issuance-notice-close" type="button" onClick={() => setIssuanceNoticeBook(null)}>Got it</button>
           </section>
