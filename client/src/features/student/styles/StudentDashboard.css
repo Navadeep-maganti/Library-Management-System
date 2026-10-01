@@ -791,6 +791,19 @@
 .request-cancel-button { background: #b42318; border: 0; border-radius: 6px; color: #fff; cursor: pointer; font-size: 0.72rem; font-weight: 800; padding: 8px 10px; }
 .request-cancel-button:hover { background: #8f1d14; }
 .request-cancel-button:disabled { background: #c9cfca; cursor: not-allowed; }
+.issued-books-block { border-top: 1px solid #e8eeeb; margin-top: 24px; padding-top: 20px; }
+.issued-books-heading { align-items: end; display: flex; justify-content: space-between; margin-bottom: 12px; }
+.issued-books-heading h3 { color: var(--ink); font-family: Georgia, serif; font-size: 1.25rem; margin: 4px 0 0; }
+.history-table-wrap { min-width: 0; overflow-x: auto; }
+.history-table { border: 1px solid var(--line); border-radius: 10px; min-width: 980px; overflow: hidden; }
+.history-row { align-items: center; background: var(--paper); border-bottom: 1px solid #edf0eb; display: grid; gap: 16px; grid-template-columns: 0.9fr 1.8fr 1.2fr 1.2fr 1.2fr 0.9fr 0.9fr; min-height: 70px; padding: 13px 16px; }
+.history-row:last-child { border-bottom: 0; }
+.history-header { background: #f3f7f3; color: var(--muted); font-size: 0.64rem; font-weight: 800; letter-spacing: 0.08em; min-height: 44px; text-transform: uppercase; }
+.history-request-id { color: var(--teal-dark); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 0.75rem; font-weight: 800; }
+.history-book-cell { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.history-book-cell strong { color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.history-book-cell small { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.history-warning { color: #a24435; font-weight: 800; }
 .alert-list { display: grid; gap: 12px; }
 .library-alert { align-items: center; background: var(--paper); border: 1px solid var(--line); border-left: 4px solid #b9cbc4; border-radius: 10px; display: grid; gap: 14px; grid-template-columns: 36px minmax(0, 1fr) auto; padding: 15px 16px; }
 .library-alert.alert-unread { border-left-color: var(--teal); }
@@ -842,6 +855,20 @@
 @media (max-width: 700px) {
   .requests-page { gap: 16px; }
   .requests-intro { padding: 20px 16px; }
+  .issued-books-heading { align-items: start; flex-direction: column; gap: 5px; }
+  .history-table-wrap { overflow: visible; }
+  .history-table { border: 0; min-width: 0; overflow: visible; }
+  .history-header { display: none; }
+  .history-row { align-items: start; border: 1px solid var(--line); border-radius: 9px; display: grid; gap: 11px 14px; grid-template-columns: 1fr auto; margin-bottom: 10px; padding: 14px; }
+  .history-row > span::before { color: var(--muted); display: block; font-size: 0.62rem; font-weight: 800; letter-spacing: 0.04em; margin-bottom: 4px; text-transform: uppercase; }
+  .history-row > span:nth-child(1)::before { content: "Token ID"; }
+  .history-row > span:nth-child(2) { grid-column: 1 / -1; }
+  .history-row > span:nth-child(2)::before { content: "Book name"; }
+  .history-row > span:nth-child(3)::before { content: "Requested on"; }
+  .history-row > span:nth-child(4)::before { content: "Issued on"; }
+  .history-row > span:nth-child(5)::before { content: "Due date"; }
+  .history-row > span:nth-child(6)::before { content: "Overdue days"; }
+  .history-row > span:nth-child(7)::before { content: "Fine amount"; }
   .requests-view-toolbar { align-items: flex-start; flex-direction: column; gap: 9px; }
   .requests-view-switcher { width: 100%; }
   .requests-view-option { flex: 1; padding-left: 8px; padding-right: 8px; }
