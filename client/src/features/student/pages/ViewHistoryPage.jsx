@@ -2,29 +2,38 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 
 const formatDate = (value) => value ? new Date(value).toLocaleString() : "Not available";
+const formatToken = (reservationId) => reservationId ? `TOK-${String(reservationId).padStart(6, "0")}` : "-";
 
 const normalizeHistory = (student) => {
   const issuedBooks = student.issuedBooks || [];
+  const reservations = student.reservations || [];
+  const fines = student.fines || [];
+  const now = Date.now();
+  const dayMs = 24 * 60 * 60 * 1000;
 
-  return (student.borrowHistories || []).map((history) => {
-    const issuedRecord = issuedBooks.find(
-      (issuedBook) => issuedBook.bookId === history.bookId && new Date(issuedBook.issueDate).getTime() === new Date(history.issueDate).getTime(),
-    );
-    const book = history.book || issuedRecord?.book;
-    const returnedOn = history.returnDate || (issuedRecord?.isReturned ? issuedRecord.returnDate : null);
+  return issuedBooks.map((issuedBook) => {
+    const reservation = reservations
+      .filter((item) => item.bookId === issuedBook.bookId)
+      .sort((first, second) => new Date(second.reservedDate) - new Date(first.reservedDate))[0];
+    const dueTime = new Date(issuedBook.dueDate).getTime();
+    const comparisonTime = issuedBook.returnDate ? new Date(issuedBook.returnDate).getTime() : now;
+    const overdueDays = Math.max(0, Math.floor((comparisonTime - dueTime) / dayMs));
+    const fineAmount = fines
+      .filter((fine) => fine.issuedBookId === issuedBook.id)
+      .reduce((total, fine) => total + Number(fine.amount || 0), 0);
 
     return {
-      id: history.id,
-      title: book?.title || "Book unavailable",
-      author: book?.author || "Unknown author",
-      category: book?.category?.name || "Uncategorized",
-      copies: 1,
-      requestedOn: null,
-      issuedOn: history.issueDate,
-      dueDate: issuedRecord?.dueDate,
-      returnedOn,
-      status: returnedOn ? "Returned" : "Issued",
-      token: null,
+      id: issuedBook.id,
+      token: formatToken(reservation?.id),
+      title: issuedBook.book?.title || "Book unavailable",
+      author: issuedBook.book?.author || "Unknown author",
+      bookId: issuedBook.bookId,
+      requestedOn: reservation?.reservedDate,
+      issuedOn: issuedBook.issueDate,
+      dueDate: issuedBook.dueDate,
+      overdueDays,
+      fineAmount,
+      status: issuedBook.isReturned ? "Returned" : "Issued",
     };
   });
 };
@@ -62,7 +71,9 @@ const ViewHistoryPage = () => {
   }, [currentUser.rollNo, currentUser.roll_no]);
 
   const visibleItems = useMemo(() => historyItems.filter((item) =>
-    (status === "All" || item.status === status) && `${item.title} ${item.author} ${item.token || ""}`.toLowerCase().includes(query.toLowerCase())), [historyItems, query, status]);
+    (status === "All" || item.status === status) &&
+    `${item.title} ${item.author} ${item.bookId || ""} ${item.token}`.toLowerCase().includes(query.toLowerCase())
+  ), [historyItems, query, status]);
 
   return (
     <section className="student-info-panel">
@@ -84,36 +95,59 @@ const ViewHistoryPage = () => {
           </select>
         </label>
       </div>
-      <div className="history-timeline-list">
-        {isLoading ? <p className="empty-search">Loading borrowing history...</p> : error ? <p className="browse-books-message">{error}</p> : visibleItems.length ? visibleItems.map((item) => (
-          <article className="history-timeline-card" key={item.id}>
-            <div className="history-book-summary">
-              <div className="history-book-cover">{item.title.charAt(0)}</div>
-              <div>
-                <span className="book-category">{item.category}</span>
-                <h3>{item.title}</h3>
-                <p>By {item.author} · {item.copies} {item.copies === 1 ? "copy" : "copies"}</p>
-                {item.token && <span className="request-token-label">Requested token: {item.token}</span>}
+      <section className="issued-books-block">
+        <div className="issued-books-heading">
+          <div>
+            <p className="student-kicker">ISSUED BOOKS</p>
+            <h3>Borrowing details</h3>
+          </div>
+          <span className="book-count">{visibleItems.length} {visibleItems.length === 1 ? "book" : "books"}</span>
+        </div>
+        {isLoading ? (
+          <p className="empty-search">Loading issued books...</p>
+        ) : error ? (
+          <p className="browse-books-message">{error}</p>
+        ) : (
+          <div className="history-table-wrap">
+            <div className="history-table" role="table">
+              {/* Always show header */}
+              <div className="history-row history-header" role="row">
+                <span>Token ID</span>
+                <span>Book name</span>
+                <span>Requested on</span>
+                <span>Issued on</span>
+                <span>Due date</span>
+                <span>Overdue days</span>
+                <span>Fine amount</span>
               </div>
-              <span className={`status-badge ${item.status.toLowerCase()}`}>{item.status}</span>
+
+              {/* Show rows or empty message */}
+              {visibleItems.length ? (
+                visibleItems.map((item) => (
+                  <div className="history-row" role="row" key={item.id}>
+                    <span className="history-request-id">{item.token}</span>
+                    <span className="history-book-cell">
+                      <strong>{item.title}</strong>
+                      <small>{item.author} · Book ID: {item.bookId || "-"}</small>
+                    </span>
+                    <span>{formatDate(item.requestedOn)}</span>
+                    <span>{formatDate(item.issuedOn)}</span>
+                    <span>{formatDate(item.dueDate)}</span>
+                    <span className={item.overdueDays > 0 ? "history-warning" : ""}>{item.overdueDays}</span>
+                    <span>{Number(item.fineAmount).toFixed(2)}</span>
+                  </div>
+                ))
+              ) : (
+                <div className="history-row">
+                  <span className="empty-search" style={{ gridColumn: "1 / -1" }}>
+                    No matching issued books.
+                  </span>
+                </div>
+              )}
             </div>
-            <div className="history-timeline" aria-label={`History for ${item.title}`}>
-              <div className="timeline-step complete">
-                <span className="timeline-marker">1</span>
-                <div><strong>Borrowing record created</strong><span>{formatDate(item.issuedOn)}</span></div>
-              </div>
-              <div className="timeline-step complete">
-                <span className="timeline-marker">2</span>
-                <div><strong>Book issued on</strong><span>{formatDate(item.issuedOn)}{item.dueDate ? ` · Due date: ${formatDate(item.dueDate)}` : ""}</span></div>
-              </div>
-              <div className={`timeline-step ${item.returnedOn ? "complete" : "current"}`}>
-                <span className="timeline-marker">3</span>
-                <div><strong>Returned</strong><span>{item.returnedOn || "Not returned yet. Please return it before the due date."}</span></div>
-              </div>
-            </div>
-          </article>
-        )) : <p className="empty-search">No matching borrowing records.</p>}
-      </div>
+          </div>
+        )}
+      </section>
     </section>
   );
 };
