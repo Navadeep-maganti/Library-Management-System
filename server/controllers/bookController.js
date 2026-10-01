@@ -317,7 +317,12 @@ export const updateBook = async (req, res) => {
                 if (existingAvailability) {
                     const availUpdateData = {};
                     if (totalCopies !== undefined) {
-                        availUpdateData.totalCopies = Math.max(0, parseInt(totalCopies, 10) || 0);
+                        const newTotal = Math.max(0, parseInt(totalCopies, 10) || 0);
+                        availUpdateData.totalCopies = newTotal;
+                        if (availableCopies === undefined) {
+                            const delta = newTotal - existingAvailability.totalCopies;
+                            availUpdateData.availableCopies = Math.max(0, existingAvailability.availableCopies + delta);
+                        }
                     }
                     if (availableCopies !== undefined) {
                         availUpdateData.availableCopies = Math.max(0, parseInt(availableCopies, 10) || 0);
@@ -819,8 +824,12 @@ export const updateBookStock = async (req, res) => {
                 ? currentTotal + parsedDelta
                 : parseInt(totalCopies, 10);
 
+            const totalDelta = totalCopies !== undefined
+                ? (nextTotal - currentTotal)
+                : parsedDelta;
+
             let nextAvailable = availableCopies === undefined
-                ? currentAvailable + parsedDelta
+                ? currentAvailable + totalDelta
                 : parseInt(availableCopies, 10);
 
             if (isNaN(nextTotal) || nextTotal < 0) {
@@ -843,8 +852,10 @@ export const updateBookStock = async (req, res) => {
                 throw error;
             }
 
-            const maxAvailable = nextTotal - activeIssuedCount;
-            if (nextAvailable > maxAvailable) {
+            const maxAvailable = Math.max(0, nextTotal - activeIssuedCount);
+            if (availableCopies === undefined) {
+                nextAvailable = Math.max(0, Math.min(nextAvailable, maxAvailable));
+            } else if (nextAvailable > maxAvailable) {
                 const error = new Error(
                     `Available copies (${nextAvailable}) cannot exceed available shelf capacity of ${maxAvailable} (${activeIssuedCount} currently issued out of ${nextTotal} total stock).`
                 );
