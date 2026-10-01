@@ -1,150 +1,135 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import "../styles/LibrarianVerifyTokenPage.css";
 
+const VERIFY_ENDPOINT = "/api/reservations/verify-token";
+
 const LibrarianVerifyTokenPage = () => {
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const initialToken = searchParams.get("token") || "";
-
-  const [inputToken, setInputToken] = useState(initialToken);
-  const [verificationResult, setVerificationResult] = useState(null);
+  const [inputToken, setInputToken] = useState(searchParams.get("token") || "");
+  const [verificationDetails, setVerificationDetails] = useState(null);
+  const [issueDetails, setIssueDetails] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
+  const [verifying, setVerifying] = useState(false);
+  const [issuing, setIssuing] = useState(false);
 
-  const mockDatabase = {
-    "TOK-9821": {
-      studentName: "Rahul Sharma",
-      rollNo: "421101",
-      email: "rahul.s@nitandhra.ac.in",
-      bookTitle: "Introduction to Algorithms (CLRS)",
-      isbn: "978-0262033848",
-      requestDate: "Aug 26, 2026",
-    },
-    "TOK-5542": {
-      studentName: "Priya Patel",
-      rollNo: "421108",
-      email: "priya.p@nitandhra.ac.in",
-      bookTitle: "Database System Concepts",
-      isbn: "978-0078022159",
-      requestDate: "Aug 27, 2026",
-    },
-    "TOK-3319": {
-      studentName: "Amit Kumar",
-      rollNo: "421115",
-      email: "amit.k@nitandhra.ac.in",
-      bookTitle: "Operating System Concepts",
-      isbn: "978-1118063330",
-      requestDate: "Aug 27, 2026",
-    },
+  const callVerificationApi = async (body) => {
+    const response = await fetch(VERIFY_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.success) throw new Error(data.message || "Unable to verify the reservation token.");
+    return data;
   };
 
-  useEffect(() => {
-    if (initialToken && mockDatabase[initialToken.trim().toUpperCase()]) {
-      setVerificationResult(mockDatabase[initialToken.trim().toUpperCase()]);
-    }
-  }, [initialToken]);
-
-  const handleVerify = (e) => {
-    e.preventDefault();
-    setErrorMsg("");
-    const cleaned = inputToken.trim().toUpperCase();
-    if (!cleaned) {
-      setErrorMsg("Please enter a verification token code.");
+  const verifyToken = async (token) => {
+    const cleanedToken = token.trim();
+    if (!cleanedToken) {
+      setErrorMsg("Enter the student's 6-digit reservation token.");
       return;
     }
 
-    if (mockDatabase[cleaned]) {
-      setVerificationResult(mockDatabase[cleaned]);
-    } else {
-      // Create a default verified object if unknown token is scanned for demo
-      setVerificationResult({
-        studentName: "Student (Verified)",
-        rollNo: "421199",
-        email: "student@nitandhra.ac.in",
-        bookTitle: "Computer Networks - 5th Edition",
-        isbn: "978-0132126953",
-        requestDate: "Today",
-      });
+    setVerifying(true);
+    setErrorMsg("");
+    setVerificationDetails(null);
+    setIssueDetails(null);
+    try {
+      const data = await callVerificationApi({ token: cleanedToken, verifyOnly: true });
+      setVerificationDetails(data.verificationDetails);
+    } catch (err) {
+      setErrorMsg(err.message || "Unable to verify the reservation token.");
+    } finally {
+      setVerifying(false);
     }
   };
 
-  const handleProceedToIssue = () => {
-    if (verificationResult) {
-      navigate(
-        `/librarian/issue-book?student=${encodeURIComponent(
-          verificationResult.studentName
-        )}&roll=${verificationResult.rollNo}&book=${encodeURIComponent(
-          verificationResult.bookTitle
-        )}`
-      );
+  useEffect(() => {
+    const token = searchParams.get("token");
+    if (token) verifyToken(token);
+    // The token comes only from the URL when this page mounts.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
+  const handleVerify = (event) => {
+    event.preventDefault();
+    verifyToken(inputToken);
+  };
+
+  const handleIssueBook = async () => {
+    if (!verificationDetails) return;
+
+    setIssuing(true);
+    setErrorMsg("");
+    try {
+      const data = await callVerificationApi({ token: inputToken.trim() });
+      setIssueDetails(data.issueDetails);
+      setVerificationDetails(null);
+    } catch (err) {
+      setErrorMsg(err.message || "Unable to issue the reserved book.");
+    } finally {
+      setIssuing(false);
     }
   };
+
+  const details = issueDetails || verificationDetails;
 
   return (
     <div className="verify-page-container">
       <div className="verify-header">
-        <div className="verify-badge">Step 2: Verify Token</div>
-        <h2>Scan or Enter Student Verification Code</h2>
-        <p>Validate student code before issuing physical books</p>
+        <div className="verify-badge">Verify reservation</div>
+        <h2>Verify Student Reservation Token</h2>
+        <p>Enter the student's 6-digit token, review the reservation, then confirm the book issue.</p>
       </div>
 
       <div className="verify-card">
         <form onSubmit={handleVerify} className="verify-form">
-          <label htmlFor="token-input" className="verify-form-label">
-            Student Token / OTP Code
-          </label>
+          <label htmlFor="token-input" className="verify-form-label">Student's 6-digit reservation token</label>
           <div className="verify-input-group">
             <input
               id="token-input"
               type="text"
+              inputMode="numeric"
+              maxLength="6"
               className="verify-input"
-              placeholder="e.g. TOK-9821 or 6-digit OTP"
+              placeholder="e.g. 100042"
               value={inputToken}
-              onChange={(e) => setInputToken(e.target.value)}
+              onChange={(event) => setInputToken(event.target.value.replace(/\D/g, ""))}
+              disabled={verifying || issuing}
+              required
             />
-            <button type="submit" className="verify-submit-btn">
-              Verify Code
+            <button type="submit" className="verify-submit-btn" disabled={verifying || issuing}>
+              {verifying ? "Verifying..." : "Verify Token"}
             </button>
           </div>
-          {errorMsg && <p className="verify-error-text">{errorMsg}</p>}
+          {errorMsg && <p className="verify-error-text" role="alert">{errorMsg}</p>}
         </form>
 
-        {verificationResult && (
+        {details && (
           <div className="verify-success-box">
             <div className="verify-success-header">
-              <span className="icon">✅</span>
+              <span className="icon" aria-hidden="true">✓</span>
               <div>
-                <h4>Verification Successful</h4>
-                <p>Token validated against central database</p>
+                <h4>{issueDetails ? "Book Issued Successfully" : "Reservation Verified"}</h4>
+                <p>{issueDetails ? `Transaction ${issueDetails.transactionId} has been recorded.` : "Confirm the student and booked book before issuing."}</p>
               </div>
             </div>
 
             <div className="verify-details-grid">
-              <div className="verify-detail-item">
-                <span className="label">Student Name</span>
-                <span className="value">{verificationResult.studentName}</span>
-              </div>
-              <div className="verify-detail-item">
-                <span className="label">Roll Number</span>
-                <span className="value">{verificationResult.rollNo}</span>
-              </div>
-              <div className="verify-detail-item">
-                <span className="label">Book Requested</span>
-                <span className="value">{verificationResult.bookTitle}</span>
-              </div>
-              <div className="verify-detail-item">
-                <span className="label">ISBN</span>
-                <span className="value">{verificationResult.isbn}</span>
-              </div>
+              <div className="verify-detail-item"><span className="label">Student Name</span><span className="value">{details.studentName}</span></div>
+              <div className="verify-detail-item"><span className="label">Roll Number</span><span className="value">{details.rollNo}</span></div>
+              <div className="verify-detail-item"><span className="label">Email</span><span className="value">{details.email}</span></div>
+              <div className="verify-detail-item"><span className="label">Book</span><span className="value">{details.bookTitle}</span></div>
+              <div className="verify-detail-item"><span className="label">ISBN</span><span className="value">{details.isbn}</span></div>
+              {issueDetails && <div className="verify-detail-item"><span className="label">Due Date</span><span className="value">{new Date(issueDetails.dueDate).toLocaleDateString()}</span></div>}
             </div>
 
-            <button
-              type="button"
-              className="verify-proceed-btn"
-              onClick={handleProceedToIssue}
-            >
-              📖 Proceed to Issue Book &rarr;
-            </button>
+            {verificationDetails && (
+              <button type="button" className="verify-proceed-btn" onClick={handleIssueBook} disabled={issuing}>
+                {issuing ? "Issuing Book..." : "Confirm & Issue Book"}
+              </button>
+            )}
           </div>
         )}
       </div>
