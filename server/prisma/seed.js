@@ -246,6 +246,7 @@ async function main() {
         const departmentId = departmentMap.get(b.dept) || departments[0].id;
         const shelf = shelves[i % shelves.length];
 
+        const totalCopies = 5 + (i % 6);
         const createdBook = await prisma.book.create({
             data: {
                 title: b.title,
@@ -257,8 +258,8 @@ async function main() {
                 description: b.desc,
                 availabilities: {
                     create: {
-                        totalCopies: 5 + (i % 6),
-                        availableCopies: 3 + (i % 4),
+                        totalCopies: totalCopies,
+                        availableCopies: totalCopies,
                         shelfId: shelf.id
                     }
                 }
