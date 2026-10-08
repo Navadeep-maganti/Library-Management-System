@@ -54,7 +54,7 @@ const StudentDashboard = ({ user, onLogout }) => {
   const [catalogBooks, setCatalogBooks] = useState([]);
   const [borrowedBooks, setBorrowedBooks] = useState([]);
   const [dashboardStats, setDashboardStats] = useState({ borrowed: 0, overdue: 0, pendingFine: 0, finePaid: 0 });
-  const [reservationQuota, setReservationQuota] = useState({ totalUsedToday: 0, totalDailyLimit: 5, totalRemainingToday: 5 });
+  const [reservationQuota, setReservationQuota] = useState({ totalUsedToday: 0, totalDailyLimit: 5, totalRemainingToday: 0 });
   const [category, setCategory] = useState("All");
   const [sortBy, setSortBy] = useState("title");
 
@@ -235,6 +235,10 @@ const StudentDashboard = ({ user, onLogout }) => {
       setRequestsError("Your student roll number is not available. Please sign in again.");
       return;
     }
+    if (reservationQuota.totalRemainingToday <= 0) {
+      setRequestsError("Daily reservation limit reached. You can make up to 5 requests per day.");
+      return;
+    }
     if (requestingBookId === book.id) return;
 
     setRequestingBookId(book.id);
@@ -246,10 +250,18 @@ const StudentDashboard = ({ user, onLogout }) => {
         method: "POST",
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.message || "Could not reserve this book.");
+      if (!response.ok) {
+        if (response.status === 429) await loadReservationQuota(rollNo);
+        throw new Error(data.message || "Could not reserve this book.");
+      }
 
       const reservation = normalizeReservation(data.reservation);
       setRequests((current) => [...current, reservation]);
+      setReservationQuota((current) => ({
+        ...current,
+        totalUsedToday: current.totalUsedToday + 1,
+        totalRemainingToday: Math.max(0, current.totalRemainingToday - 1),
+      }));
       setRequestsError("");
       setIssuanceNoticeBook({ book, token: formatReservationToken(data.token || reservation.token) });
       await loadReservationQuota(rollNo);
@@ -309,6 +321,7 @@ const StudentDashboard = ({ user, onLogout }) => {
         requestedBooks={requests}
         onRequestBook={requestBook}
         requestingBookId={requestingBookId}
+        dailyQuotaReached={reservationQuota.totalRemainingToday <= 0}
         onLogout={onLogout}
       />
 

@@ -16,7 +16,8 @@ const normalizeBook = (book) => {
 };
 
 const BrowseBooksPage = () => {
-  const { requests, requestBook, requestingBookId } = useOutletContext();
+  const { requests, requestBook, requestingBookId, reservationQuota = { totalRemainingToday: 0 } } = useOutletContext();
+  const dailyQuotaReached = reservationQuota.totalRemainingToday <= 0;
   const [books, setBooks] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryId, setCategoryId] = useState("all");
@@ -167,8 +168,8 @@ const BrowseBooksPage = () => {
                   <button className="browse-book-details" type="button" onClick={() => setSelectedBook(book)}>
                     View details
                   </button>
-                  <button className="book-button" type="button" disabled={!book.availableCopies || isRequested(book) || requestingBookId === book.id} onClick={() => requestBook(book)}>
-                    {requestingBookId === book.id ? "Requesting..." : isRequested(book) ? "Requested" : book.availableCopies ? "Request book" : "Unavailable"}
+                  <button className="book-button" type="button" disabled={dailyQuotaReached || !book.availableCopies || isRequested(book) || requestingBookId === book.id} onClick={() => requestBook(book)}>
+                    {requestingBookId === book.id ? "Requesting..." : isRequested(book) ? "Requested" : dailyQuotaReached ? "Daily limit reached" : book.availableCopies ? "Request book" : "Unavailable"}
                   </button>
                 </div>
               </div>
