@@ -163,7 +163,7 @@ const StudentNavbar = ({
                 <div><span>Roll</span><strong>{user?.roll_no || user?.rollNo || "Not available"}</strong></div>
                 <div><span>Role</span><strong>Student</strong></div>
                 <NavLink className="student-change-password" to="/student-dashboard/profile" onClick={() => setIsProfileOpen(false)}>
-                  <span>Change password</span><strong>→</strong>
+                  <span>edit profile</span><strong>→</strong>
                 </NavLink>
               </div>
               <button className="student-logout-btn" type="button" onClick={handleLogout}>
