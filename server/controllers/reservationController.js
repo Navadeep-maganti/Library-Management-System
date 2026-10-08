@@ -215,6 +215,22 @@ export const createReservation = async (req, res) => {
             return res.status(404).json({ success: false, message: `Student ${studentId} not found.` });
         }
 
+        // Do not create a reservation once the student already holds the
+        // configured maximum number of unreturned books.
+        const constants = await prisma.libraryConstants.findFirst() || { maxBooksPerStudent: 3 };
+        const activeIssuedCount = await prisma.issuedBook.count({
+            where: { studentId, isReturned: false }
+        });
+        if (activeIssuedCount >= constants.maxBooksPerStudent) {
+            return res.status(400).json({
+                success: false,
+                limitExceeded: "ACTIVE_BORROW_LIMIT",
+                message: `You already hold the maximum of ${constants.maxBooksPerStudent} issued books. Return a book before reserving another one.`,
+                activeIssuedCount,
+                maxBooksAllowed: constants.maxBooksPerStudent
+            });
+        }
+
         // 2. Verify book exists
         const book = await prisma.book.findUnique({
             where: { id: parsedBookId },
@@ -511,8 +527,26 @@ export const verifyReservationToken = async (req, res) => {
             });
         }
 
+        // Re-check at issue time: a reservation can predate a later issue that
+        // brought the student to the active-loan limit.
+        const constants = await prisma.libraryConstants.findFirst() || {
+            maxBorrowDays: 14,
+            maxBooksPerStudent: 3
+        };
+        const activeIssuedCount = await prisma.issuedBook.count({
+            where: { studentId: reservation.studentId, isReturned: false }
+        });
+        if (activeIssuedCount >= constants.maxBooksPerStudent) {
+            return res.status(400).json({
+                success: false,
+                limitExceeded: "ACTIVE_BORROW_LIMIT",
+                message: `Student already holds the maximum of ${constants.maxBooksPerStudent} issued books. Return a book before issuing this reservation.`,
+                activeIssuedCount,
+                maxBooksAllowed: constants.maxBooksPerStudent
+            });
+        }
+
         // Fetch library constants for default loan duration (14 days)
-        const constants = await prisma.libraryConstants.findFirst() || { maxBorrowDays: 14 };
         const issueDate = new Date();
         const calculatedDueDate = customDueDate
             ? new Date(customDueDate)
