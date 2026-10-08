@@ -72,18 +72,31 @@ const LibrarianNavbar = ({ user, onLogout }) => {
         <div className="librarian-profile-menu" ref={profileMenuRef}>
           <button
             type="button"
-            className="librarian-avatar-button"
+            className="librarian-profile-trigger"
             onClick={() => setProfileOpen((open) => !open)}
             aria-expanded={profileOpen}
             aria-haspopup="menu"
             aria-label="Open profile menu"
           >
-            {user?.username ? user.username.charAt(0).toUpperCase() : "L"}
+            <div className="librarian-avatar-icon">
+              {user?.username ? user.username.charAt(0).toUpperCase() : "L"}
+            </div>
+            <span className="librarian-profile-trigger-name">
+              {user?.username || user?.email?.split("@")[0] || "Librarian"}
+            </span>
+            <span className="librarian-profile-caret">▾</span>
           </button>
           {profileOpen && (
             <div className="librarian-profile-dropdown" role="menu">
-              <div className="librarian-profile-name">{user?.username || user?.email || "Librarian"}</div>
-              <button type="button" className="librarian-profile-action" role="menuitem" onClick={() => setProfileOpen(false)}>Edit profile</button>
+              <div className="librarian-profile-name">
+                <div style={{ fontWeight: 800 }}>{user?.username || "Librarian"}</div>
+                <div style={{ fontSize: "0.75rem", color: "#64748b", fontWeight: 500, marginTop: "2px" }}>
+                  {user?.email || "staff@nitandhra.ac.in"}
+                </div>
+                <div className="librarian-role-tag" style={{ marginTop: "4px" }}>
+                  Librarian Staff
+                </div>
+              </div>
               <button type="button" className="librarian-profile-action librarian-profile-logout" role="menuitem" onClick={handleLogoutClick}>Logout</button>
             </div>
           )}
