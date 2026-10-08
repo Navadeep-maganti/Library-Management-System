@@ -1,16 +1,19 @@
-/* LibrarianVerifyTokenPage.css - Dedicated Styles for Verify Token Page */
+/* LibrarianVerifyTokenPage.css - Matching Update Stock CSS & Design System */
 
 .verify-page-container {
-  max-width: 1200px;
+  width: 100%;
+  max-width: none;
   margin: 0 auto;
   padding: 40px 24px;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 32px;
+  min-height: 100%;
 }
 
 .verify-header {
-  background: rgba(255, 255, 255, 0.85);
+  background: linear-gradient(120deg, rgba(240, 253, 250, 0.96), rgba(255, 255, 255, 0.92));
   backdrop-filter: blur(12px);
   border: 1px solid rgba(203, 213, 225, 0.7);
   border-left: 6px solid #0f766e;
@@ -40,6 +43,8 @@
   font-weight: 800;
   color: #0f172a;
   margin: 0 0 6px 0;
+  text-transform: none;
+  letter-spacing: normal;
 }
 
 .verify-header p {
@@ -47,28 +52,109 @@
   font-size: 0.95rem;
   line-height: 1.5;
   margin: 0;
+  text-transform: none;
+  letter-spacing: normal;
 }
 
+.verify-btn-secondary {
+  padding: 9px 16px;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #0f766e;
+  font-weight: 700;
+  font-size: 0.88rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.verify-btn-secondary:hover {
+  background: #ccfbf1;
+  border-color: #0f766e;
+}
+
+/* Metrics Grid matching Stock Page */
+.verify-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  width: 100%;
+}
+
+.verify-metric-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(203, 213, 225, 0.7);
+  border-radius: 16px;
+  padding: 18px 20px;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 90px;
+  justify-content: center;
+}
+
+.verify-metric-label {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.verify-metric-val {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.verify-metric-val.avail { color: #0f766e; }
+.verify-metric-val.issued { color: #2563eb; }
+.verify-metric-val.low { color: #b45309; }
+
+/* Full Width Main Verification Card */
 .verify-card {
   background: #ffffff;
   border-radius: 20px;
   border: 1px solid #e2e8f0;
-  padding: 32px;
+  padding: 28px;
   box-shadow: 0 12px 32px rgba(15, 23, 42, 0.06);
-  max-width: 620px;
-  margin: 0 auto;
   width: 100%;
+  box-sizing: border-box;
+}
+
+.verify-card-title-box {
+  margin-bottom: 20px;
+}
+
+.verify-card-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 4px 0;
+}
+
+.verify-card-subtitle {
+  color: #64748b;
+  font-size: 0.88rem;
+  margin: 0;
 }
 
 .verify-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
 .verify-form-label {
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   color: #334155;
 }
 
@@ -82,11 +168,15 @@
   padding: 12px 16px;
   border-radius: 10px;
   border: 1px solid #cbd5e1;
-  font-size: 0.95rem;
+  font-size: 1.05rem;
   outline: none;
   background: #ffffff;
   color: #0f172a;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  font-family: monospace;
   transition: all 0.2s ease;
+  box-sizing: border-box;
 }
 
 .verify-input:focus {
@@ -95,7 +185,7 @@
 }
 
 .verify-submit-btn {
-  padding: 12px 20px;
+  padding: 12px 22px;
   border-radius: 10px;
   border: 0;
   cursor: pointer;
@@ -108,18 +198,28 @@
   white-space: nowrap;
 }
 
-.verify-submit-btn:hover {
+.verify-submit-btn:hover:not(:disabled) {
   transform: translateY(-1px);
   box-shadow: 0 6px 18px rgba(37, 99, 235, 0.3);
 }
 
-.verify-error-text {
-  color: #dc2626;
-  font-size: 0.85rem;
-  margin: 4px 0 0 0;
-  font-weight: 600;
+.verify-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
+.verify-error-text {
+  color: #dc2626;
+  font-size: 0.88rem;
+  margin: 4px 0 0 0;
+  font-weight: 600;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  padding: 10px 14px;
+  border-radius: 10px;
+}
+
+/* Success Card */
 .verify-success-box {
   margin-top: 24px;
   background: rgba(240, 253, 250, 0.8);
@@ -202,7 +302,71 @@
   gap: 8px;
 }
 
-.verify-proceed-btn:hover {
+.verify-proceed-btn:hover:not(:disabled) {
   transform: translateY(-1px);
   box-shadow: 0 6px 18px rgba(37, 99, 235, 0.3);
+}
+
+.verify-proceed-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 1024px) {
+  .verify-page-container {
+    padding: 28px 20px;
+    gap: 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .verify-page-container {
+    padding: 20px 14px;
+    gap: 18px;
+  }
+
+  .verify-header,
+  .verify-card {
+    padding: 18px 16px;
+    border-radius: 14px;
+  }
+
+  .verify-header h2 {
+    font-size: 1.35rem;
+  }
+
+  .verify-header p {
+    font-size: 0.88rem;
+  }
+
+  .verify-input-group {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .verify-input-field {
+    font-size: 1.25rem;
+    letter-spacing: 0.2em;
+    padding: 12px 14px;
+  }
+
+  .verify-submit-btn {
+    width: 100%;
+    padding: 12px;
+  }
+
+  .verify-details-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .verify-header h2 {
+    font-size: 1.2rem;
+  }
+
+  .verify-card-title {
+    font-size: 1.1rem;
+  }
 }
