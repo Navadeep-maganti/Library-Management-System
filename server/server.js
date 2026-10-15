@@ -12,12 +12,17 @@ import reservationRoutes from "./routes/reservationRoutes.js";
 import fineRoutes from "./routes/fineRoutes.js";
 import announcementRoutes from "./routes/announcementRoutes.js";
 import constantRoutes from "./routes/constantRoutes.js";
+import profileRoutes from "./routes/profileRoutes.js";
 import { processExpiredReservations } from "./controllers/reservationController.js";
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+app.get("/api/health", (req, res) => {
+    res.status(200).json({ success: true, message: "Server is running" });
+});
 
 // Resource-Oriented API Routes
 app.use("/api/auth", authRoutes);
@@ -31,6 +36,7 @@ app.use("/api/reservations", reservationRoutes);
 app.use("/api/fines", fineRoutes);
 app.use("/api/announcements", announcementRoutes);
 app.use("/api/constants", constantRoutes);
+app.use("/api/profile", profileRoutes);
 
 // Endpoint to download the generated Test Report Word Document
 app.get("/api/test-report/download", (req, res) => {

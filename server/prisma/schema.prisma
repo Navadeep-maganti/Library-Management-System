@@ -150,6 +150,7 @@ model BorrowHistory {
 
 model BookReservation {
   id            Int      @id @default(autoincrement())
+  token         String?  @unique @db.VarChar(20)
   studentId     String   @map("student_id") @db.VarChar(20)
   bookId        Int?     @map("book_id")
   reservedDate  DateTime @default(now()) @map("reserved_date")

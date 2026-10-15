@@ -26,6 +26,7 @@ const server = app.listen(PORT, async () => {
         await prisma.bookReservation.deleteMany({ where: { studentId } });
         await prisma.student.deleteMany({ where: { rollNo: studentId } });
         await prisma.user.deleteMany({ where: { email } });
+        await prisma.book.deleteMany({ where: { isbn: { in: ["9788888880001", "9788888880002", "9788888880003"] } } });
 
         // Setup student
         await prisma.user.create({ data: { email, username: "Spam Test Student", role: "student", passwordHash: "hash" } });

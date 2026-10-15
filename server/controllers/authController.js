@@ -1,18 +1,20 @@
 import prisma from "../config/db.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { validateEmailDomain } from "../utils/authHelpers.js";
+import { validateEmailDomain, generateOTP } from "../utils/authHelpers.js";
+import { sendPasswordChangeOTPEmail } from "../services/emailService.js";
+
+const PASSWORD_RULE = /^(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,}$/;
 
 export const registerUser = async (req, res) => {
     const { email, username, password, role } = req.body;
-    const passwordRule = /^(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,}$/;
 
     try {
         if (!email || !username || !password) {
             return res.status(400).json({ message: "Email, username, and password are required." });
         }
 
-        if (!passwordRule.test(password)) {
+        if (!PASSWORD_RULE.test(password)) {
             return res.status(400).json({
                 message: "Password must be at least 8 characters and include 1 uppercase letter and 1 special character."
             });
@@ -201,5 +203,148 @@ export const loginUser = async (req, res) => {
     } catch (error) {
         console.error("Error in login", error);
         res.status(500).json({ message: "Login attempt failed. Try again later." });
+    }
+};
+
+/**
+ * Public Forgot Password - Send OTP to registered user
+ */
+export const forgotPassword = async (req, res) => {
+    const { email } = req.body;
+    try {
+        if (!email) {
+            return res.status(400).json({ success: false, message: "Email is required." });
+        }
+        const cleanEmail = email.trim().toLowerCase();
+        const user = await prisma.user.findUnique({ where: { email: cleanEmail } });
+        if (!user) {
+            return res.status(404).json({ success: false, message: "No account found with this email." });
+        }
+
+        const otp = generateOTP();
+        const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+        await prisma.$transaction([
+            prisma.otp.deleteMany({ where: { email: cleanEmail } }),
+            prisma.otp.create({ data: { email: cleanEmail, otp, expiresAt } })
+        ]);
+
+        try {
+            await sendPasswordChangeOTPEmail(cleanEmail, otp);
+        } catch (emailErr) {
+            console.error("Forgot password email error:", emailErr.message);
+            if (process.env.NODE_ENV !== "production") {
+                console.log(`[DEV OTP] Password reset OTP for ${cleanEmail}: ${otp}`);
+            } else {
+                return res.status(500).json({
+                    success: false,
+                    message: "Failed to send reset email. Try again later."
+                });
+            }
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Password reset OTP has been sent to your email address.",
+            expiresInSeconds: 600
+        });
+    } catch (error) {
+        console.error("Error in forgotPassword:", error);
+        return res.status(500).json({ success: false, message: "Failed to process forgot password request." });
+    }
+};
+
+/**
+ * Public Verify Reset OTP - Generates temporary reset token
+ */
+export const verifyResetOTP = async (req, res) => {
+    const { email, otp } = req.body;
+    try {
+        if (!email || !otp) {
+            return res.status(400).json({ success: false, message: "Email and OTP are required." });
+        }
+        const cleanEmail = email.trim().toLowerCase();
+        const cleanOtp = String(otp).trim();
+
+        const validOtp = await prisma.otp.findFirst({
+            where: { email: cleanEmail, otp: cleanOtp, expiresAt: { gt: new Date() } }
+        });
+
+        if (!validOtp) {
+            return res.status(400).json({ success: false, message: "Invalid or expired OTP." });
+        }
+
+        await prisma.otp.delete({ where: { id: validOtp.id } });
+
+        const resetToken = jwt.sign(
+            { email: cleanEmail, purpose: "password-reset" },
+            process.env.JWT_SECRET,
+            { expiresIn: "10m" }
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: "OTP verified successfully. You may now reset your password.",
+            resetToken,
+            expiresInSeconds: 600
+        });
+    } catch (error) {
+        console.error("Error in verifyResetOTP:", error);
+        return res.status(500).json({ success: false, message: "Failed to verify reset OTP." });
+    }
+};
+
+/**
+ * Public Reset Password with resetToken
+ */
+export const resetPassword = async (req, res) => {
+    const { email, resetToken, newPassword, confirmPassword } = req.body;
+
+    try {
+        if (!email || !resetToken || !newPassword) {
+            return res.status(400).json({
+                success: false,
+                message: "Email, resetToken, and newPassword are required."
+            });
+        }
+
+        const cleanEmail = email.trim().toLowerCase();
+
+        if (confirmPassword && newPassword !== confirmPassword) {
+            return res.status(400).json({
+                success: false,
+                message: "New password and confirmation do not match."
+            });
+        }
+
+        if (!PASSWORD_RULE.test(newPassword)) {
+            return res.status(400).json({
+                success: false,
+                message: "Password must be at least 8 characters and include 1 uppercase letter and 1 special character."
+            });
+        }
+
+        try {
+            const verification = jwt.verify(resetToken, process.env.JWT_SECRET);
+            if (verification.purpose !== "password-reset" || verification.email !== cleanEmail) {
+                return res.status(403).json({ success: false, message: "Invalid reset token for this email." });
+            }
+        } catch {
+            return res.status(401).json({ success: false, message: "Reset token has expired or is invalid." });
+        }
+
+        const passwordHash = await bcrypt.hash(newPassword, 10);
+        await prisma.user.update({
+            where: { email: cleanEmail },
+            data: { passwordHash }
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "Password has been successfully reset. You can now login with your new password."
+        });
+    } catch (error) {
+        console.error("Error in resetPassword:", error);
+        return res.status(500).json({ success: false, message: "Failed to reset password." });
     }
 };

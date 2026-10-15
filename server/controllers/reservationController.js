@@ -1,27 +1,54 @@
+import crypto from "crypto";
 import prisma from "../config/db.js";
 
 /**
- * Helper to generate a consistent 6-digit numeric token for a reservation ID
+ * Generates a unique, non-sequential cryptographically secure 6-digit random token (100000 - 999999)
  */
-export const formatReservationToken = (id) => {
-    if (!id) return "000000";
-    return String(100000 + id);
+export const generateRandomReservationToken = async () => {
+    let token = "";
+    let exists = true;
+    let attempts = 0;
+    while (exists && attempts < 10) {
+        attempts++;
+        token = crypto.randomInt(100000, 1000000).toString();
+        const found = await prisma.bookReservation.findUnique({
+            where: { token }
+        });
+        if (!found) {
+            exists = false;
+        }
+    }
+    return token;
 };
 
 /**
- * Helper to parse a reservation ID from a 6-digit token or formatted string
+ * Helper to get or format the 6-digit token for a reservation
+ */
+export const formatReservationToken = (resvOrId) => {
+    if (!resvOrId) return "000000";
+    if (typeof resvOrId === "object") {
+        if (resvOrId.token) return String(resvOrId.token);
+        return String(100000 + (resvOrId.id || 0));
+    }
+    const str = String(resvOrId);
+    if (/^\d{6}$/.test(str)) {
+        return str;
+    }
+    const num = parseInt(str, 10);
+    if (!isNaN(num) && num < 100000) {
+        return String(100000 + num);
+    }
+    return str;
+};
+
+/**
+ * Helper to parse a reservation ID or token string
  */
 export const parseReservationToken = (token) => {
     if (!token) return null;
-    const clean = String(token).trim().toUpperCase().replace(/\D/g, "");
+    const clean = String(token).trim().toUpperCase().replace(/^TOK-/i, "").replace(/\D/g, "");
     if (!clean) return null;
-    const num = parseInt(clean, 10);
-    if (isNaN(num)) return null;
-    // If token is in the 100000+ range, subtract 100000 to get ID
-    if (num > 100000) {
-        return num - 100000;
-    }
-    return num;
+    return clean;
 };
 
 /**
@@ -156,7 +183,7 @@ export const getReservations = async (req, res) => {
             const secondsRemaining = Math.floor((remainingMs % 60000) / 1000);
 
             // 6-digit numeric token
-            const token = formatReservationToken(resv.id);
+            const token = resv.token || formatReservationToken(resv.id);
 
             return {
                 ...resv,
@@ -213,6 +240,22 @@ export const createReservation = async (req, res) => {
         });
         if (!student) {
             return res.status(404).json({ success: false, message: `Student ${studentId} not found.` });
+        }
+
+        // Do not create a reservation once the student already holds the
+        // configured maximum number of unreturned books.
+        const constants = await prisma.libraryConstants.findFirst() || { maxBooksPerStudent: 3 };
+        const activeIssuedCount = await prisma.issuedBook.count({
+            where: { studentId, isReturned: false }
+        });
+        if (activeIssuedCount >= constants.maxBooksPerStudent) {
+            return res.status(400).json({
+                success: false,
+                limitExceeded: "ACTIVE_BORROW_LIMIT",
+                message: `You already hold the maximum of ${constants.maxBooksPerStudent} issued books. Return a book before reserving another one.`,
+                activeIssuedCount,
+                maxBooksAllowed: constants.maxBooksPerStudent
+            });
         }
 
         // 2. Verify book exists
@@ -291,7 +334,7 @@ export const createReservation = async (req, res) => {
             }
         });
         if (existingActiveReservation) {
-            const activeToken = formatReservationToken(existingActiveReservation.id);
+            const activeToken = existingActiveReservation.token || formatReservationToken(existingActiveReservation.id);
             return res.status(400).json({
                 success: false,
                 message: `You already have an active reservation for "${book.title}". Your 6-digit verification code is ${activeToken}. Please claim it before it expires.`
@@ -306,7 +349,10 @@ export const createReservation = async (req, res) => {
         const reservedDate = new Date();
         const expiresAt = new Date(reservedDate.getTime() + 30 * 60 * 1000);
 
-        // 8. Atomically create reservation and decrement available stock by 1 (making it unavailable)
+        // 8. Generate a non-sequential random 6-digit token
+        const token = await generateRandomReservationToken();
+
+        // 9. Atomically create reservation and decrement available stock by 1 (making it unavailable)
         const result = await prisma.$transaction(async (tx) => {
             // Decrement available copies
             const updatedAvailability = await tx.bookAvailability.update({
@@ -314,9 +360,10 @@ export const createReservation = async (req, res) => {
                 data: { availableCopies: Math.max(0, availability.availableCopies - 1) }
             });
 
-            // Create reservation record
+            // Create reservation record with random token
             const newReservation = await tx.bookReservation.create({
                 data: {
+                    token,
                     studentId,
                     bookId: parsedBookId,
                     reservedDate,
@@ -331,10 +378,7 @@ export const createReservation = async (req, res) => {
             });
 
             return { reservation: newReservation, availability: updatedAvailability };
-        });
-
-        // 6-digit numeric token
-        const token = formatReservationToken(result.reservation.id);
+        }, { maxWait: 10000, timeout: 15000 });
 
         return res.status(201).json({
             success: true,
@@ -424,7 +468,7 @@ export const cancelReservation = async (req, res) => {
             }
 
             return { updated, updatedAvailability };
-        });
+        }, { maxWait: 10000, timeout: 15000 });
 
         return res.status(200).json({
             success: true,
@@ -460,16 +504,17 @@ export const verifyReservationToken = async (req, res) => {
             return res.status(400).json({ success: false, message: "6-digit token is required." });
         }
 
-        const reservationId = parseReservationToken(token);
-        if (!reservationId) {
+        const cleanedToken = String(token).trim().toUpperCase().replace(/^TOK-/i, "");
+        if (!cleanedToken) {
             return res.status(400).json({
                 success: false,
                 message: `Invalid token format. Please provide a valid 6-digit code.`
             });
         }
 
-        const reservation = await prisma.bookReservation.findUnique({
-            where: { id: reservationId },
+        // 1. Direct lookup by random token
+        let reservation = await prisma.bookReservation.findFirst({
+            where: { token: cleanedToken },
             include: {
                 student: {
                     include: { user: { select: { username: true, email: true } } }
@@ -482,6 +527,29 @@ export const verifyReservationToken = async (req, res) => {
                 status: true
             }
         });
+
+        // 2. Legacy fallback lookup for sequential tokens (100000 + id) or raw id
+        if (!reservation) {
+            const rawDigits = cleanedToken.replace(/\D/g, "");
+            const num = parseInt(rawDigits, 10);
+            if (!isNaN(num)) {
+                const legacyId = num > 100000 ? num - 100000 : num;
+                reservation = await prisma.bookReservation.findUnique({
+                    where: { id: legacyId },
+                    include: {
+                        student: {
+                            include: { user: { select: { username: true, email: true } } }
+                        },
+                        book: {
+                            include: {
+                                availabilities: { include: { shelf: true } }
+                            }
+                        },
+                        status: true
+                    }
+                });
+            }
+        }
 
         if (!reservation) {
             return res.status(404).json({
@@ -511,8 +579,26 @@ export const verifyReservationToken = async (req, res) => {
             });
         }
 
+        // Re-check at issue time: a reservation can predate a later issue that
+        // brought the student to the active-loan limit.
+        const constants = await prisma.libraryConstants.findFirst() || {
+            maxBorrowDays: 14,
+            maxBooksPerStudent: 3
+        };
+        const activeIssuedCount = await prisma.issuedBook.count({
+            where: { studentId: reservation.studentId, isReturned: false }
+        });
+        if (activeIssuedCount >= constants.maxBooksPerStudent) {
+            return res.status(400).json({
+                success: false,
+                limitExceeded: "ACTIVE_BORROW_LIMIT",
+                message: `Student already holds the maximum of ${constants.maxBooksPerStudent} issued books. Return a book before issuing this reservation.`,
+                activeIssuedCount,
+                maxBooksAllowed: constants.maxBooksPerStudent
+            });
+        }
+
         // Fetch library constants for default loan duration (14 days)
-        const constants = await prisma.libraryConstants.findFirst() || { maxBorrowDays: 14 };
         const issueDate = new Date();
         const calculatedDueDate = customDueDate
             ? new Date(customDueDate)
@@ -525,7 +611,7 @@ export const verifyReservationToken = async (req, res) => {
         }
 
         if (verifyOnly) {
-            const formattedToken = formatReservationToken(reservation.id);
+            const formattedToken = reservation.token || formatReservationToken(reservation.id);
             const remainingMs = Math.max(0, expiresTime - now);
 
             return res.status(200).json({
@@ -590,9 +676,9 @@ export const verifyReservationToken = async (req, res) => {
             });
 
             return { issuedBookRecord, updatedReservation };
-        });
+        }, { maxWait: 10000, timeout: 15000 });
 
-        const formattedToken = formatReservationToken(reservation.id);
+        const formattedToken = reservation.token || formatReservationToken(reservation.id);
 
         return res.status(200).json({
             success: true,

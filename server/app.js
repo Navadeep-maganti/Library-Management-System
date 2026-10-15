@@ -11,6 +11,7 @@ import reservationRoutes from "./routes/reservationRoutes.js";
 import fineRoutes from "./routes/fineRoutes.js";
 import announcementRoutes from "./routes/announcementRoutes.js";
 import constantRoutes from "./routes/constantRoutes.js";
+import profileRoutes from "./routes/profileRoutes.js";
 
 const app = express();
 
@@ -33,5 +34,6 @@ app.use("/api/reservations", reservationRoutes);
 app.use("/api/fines", fineRoutes);
 app.use("/api/announcements", announcementRoutes);
 app.use("/api/constants", constantRoutes);
+app.use("/api/profile", profileRoutes);
 
 export default app;

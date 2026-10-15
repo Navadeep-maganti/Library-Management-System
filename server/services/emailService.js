@@ -27,3 +27,21 @@ export const sendOTPEmail = async (toEmail, otp) => {
     };
     return await transporter.sendMail(mailOptions);
 };
+
+export const sendPasswordChangeOTPEmail = async (toEmail, otp) => {
+    const mailOptions = {
+        from: `"Library management system" <${process.env.EMAIL_USER}>`,
+        to: toEmail,
+        subject: "Password Change OTP - Library Management System",
+        html: `
+            <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+                <h2>Password Change Request</h2>
+                <p>Use the following 6-digit OTP to verify your password change:</p>
+                <h1 style="font-size: 32px; letter-spacing: 5px; color: #1a73e8;">${otp}</h1>
+                <p>This OTP is valid for <strong>10 minutes</strong>. Do not share this OTP with anyone.</p>
+                <p>If you did not request a password change, you can safely ignore this email.</p>
+            </div>
+        `,
+    };
+    return await transporter.sendMail(mailOptions);
+};
