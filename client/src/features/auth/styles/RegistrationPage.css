@@ -414,6 +414,8 @@
 @media (max-width: 640px) {
   .registration-shell {
     padding: 16px 12px;
+    overflow: visible;
+    place-items: start center;
   }
 
   .registration-card {
