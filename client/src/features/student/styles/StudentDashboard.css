@@ -389,6 +389,105 @@
   text-transform: uppercase;
 }
 
+.account-settings {
+  border-top: 1px solid #e2e8f0;
+  margin-top: 28px;
+  padding-top: 24px;
+}
+
+.account-settings-heading {
+  align-items: end;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.account-settings-heading h3 {
+  color: #0f172a;
+  font-size: 1.2rem;
+  margin-top: 4px;
+}
+
+.account-settings-heading > p,
+.account-setting-copy p {
+  color: #64748b;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.account-settings-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+}
+
+.account-setting-card {
+  align-content: start;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  display: grid;
+  gap: 18px;
+  padding: 20px;
+}
+
+.account-setting-copy h4 {
+  color: #0f172a;
+  font-size: 1rem;
+  margin: 0 0 6px;
+}
+
+.account-setting-form {
+  display: grid;
+  gap: 9px;
+}
+
+.account-setting-form label {
+  color: #475569;
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.account-setting-form input {
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  color: #0f172a;
+  font: inherit;
+  font-size: 0.88rem;
+  min-height: 42px;
+  padding: 0 11px;
+  width: 100%;
+}
+
+.account-setting-form input:focus {
+  border-color: #0f766e;
+  outline: 3px solid rgba(15, 118, 110, 0.16);
+}
+
+.account-setting-form .book-button {
+  background: linear-gradient(135deg, var(--student-teal), var(--student-blue));
+  margin-top: 6px;
+  min-height: 42px;
+}
+
+.account-setting-notice {
+  color: #475569;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  margin: 2px 0 0;
+}
+
+@media (max-width: 600px) {
+  .account-settings-heading {
+    align-items: start;
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
 .student-empty-state {
   align-items: center;
   background: #f8fafc;
@@ -645,12 +744,14 @@
 .view-all-button:hover { background: var(--teal-soft); }
 .borrowed-books-table { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
 .borrowed-books-header,
-.borrowed-book-row { align-items: center; display: grid; gap: 16px; grid-template-columns: minmax(220px, 1.8fr) minmax(150px, 1.25fr) 0.7fr 1fr 1fr; padding: 14px 18px; }
+.borrowed-book-row { align-items: center; display: grid; gap: 16px; grid-template-columns: minmax(0, 1.8fr) minmax(0, 1.25fr) minmax(0, 0.7fr) minmax(0, 1fr) minmax(0, 1fr); padding: 14px 18px; }
 .borrowed-books-header { background: #f3f7f3; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 0.66rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
 .borrowed-book-row { background: var(--paper); border-bottom: 1px solid #edf0eb; color: #506064; font-size: 0.82rem; min-height: 72px; }
 .borrowed-book-row:last-child { border-bottom: 0; }
+.borrowed-book-row > * { min-width: 0; }
 .book-title-cell { align-items: center; color: var(--ink); display: flex; gap: 12px; min-width: 0; }
-.book-title-cell strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.book-title-cell > div:last-child { flex: 1 1 auto; min-width: 0; }
+.book-title-cell strong { display: block; overflow-wrap: anywhere; white-space: normal; }
 .book-thumbnail { align-items: center; background: var(--teal-soft); border-radius: 7px; color: var(--teal-dark); display: flex; flex: 0 0 34px; font-family: Georgia, serif; font-size: 1.1rem; font-weight: 700; height: 38px; justify-content: center; width: 34px; }
 .book-author-cell { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .due-date-cell { color: var(--amber); font-weight: 800; }
