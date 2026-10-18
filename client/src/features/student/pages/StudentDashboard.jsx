@@ -47,6 +47,7 @@ const StudentDashboard = ({ user, onLogout }) => {
   */
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [profileUserUpdates, setProfileUserUpdates] = useState({});
   const [issuanceNoticeBook, setIssuanceNoticeBook] = useState(null);
   const [requests, setRequests] = useState([]);
   const [requestsError, setRequestsError] = useState("");
@@ -81,6 +82,7 @@ const StudentDashboard = ({ user, onLogout }) => {
     ...dummyStudentUser,
     ...storedUser,
     ...user,
+    ...profileUserUpdates,
   };
 
   const loadReservationQuota = async (studentId) => {
@@ -759,6 +761,7 @@ const StudentDashboard = ({ user, onLogout }) => {
         <Outlet
           context={{
             currentUser,
+            onUserUpdated: setProfileUserUpdates,
             filteredBooks,
             requests,
             requestBook,
