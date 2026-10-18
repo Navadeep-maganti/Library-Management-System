@@ -31,6 +31,7 @@ const StudentNavbar = ({
   requestedBooks = [],
   onRequestBook,
   requestingBookId,
+  dailyQuotaReached = false,
   onLogout,
 }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -139,8 +140,8 @@ const StudentNavbar = ({
                         >
                           View details
                         </button>
-                        <button className="student-search-request" type="button" disabled={isRequested || requestingBookId === book.id} onClick={() => onRequestBook(book)}>
-                          {requestingBookId === book.id ? "Requesting..." : isRequested ? "Requested" : "Request book"}
+                        <button className="student-search-request" type="button" disabled={dailyQuotaReached || isRequested || requestingBookId === book.id} onClick={() => onRequestBook(book)}>
+                          {requestingBookId === book.id ? "Requesting..." : isRequested ? "Requested" : dailyQuotaReached ? "Daily limit reached" : "Request book"}
                         </button>
                       </div>
                     </article>
@@ -237,7 +238,7 @@ const StudentNavbar = ({
                 <div><span>Roll</span><strong>{user?.roll_no || user?.rollNo || "Not available"}</strong></div>
                 <div><span>Role</span><strong>Student</strong></div>
                 <NavLink className="student-change-password" to="/student-dashboard/profile" onClick={() => setIsProfileOpen(false)}>
-                  <span>Change password</span><strong>→</strong>
+                  <span>edit profile</span><strong>→</strong>
                 </NavLink>
               </div>
               <button className="student-logout-btn" type="button" onClick={handleLogout}>
