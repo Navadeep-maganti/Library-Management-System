@@ -97,12 +97,16 @@ const BrowseBooksPage = () => {
         </div>
         <div className="browse-books-toolbar">
           <label className="browse-books-search-bar">
-            <span className="browse-books-search-icon" aria-hidden="true">⌕</span>
+            <span className="browse-books-search-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8" /><path d="m16 16 4.5 4.5" /></svg>
+            </span>
             <span className="sr-only">Search the library catalog</span>
             <input
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
               placeholder="Search by title, author, or ISBN"
+              type="search"
+              enterKeyHint="search"
             />
             {searchTerm && (
               <button type="button" className="browse-books-clear" onClick={() => setSearchTerm("")} aria-label="Clear search">
