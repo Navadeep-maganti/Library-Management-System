@@ -3,6 +3,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 /* Global Footer Styling */
@@ -32,4 +33,9 @@
   margin: 0 auto;
   padding: 40px 24px;
   width: 100%;
+}
+
+@media (max-width: 600px) {
+  .footer-content { flex-direction: column; justify-content: center; }
+  .app-footer { padding: 18px 16px; }
 }

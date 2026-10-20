@@ -249,3 +249,11 @@
 .login-register-link:hover {
   text-decoration: underline;
 }
+
+@media (max-width: 520px) {
+  .login-page-shell { min-height: calc(100vh - 120px); padding: 20px 12px; }
+  .login-card { border-radius: 16px; padding: 24px 18px; }
+  .login-title { font-size: 1.45rem; }
+  .student-email-suffix { font-size: 0.78rem; padding: 12px 8px; }
+  .login-label-row { align-items: flex-start; gap: 8px; }
+}

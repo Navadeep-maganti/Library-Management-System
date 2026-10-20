@@ -16,7 +16,8 @@ const normalizeBook = (book) => {
 };
 
 const BrowseBooksPage = () => {
-  const { requests, requestBook, requestingBookId } = useOutletContext();
+  const { requests, requestBook, requestingBookId, reservationQuota = { totalRemainingToday: 0 } } = useOutletContext();
+  const dailyQuotaReached = reservationQuota.totalRemainingToday <= 0;
   const [books, setBooks] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryId, setCategoryId] = useState("all");
@@ -96,12 +97,16 @@ const BrowseBooksPage = () => {
         </div>
         <div className="browse-books-toolbar">
           <label className="browse-books-search-bar">
-            <span className="browse-books-search-icon" aria-hidden="true">⌕</span>
+            <span className="browse-books-search-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8" /><path d="m16 16 4.5 4.5" /></svg>
+            </span>
             <span className="sr-only">Search the library catalog</span>
             <input
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
               placeholder="Search by title, author, or ISBN"
+              type="search"
+              enterKeyHint="search"
             />
             {searchTerm && (
               <button type="button" className="browse-books-clear" onClick={() => setSearchTerm("")} aria-label="Clear search">
@@ -167,8 +172,8 @@ const BrowseBooksPage = () => {
                   <button className="browse-book-details" type="button" onClick={() => setSelectedBook(book)}>
                     View details
                   </button>
-                  <button className="book-button" type="button" disabled={!book.availableCopies || isRequested(book) || requestingBookId === book.id} onClick={() => requestBook(book)}>
-                    {requestingBookId === book.id ? "Requesting..." : isRequested(book) ? "Requested" : book.availableCopies ? "Request book" : "Unavailable"}
+                  <button className="book-button" type="button" disabled={dailyQuotaReached || !book.availableCopies || isRequested(book) || requestingBookId === book.id} onClick={() => requestBook(book)}>
+                    {requestingBookId === book.id ? "Requesting..." : isRequested(book) ? "Requested" : dailyQuotaReached ? "Daily limit reached" : book.availableCopies ? "Request book" : "Unavailable"}
                   </button>
                 </div>
               </div>
