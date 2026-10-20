@@ -59,10 +59,12 @@ const LibrarianVerifyTokenPage = () => {
     return data;
   };
 
+  const cleanToken = (val) => String(val || "").trim().toUpperCase().replace(/^TOK-?/i, "").replace(/\D/g, "");
+
   const verifyToken = async (token) => {
-    const cleanedToken = token.trim();
+    const cleanedToken = cleanToken(token);
     if (!cleanedToken) {
-      setErrorMsg("Enter the student's 6-digit reservation token.");
+      setErrorMsg("Enter the student's 6-digit reservation token (e.g. 907254 or TOK-907254).");
       return;
     }
 
@@ -100,7 +102,8 @@ const LibrarianVerifyTokenPage = () => {
     setIssuing(true);
     setErrorMsg("");
     try {
-      const data = await callVerificationApi({ token: inputToken.trim() });
+      const cleaned = cleanToken(inputToken);
+      const data = await callVerificationApi({ token: cleaned });
       setIssueDetails(data.issueDetails);
       setVerificationDetails(null);
       loadReservations(true);
@@ -127,23 +130,25 @@ const LibrarianVerifyTokenPage = () => {
       <div className="verify-card">
         <div className="verify-card-title-box">
           <h3 className="verify-card-title">🔑 Enter Reservation Code</h3>
-          <p className="verify-card-subtitle">Type student's 6-digit OTP code to retrieve book reservation.</p>
+          <p className="verify-card-subtitle">Type or paste student's OTP code (e.g. 907254 or TOK-907254) to retrieve book reservation.</p>
         </div>
 
         <form onSubmit={handleVerify} className="verify-form">
           <label htmlFor="token-input" className="verify-form-label">
-            Student's 6-Digit OTP Token
+            Student's Reservation Token / OTP
           </label>
           <div className="verify-input-group">
             <input
               id="token-input"
               type="text"
-              inputMode="numeric"
-              maxLength="6"
+              maxLength={12}
               className="verify-input"
-              placeholder="e.g. 100042"
+              placeholder="e.g. 907254 or TOK-907254"
               value={inputToken}
-              onChange={(event) => setInputToken(event.target.value.replace(/\D/g, ""))}
+              onChange={(event) => {
+                const val = event.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, "");
+                setInputToken(val);
+              }}
               disabled={verifying || issuing}
               required
             />

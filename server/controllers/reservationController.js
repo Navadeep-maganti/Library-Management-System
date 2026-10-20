@@ -528,13 +528,13 @@ export const verifyReservationToken = async (req, res) => {
             }
         });
 
-        // 2. Legacy fallback lookup for sequential tokens (100000 + id) or raw id
+        // 2. Legacy fallback lookup for sequential tokens (100000 + id) or raw id (only for legacy records)
         if (!reservation) {
             const rawDigits = cleanedToken.replace(/\D/g, "");
             const num = parseInt(rawDigits, 10);
             if (!isNaN(num)) {
                 const legacyId = num > 100000 ? num - 100000 : num;
-                reservation = await prisma.bookReservation.findUnique({
+                const candidate = await prisma.bookReservation.findUnique({
                     where: { id: legacyId },
                     include: {
                         student: {
@@ -548,6 +548,10 @@ export const verifyReservationToken = async (req, res) => {
                         status: true
                     }
                 });
+                // Legacy fallback only matches if candidate does not have a separate random token
+                if (candidate && (!candidate.token || candidate.token === String(num) || candidate.token === String(100000 + candidate.id))) {
+                    reservation = candidate;
+                }
             }
         }
 

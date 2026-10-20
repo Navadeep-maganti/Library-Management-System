@@ -2,7 +2,17 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 
 const formatDate = (value) => value ? new Date(value).toLocaleString() : "Not available";
-const formatToken = (reservationId) => reservationId ? `TOK-${String(reservationId).padStart(6, "0")}` : "-";
+const formatToken = (reservation) => {
+  if (!reservation) return "-";
+  if (reservation.token) {
+    const raw = String(reservation.token).replace(/^TOK-/i, "");
+    return `TOK-${raw}`;
+  }
+  if (reservation.id) {
+    return `TOK-${String(reservation.id).padStart(6, "0")}`;
+  }
+  return "-";
+};
 
 const normalizeHistory = (student) => {
   const issuedBooks = student.issuedBooks || [];
@@ -24,7 +34,7 @@ const normalizeHistory = (student) => {
 
     return {
       id: issuedBook.id,
-      token: formatToken(reservation?.id),
+      token: formatToken(reservation),
       title: issuedBook.book?.title || "Book unavailable",
       author: issuedBook.book?.author || "Unknown author",
       bookId: issuedBook.bookId,
