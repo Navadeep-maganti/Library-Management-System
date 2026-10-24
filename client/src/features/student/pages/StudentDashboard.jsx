@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 
 import StudentNavbar from "../components/StudentNavbar";
@@ -50,6 +50,7 @@ const StudentDashboard = ({ user, onLogout }) => {
   const [profileUserUpdates, setProfileUserUpdates] = useState({});
   const [issuanceNoticeBook, setIssuanceNoticeBook] = useState(null);
   const [requests, setRequests] = useState([]);
+  const [requestsLoading, setRequestsLoading] = useState(true);
   const [requestsError, setRequestsError] = useState("");
   const [requestingBookId, setRequestingBookId] = useState(null);
   const [catalogBooks, setCatalogBooks] = useState([]);
@@ -85,7 +86,7 @@ const StudentDashboard = ({ user, onLogout }) => {
     ...profileUserUpdates,
   };
 
-  const loadReservationQuota = async (studentId) => {
+  const loadReservationQuota = useCallback(async (studentId) => {
     if (!studentId) return;
 
     try {
@@ -105,35 +106,41 @@ const StudentDashboard = ({ user, onLogout }) => {
     } catch (quotaError) {
       setRequestsError((prev) => prev || quotaError.message);
     }
-  };
+  }, []);
+
+  const refreshReservations = useCallback(async () => {
+    const rollNo = currentUser.roll_no || currentUser.rollNo;
+    if (!rollNo) throw new Error("Your student roll number is not available.");
+
+    const response = await fetch(`/api/reservations?studentId=${encodeURIComponent(rollNo)}`);
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || "Could not load your reservations.");
+    setRequests((data.reservations || []).map(normalizeReservation));
+    setRequestsError("");
+    await loadReservationQuota(rollNo);
+  }, [currentUser.rollNo, currentUser.roll_no, loadReservationQuota]);
 
   useEffect(() => {
-    const rollNo = currentUser.roll_no || currentUser.rollNo;
-    if (!rollNo) return;
-
     const loadReservations = async () => {
       try {
-        await fetch("/api/reservations/check-expired", { method: "POST" });
-      } catch (expiryError) {
-        console.warn("Reservation expiry check failed:", expiryError);
-      }
-
-      try {
-        const response = await fetch(`/api/reservations?studentId=${encodeURIComponent(rollNo)}`);
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.message || "Could not load your reservations.");
-        setRequests((data.reservations || []).map(normalizeReservation));
+        await refreshReservations();
       } catch (loadError) {
         setRequestsError(loadError.message);
+      } finally {
+        setRequestsLoading(false);
       }
-
-      await loadReservationQuota(rollNo);
     };
 
+    if (!currentUser.roll_no && !currentUser.rollNo) {
+      setRequestsLoading(false);
+      return undefined;
+    }
+
+    setRequestsLoading(true);
     loadReservations();
     const refreshTimer = window.setInterval(loadReservations, 30000);
     return () => window.clearInterval(refreshTimer);
-  }, [currentUser.rollNo, currentUser.roll_no]);
+  }, [currentUser.rollNo, currentUser.roll_no, refreshReservations]);
 
   useEffect(() => {
     const rollNo = currentUser.roll_no || currentUser.rollNo;
@@ -363,15 +370,14 @@ const StudentDashboard = ({ user, onLogout }) => {
             </p>
 
             <h1>
-              Welcome back,{" "}
-              {currentUser.username || "Student"} 👋
+              Welcome back, <span className="student-gradient-text">{currentUser.username || "Student"}</span> 👋
             </h1>
 
             <p>
               Here's an overview of your library activity.
             </p>
 
-            <div style={{ marginTop: "12px", display: "inline-flex", alignItems: "center", gap: "8px", background: "#eff6ff", color: "#1d4ed8", border: "1px solid #bfdbfe", borderRadius: "999px", padding: "8px 14px", fontWeight: 700 }}>
+            <div className="student-quota-badge">
               Daily reservation attempts: {reservationQuota.totalUsedToday}/{reservationQuota.totalDailyLimit}
             </div>
 
@@ -419,7 +425,7 @@ const StudentDashboard = ({ user, onLogout }) => {
                 BORROWED BOOKS
             -------------------------------------------------- */}
 
-            <article className="stat-card">
+            <article className="stat-card stat-card-borrowed">
 
               <div className="stat-card-top">
 
@@ -452,7 +458,7 @@ const StudentDashboard = ({ user, onLogout }) => {
             -------------------------------------------------- */}
 
             <article
-              className={`stat-card ${
+              className={`stat-card stat-card-overdue ${
                 dashboardStats.overdue > 0
                   ? "stat-card-warning"
                   : ""
@@ -489,7 +495,7 @@ const StudentDashboard = ({ user, onLogout }) => {
                 PENDING FINE
             -------------------------------------------------- */}
 
-            <article className="stat-card">
+            <article className="stat-card stat-card-pending">
 
               <div className="stat-card-top">
 
@@ -521,7 +527,7 @@ const StudentDashboard = ({ user, onLogout }) => {
                 FINE PAID
             -------------------------------------------------- */}
 
-            <article className="stat-card">
+            <article className="stat-card stat-card-paid">
 
               <div className="stat-card-top">
 
@@ -764,9 +770,11 @@ const StudentDashboard = ({ user, onLogout }) => {
             onUserUpdated: setProfileUserUpdates,
             filteredBooks,
             requests,
+            requestsLoading,
             requestBook,
             requestingBookId,
             cancelReservation,
+            refreshReservations,
             searchTerm,
             reservationQuota,
           }}

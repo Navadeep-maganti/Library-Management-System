@@ -1,5 +1,101 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useOutletContext } from "react-router-dom";
+
+const FilterDropdown = ({ id, label, value, options, onChange }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const dropdownRef = useRef(null);
+  const selectedIndex = Math.max(0, options.findIndex((option) => option.value === value));
+  const selectedOption = options[selectedIndex];
+  const listboxId = `${id}-options`;
+
+  useEffect(() => {
+    if (!isOpen) return undefined;
+    const closeOnOutsideClick = (event) => {
+      if (!dropdownRef.current?.contains(event.target)) setIsOpen(false);
+    };
+    document.addEventListener("mousedown", closeOnOutsideClick);
+    return () => document.removeEventListener("mousedown", closeOnOutsideClick);
+  }, [isOpen]);
+
+  const openAt = (index = selectedIndex) => {
+    setActiveIndex(index);
+    setIsOpen(true);
+  };
+
+  const selectOption = (option) => {
+    onChange(option.value);
+    setActiveIndex(options.indexOf(option));
+    setIsOpen(false);
+  };
+
+  const handleKeyDown = (event) => {
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setActiveIndex((current) => isOpen ? (current + 1) % options.length : selectedIndex);
+      setIsOpen(true);
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setActiveIndex((current) => isOpen ? (current - 1 + options.length) % options.length : selectedIndex);
+      setIsOpen(true);
+    } else if (event.key === "Home" && isOpen) {
+      event.preventDefault();
+      setActiveIndex(0);
+    } else if (event.key === "End" && isOpen) {
+      event.preventDefault();
+      setActiveIndex(options.length - 1);
+    } else if ((event.key === "Enter" || event.key === " ") && isOpen) {
+      event.preventDefault();
+      selectOption(options[activeIndex]);
+    } else if (event.key === "Escape" && isOpen) {
+      event.preventDefault();
+      setIsOpen(false);
+    } else if (event.key === "Tab" && isOpen) {
+      setIsOpen(false);
+    }
+  };
+
+  return (
+    <div className={`browse-books-filter${isOpen ? " is-open" : ""}`} ref={dropdownRef}>
+      <span className="browse-books-filter-label" id={`${id}-label`}>{label}</span>
+      <button
+        type="button"
+        className="browse-books-filter-trigger"
+        aria-labelledby={`${id}-label`}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        aria-controls={listboxId}
+        aria-activedescendant={isOpen ? `${id}-option-${options[Math.min(activeIndex, options.length - 1)].value}` : undefined}
+        onClick={() => (isOpen ? setIsOpen(false) : openAt())}
+        onKeyDown={handleKeyDown}
+      >
+        <span>{selectedOption.label}</span>
+        <svg className="browse-books-filter-chevron" viewBox="0 0 16 16" aria-hidden="true">
+          <path d="m4 6 4 4 4-4" />
+        </svg>
+      </button>
+      {isOpen && (
+        <div className="browse-books-filter-menu" role="listbox" id={listboxId} aria-labelledby={`${id}-label`}>
+          {options.map((option, index) => (
+            <div
+              className={`browse-books-filter-option${option.value === value ? " selected" : ""}${index === activeIndex ? " highlighted" : ""}`}
+              id={`${id}-option-${option.value}`}
+              key={option.value}
+              role="option"
+              aria-selected={option.value === value}
+              onMouseEnter={() => setActiveIndex(index)}
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={() => selectOption(option)}
+            >
+              <span>{option.label}</span>
+              {option.value === value && <span className="browse-books-filter-check" aria-hidden="true">✓</span>}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const normalizeBook = (book) => {
   const availability = book.availabilities?.reduce(
@@ -115,20 +211,26 @@ const BrowseBooksPage = () => {
             )}
           </label>
           <div className="browse-books-filters" aria-label="Filter books">
-            <label className="browse-books-filter">
-              <span>Category</span>
-              <select value={categoryId} onChange={(event) => setCategoryId(event.target.value)}>
-                <option value="all">All categories</option>
-                {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
-              </select>
-            </label>
-            <label className="browse-books-filter">
-              <span>Department</span>
-              <select value={departmentId} onChange={(event) => setDepartmentId(event.target.value)}>
-                <option value="all">All departments</option>
-                {departments.map((department) => <option key={department.id} value={department.id}>{department.name}</option>)}
-              </select>
-            </label>
+            <FilterDropdown
+              id="category-filter"
+              label="Category"
+              value={categoryId}
+              options={[
+                { value: "all", label: "All categories" },
+                ...categories.map((category) => ({ value: String(category.id), label: category.name })),
+              ]}
+              onChange={setCategoryId}
+            />
+            <FilterDropdown
+              id="department-filter"
+              label="Department"
+              value={departmentId}
+              options={[
+                { value: "all", label: "All departments" },
+                ...departments.map((department) => ({ value: String(department.id), label: department.name })),
+              ]}
+              onChange={setDepartmentId}
+            />
             <button
               type="button"
               className="browse-books-reset"
@@ -154,32 +256,40 @@ const BrowseBooksPage = () => {
           <span className="browse-books-result-count">{isLoading ? "Loading..." : `${visibleBooks.length} ${visibleBooks.length === 1 ? "title" : "titles"}`}</span>
         </div>
 
-        {error && <div className="browse-books-message">{error}</div>}
-        {!isLoading && !error && visibleBooks.length === 0 && <div className="browse-books-message">No books match your search and filters.</div>}
-        <div className="book-grid browse-books-grid">
-          {visibleBooks.map((book) => (
-            <article className="book-card" key={book.id}>
-              <div className="book-cover">{book.title.charAt(0)}</div>
-              <div className="book-card-content">
-                <span className="book-category">{book.categoryName}</span>
-                <h3>{book.title}</h3>
-                <p>By {book.author}</p>
-                <div className="browse-book-meta">
-                  <span>{book.departmentName}</span>
-                  <strong>{book.availableCopies} available</strong>
+        {error && <div className="browse-books-message" role="alert">{error}</div>}
+        {isLoading ? (
+          <div className="history-loading" role="status" aria-live="polite">
+            <span className="history-loading-spinner" aria-hidden="true" />
+            <span>Loading books...</span>
+          </div>
+        ) : !error && visibleBooks.length === 0 ? (
+          <div className="browse-books-message">No books match your search and filters.</div>
+        ) : !error && (
+          <div className="book-grid browse-books-grid">
+            {visibleBooks.map((book) => (
+              <article className="book-card" key={book.id}>
+                <div className="book-cover">{book.title.charAt(0)}</div>
+                <div className="book-card-content">
+                  <span className="book-category">{book.categoryName}</span>
+                  <h3>{book.title}</h3>
+                  <p>By {book.author}</p>
+                  <div className="browse-book-meta">
+                    <span>{book.departmentName}</span>
+                    <strong>{book.availableCopies} available</strong>
+                  </div>
+                  <div className="browse-book-actions">
+                    <button className="browse-book-details" type="button" onClick={() => setSelectedBook(book)}>
+                      View details
+                    </button>
+                    <button className="book-button" type="button" disabled={dailyQuotaReached || !book.availableCopies || isRequested(book) || requestingBookId === book.id} onClick={() => requestBook(book)}>
+                      {requestingBookId === book.id ? "Requesting..." : isRequested(book) ? "Requested" : dailyQuotaReached ? "Daily limit reached" : book.availableCopies ? "Request book" : "Unavailable"}
+                    </button>
+                  </div>
                 </div>
-                <div className="browse-book-actions">
-                  <button className="browse-book-details" type="button" onClick={() => setSelectedBook(book)}>
-                    View details
-                  </button>
-                  <button className="book-button" type="button" disabled={dailyQuotaReached || !book.availableCopies || isRequested(book) || requestingBookId === book.id} onClick={() => requestBook(book)}>
-                    {requestingBookId === book.id ? "Requesting..." : isRequested(book) ? "Requested" : dailyQuotaReached ? "Daily limit reached" : book.availableCopies ? "Request book" : "Unavailable"}
-                  </button>
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
+              </article>
+            ))}
+          </div>
+        )}
       </section>
 
       {selectedBook && (

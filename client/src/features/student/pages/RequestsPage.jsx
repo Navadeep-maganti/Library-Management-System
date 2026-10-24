@@ -72,10 +72,18 @@ const RequestsTable = ({ requests, emptyMessage, now, cancellingId, onCancel }) 
 );
 
 const RequestsPage = () => {
-  const { requests, cancelReservation, reservationQuota = { totalUsedToday: 0, totalDailyLimit: 5 } } = useOutletContext();
+  const {
+    requests,
+    requestsLoading = false,
+    cancelReservation,
+    refreshReservations,
+    reservationQuota = { totalUsedToday: 0, totalDailyLimit: 5 },
+  } = useOutletContext();
   const [now, setNow] = useState(Date.now());
   const [cancellingId, setCancellingId] = useState(null);
   const [cancelError, setCancelError] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshNotice, setRefreshNotice] = useState(null);
   const [groupMode, setGroupMode] = useState("all");
 
   useEffect(() => {
@@ -92,6 +100,20 @@ const RequestsPage = () => {
       setCancelError(error.message);
     } finally {
       setCancellingId(null);
+    }
+  };
+
+  const handleRefresh = async () => {
+    if (refreshing || !refreshReservations) return;
+    setRefreshing(true);
+    setRefreshNotice(null);
+    try {
+      await refreshReservations();
+      setRefreshNotice({ type: "success", text: "Your reservation records are up to date." });
+    } catch (error) {
+      setRefreshNotice({ type: "error", text: error.message || "Could not refresh your reservation records." });
+    } finally {
+      setRefreshing(false);
     }
   };
 
@@ -135,9 +157,21 @@ const RequestsPage = () => {
             <p className="student-kicker">RESERVED TITLES</p>
             <h2>My Booking Requests</h2>
           </div>
-          <span className="book-count">{requests.length} {requests.length === 1 ? "request" : "requests"}</span>
+          <div className="requests-heading-actions">
+            <span className="book-count">{requests.length} {requests.length === 1 ? "request" : "requests"}</span>
+            <button
+              type="button"
+              className="issued-refresh-btn"
+              onClick={handleRefresh}
+              disabled={refreshing || !refreshReservations}
+              title="Refresh your reservation records"
+            >
+              <span className={refreshing ? "spinning" : ""} aria-hidden="true">🔄</span>
+              {refreshing ? "Refreshing..." : "Refresh"}
+            </button>
+          </div>
         </div>
-        <div style={{ margin: "12px 0 18px", display: "inline-flex", alignItems: "center", gap: "8px", background: "#f3f4f6", color: "#111827", border: "1px solid #d1d5db", borderRadius: "999px", padding: "8px 14px", fontWeight: 700 }}>
+        <div className="requests-quota-badge">
           Today: {reservationQuota.totalUsedToday}/{reservationQuota.totalDailyLimit}
         </div>
         <div className="requests-view-toolbar" aria-label="Group requests">
@@ -157,7 +191,18 @@ const RequestsPage = () => {
           </div>
         </div>
         {cancelError && <div className="browse-books-message" role="alert">{cancelError}</div>}
-        {groupMode === "all" ? (
+        {refreshNotice && (
+          <div className={`student-refresh-notice ${refreshNotice.type}`} role={refreshNotice.type === "error" ? "alert" : "status"}>
+            <span aria-hidden="true">{refreshNotice.type === "success" ? "✓" : "⚠"}</span>
+            {refreshNotice.text}
+          </div>
+        )}
+        {requestsLoading ? (
+          <div className="history-loading" role="status" aria-live="polite">
+            <span className="history-loading-spinner" aria-hidden="true" />
+            <span>Loading your book requests...</span>
+          </div>
+        ) : groupMode === "all" ? (
           <RequestsTable requests={requests} {...tableProps} />
         ) : groupedRequests.length ? (
           <div className="request-groups">

@@ -6,8 +6,8 @@ const navItems = [
   { to: "/student-dashboard", label: "Home", mobileLabel: "Home", icon: "home", end: true },
   { to: "/student-dashboard/books", label: "Browse Books", mobileLabel: "Browse", icon: "books" },
   { to: "/student-dashboard/requests", label: "Requests", mobileLabel: "Requests", icon: "requests" },
-  { to: "/student-dashboard/payfine", label: "Pay Fine", mobileLabel: "Fine", icon: "fine" },
   { to: "/student-dashboard/history", label: "View History", mobileLabel: "History", icon: "history" },
+   { to: "/student-dashboard/payfine", label: "Pay Fine", mobileLabel: "Fine", icon: "fine" },
 ];
 
 const NavIcon = ({ name }) => {
@@ -183,6 +183,8 @@ const StudentNavbar = ({
             onClick={() => setIsProfileOpen((current) => !current)}
           >
           <span className="student-profile-avatar">{profileInitial}</span>
+          <span className="student-profile-trigger-name">{displayName}</span>
+          <span className="student-profile-trigger-caret" aria-hidden="true">▾</span>
           </button>
           {isProfileOpen && (
             <>

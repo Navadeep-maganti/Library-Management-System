@@ -17,7 +17,7 @@
 
 .fine-page button,
 .fine-page a { font: inherit; }
-.fine-page-header { align-items: center; display: flex; gap: 24px; justify-content: space-between; }
+.fine-page-header { align-items: center; background: linear-gradient(120deg, rgba(240, 253, 250, 0.96), rgba(255, 255, 255, 0.92)); border: 1px solid rgba(203, 213, 225, 0.7); border-left: 6px solid #0f766e; border-radius: 18px; box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04); display: flex; gap: 24px; justify-content: space-between; padding: 24px 28px; }
 .fine-eyebrow { color: var(--fine-teal); font-size: 0.66rem; font-weight: 850; letter-spacing: 0.15em; margin: 0; }
 .fine-page-header h1 { color: var(--fine-ink); font-family: Georgia, serif; font-size: clamp(2rem, 4vw, 3rem); letter-spacing: -0.035em; line-height: 1; margin: 8px 0 0; }
 .fine-page-subtitle { color: var(--fine-muted); font-size: 0.9rem; line-height: 1.55; margin: 10px 0 0; }
@@ -170,7 +170,7 @@
 
 @media (max-width: 620px) {
   .fine-page { gap: 15px; padding: 10px 0 30px; }
-  .fine-page-header { align-items: flex-start; flex-direction: column; gap: 14px; }
+  .fine-page-header { align-items: flex-start; flex-direction: column; gap: 14px; padding: 20px 18px; }
   .fine-page-header h1 { font-size: 2.25rem; }
   .fine-page-subtitle { font-size: .82rem; }
   .fine-balance-hero { border-radius: 13px; padding: 21px 19px 15px; }

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 
 const formatDate = (value) => value ? new Date(value).toLocaleString() : "Not available";
@@ -54,31 +54,55 @@ const ViewHistoryPage = () => {
   const [status, setStatus] = useState("All");
   const [historyItems, setHistoryItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
+  const [refreshNotice, setRefreshNotice] = useState(null);
+
+  const fetchHistory = useCallback(async () => {
+    const rollNo = currentUser.roll_no || currentUser.rollNo;
+    if (!rollNo) throw new Error("Student roll number is not available.");
+    const response = await fetch(`/api/students/${encodeURIComponent(rollNo)}`);
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || "Could not load borrowing history.");
+    return normalizeHistory(data.student);
+  }, [currentUser.rollNo, currentUser.roll_no]);
 
   useEffect(() => {
-    const rollNo = currentUser.roll_no || currentUser.rollNo;
-    if (!rollNo) {
-      setIsLoading(false);
-      setError("Student roll number is not available.");
-      return;
-    }
-
-    const loadHistory = async () => {
+    let isCurrent = true;
+    const load = async () => {
       try {
-        const response = await fetch(`/api/students/${encodeURIComponent(rollNo)}`);
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.message || "Could not load borrowing history.");
-        setHistoryItems(normalizeHistory(data.student));
+        setIsLoading(true);
+        setError("");
+        const items = await fetchHistory();
+        if (isCurrent) setHistoryItems(items);
       } catch (loadError) {
-        setError(loadError.message);
+        if (isCurrent) {
+          setError(loadError.message);
+        }
       } finally {
-        setIsLoading(false);
+        if (isCurrent) setIsLoading(false);
       }
     };
+    load();
+    return () => { isCurrent = false; };
+  }, [fetchHistory]);
 
-    loadHistory();
-  }, [currentUser.rollNo, currentUser.roll_no]);
+  const handleRefresh = async () => {
+    if (refreshing) return;
+    setRefreshing(true);
+    setRefreshNotice(null);
+    try {
+      const items = await fetchHistory();
+      setHistoryItems(items);
+      setError("");
+      setRefreshNotice({ type: "success", text: "Your borrowing history is up to date." });
+    } catch (loadError) {
+      setError(loadError.message);
+      setRefreshNotice({ type: "error", text: loadError.message || "Could not refresh your borrowing history." });
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const visibleItems = useMemo(() => historyItems.filter((item) =>
     (status === "All" || item.status === status) &&
@@ -92,7 +116,23 @@ const ViewHistoryPage = () => {
           <p className="student-kicker">BORROWING RECORD</p>
           <h2>View History</h2>
         </div>
+        <button
+          type="button"
+          className="issued-refresh-btn"
+          onClick={handleRefresh}
+          disabled={refreshing}
+          title="Refresh your borrowing history"
+        >
+          <span className={refreshing ? "spinning" : ""} aria-hidden="true">🔄</span>
+          {refreshing ? "Refreshing..." : "Refresh"}
+        </button>
       </div>
+      {refreshNotice && (
+        <div className={`student-refresh-notice ${refreshNotice.type}`} role={refreshNotice.type === "error" ? "alert" : "status"}>
+          <span aria-hidden="true">{refreshNotice.type === "success" ? "✓" : "⚠"}</span>
+          {refreshNotice.text}
+        </div>
+      )}
       <div className="page-tools">
         <label className="field-with-label">
           <span>Find a book</span>
@@ -114,7 +154,10 @@ const ViewHistoryPage = () => {
           <span className="book-count">{visibleItems.length} {visibleItems.length === 1 ? "book" : "books"}</span>
         </div>
         {isLoading ? (
-          <p className="empty-search">Loading issued books...</p>
+          <div className="history-loading" role="status" aria-live="polite">
+            <span className="history-loading-spinner" aria-hidden="true" />
+            <span>Loading issued books...</span>
+          </div>
         ) : error ? (
           <p className="browse-books-message">{error}</p>
         ) : (
