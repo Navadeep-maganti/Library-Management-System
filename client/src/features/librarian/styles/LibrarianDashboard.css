@@ -763,6 +763,7 @@
 }
 
 @media (max-width: 768px) {
+  .librarian-table-wrapper { display: none; }
   .librarian-dashboard-shell {
     padding: 20px 14px;
     gap: 18px;

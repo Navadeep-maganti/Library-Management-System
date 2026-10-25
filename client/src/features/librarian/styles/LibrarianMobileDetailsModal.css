@@ -1,0 +1,25 @@
+.librarian-mobile-records { display: none; }
+
+@media (max-width: 768px) {
+  .librarian-mobile-records { display: grid; gap: 10px; }
+  .librarian-mobile-record {
+    align-items: center; background: #fff; border: 1px solid #dfe7ec; border-radius: 12px; color: #17252b;
+    cursor: pointer; display: grid; gap: 5px; grid-template-columns: minmax(0, 1fr) auto; padding: 14px; text-align: left; width: 100%;
+  }
+  .librarian-mobile-record strong { font-size: 0.92rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .librarian-mobile-record span { color: #64748b; font-size: 0.76rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .librarian-mobile-record em { color: #0f766e; font-size: 1.1rem; font-style: normal; grid-column: 2; grid-row: 1 / span 2; }
+  .librarian-mobile-modal-backdrop { align-items: end; background: rgba(15, 23, 42, 0.52); display: flex; inset: 0; justify-content: center; padding: 12px; position: fixed; z-index: 300; }
+  .librarian-mobile-modal { background: #fff; border-radius: 18px 18px 12px 12px; box-shadow: 0 -12px 38px rgba(15, 23, 42, 0.22); max-height: min(80dvh, 680px); overflow: auto; padding: 20px; width: min(100%, 520px); }
+  .librarian-mobile-modal-header { align-items: flex-start; display: flex; gap: 12px; justify-content: space-between; }
+  .librarian-mobile-modal-kicker { color: #0f766e; font-size: 0.66rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+  .librarian-mobile-modal h2 { color: #17252b; font-size: 1.1rem; line-height: 1.25; margin: 5px 0; }
+  .librarian-mobile-modal p { color: #64748b; font-size: .8rem; margin: 0; }
+  .librarian-mobile-modal-close { background: #f1f5f9; border: 0; border-radius: 50%; color: #334155; cursor: pointer; flex: 0 0 32px; font-size: 1.4rem; height: 32px; line-height: 1; width: 32px; }
+  .librarian-mobile-modal-status { background: #ecfdf5; border-radius: 7px; color: #0f766e; font-size: .76rem; font-weight: 750; margin-top: 16px; padding: 8px 10px; }
+  .librarian-mobile-detail-list { display: grid; gap: 0; margin: 14px 0 0; }
+  .librarian-mobile-detail-list > div { border-bottom: 1px solid #eef2f7; display: grid; gap: 12px; grid-template-columns: 40% 1fr; padding: 10px 0; }
+  .librarian-mobile-detail-list dt { color: #64748b; font-size: .74rem; font-weight: 700; }
+  .librarian-mobile-detail-list dd { color: #17252b; font-size: .8rem; font-weight: 650; margin: 0; overflow-wrap: anywhere; text-align: right; }
+  .librarian-mobile-modal-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+}

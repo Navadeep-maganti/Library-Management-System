@@ -605,6 +605,7 @@
 }
 
 @media (max-width: 768px) {
+  .librarian-table-wrapper { display: none; }
   .issue-page-container {
     padding: 20px 14px;
     gap: 18px;
