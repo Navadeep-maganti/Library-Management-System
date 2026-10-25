@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import LibrarianMobileDetailsModal from "../components/LibrarianMobileDetailsModal";
 import "../styles/LibrarianUpdateStockPage.css";
 
 const STOCK_ENDPOINT = (bookId) => `/api/books/${bookId}/stock`;
@@ -23,6 +24,7 @@ export default function LibrarianUpdateStockPage() {
   const [drafts, setDrafts] = useState({});
   const [amounts, setAmounts] = useState({});
   const [pendingUpdate, setPendingUpdate] = useState(null);
+  const [selectedBook, setSelectedBook] = useState(null);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
   const [status, setStatus] = useState("all");
@@ -161,6 +163,27 @@ export default function LibrarianUpdateStockPage() {
   const rows = filtered.slice((activePage - 1) * pageSize, activePage * pageSize);
 
   return <>
+    <LibrarianMobileDetailsModal
+      item={selectedBook}
+      onClose={() => setSelectedBook(null)}
+      title={selectedBook?.title}
+      subtitle={selectedBook && `${selectedBook.author} · ${selectedBook.code}`}
+      status={selectedBook && `${selectedBook.available} available · ${selectedBook.issued} on loan`}
+      fields={selectedBook ? [
+        { label: "ISBN", value: selectedBook.isbn }, { label: "Category", value: selectedBook.category },
+        { label: "Shelf", value: selectedBook.shelf }, { label: "Total copies", value: selectedBook.total },
+        { label: "Available", value: selectedBook.available }, { label: "Issued", value: selectedBook.issued },
+      ] : []}
+    >
+      {selectedBook && <>
+        <button type="button" className="stock-mobile-adjust-button" disabled={saving.has(selectedBook.id) || selectedBook.total <= selectedBook.issued} onClick={() => setPendingUpdate({ book: selectedBook, total: selectedBook.total - 1, change: -1 })}>− Remove one</button>
+        <button type="button" className="stock-mobile-adjust-button" disabled={saving.has(selectedBook.id)} onClick={() => setPendingUpdate({ book: selectedBook, total: selectedBook.total + 1, change: 1 })}>+ Add one</button>
+        <form className="stock-mobile-add-form" onSubmit={(event) => { event.preventDefault(); const quantity = Number(amounts[selectedBook.id]); if (!Number.isInteger(quantity) || quantity < 1) { setNotice({ type: "error", text: "Enter a whole number greater than zero." }); return; } setPendingUpdate({ book: selectedBook, total: selectedBook.total + quantity, change: quantity }); }}>
+          <input type="number" min="1" placeholder="Copies to add" disabled={saving.has(selectedBook.id)} value={amounts[selectedBook.id] || ""} onChange={(event) => setAmounts((current) => ({ ...current, [selectedBook.id]: event.target.value }))} aria-label={`Copies to add to ${selectedBook.title}`} />
+          <button type="submit" disabled={saving.has(selectedBook.id)}>Add quantity</button>
+        </form>
+      </>}
+    </LibrarianMobileDetailsModal>
     {pendingUpdate && <div className="stock-confirm-backdrop" role="presentation">
       <section className="stock-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="stock-confirm-title">
         <p className="stock-confirm-kicker">Confirm stock update</p>
@@ -168,7 +191,7 @@ export default function LibrarianUpdateStockPage() {
         <p>You are about to {pendingUpdate.change > 0 ? "add" : "remove"} <strong>{Math.abs(pendingUpdate.change)}</strong> cop{Math.abs(pendingUpdate.change) === 1 ? "y" : "ies"}. The total will change from <strong>{pendingUpdate.book.total}</strong> to <strong>{pendingUpdate.total}</strong>.</p>
         <div className="stock-confirm-actions">
           <button type="button" className="stock-confirm-cancel" onClick={() => setPendingUpdate(null)}>Cancel</button>
-          <button type="button" className="stock-confirm-save" onClick={() => { save(pendingUpdate.book, pendingUpdate.total); setAmounts((current) => ({ ...current, [pendingUpdate.book.id]: "" })); setPendingUpdate(null); }}>Confirm update</button>
+          <button type="button" className="stock-confirm-save" onClick={() => { save(pendingUpdate.book, pendingUpdate.total); setAmounts((current) => ({ ...current, [pendingUpdate.book.id]: "" })); setSelectedBook(null); setPendingUpdate(null); }}>Confirm update</button>
         </div>
       </section>
     </div>}
@@ -181,7 +204,7 @@ export default function LibrarianUpdateStockPage() {
       <div className="stock-card-header"><div><h2>Catalog inventory</h2><p>{filtered.length} of {books.length} titles</p></div><button type="button" className="stock-btn-sync" disabled={loading} onClick={() => refresh(true)}>{loading ? "Refreshing…" : "Refresh inventory"}</button></div>
       {notice && <div className={`stock-sync-alert ${notice.type === "error" ? "stock-alert-error" : ""}`} role="status">{typeof notice === "string" ? notice : notice.text}</div>}
       <div className="stock-filter-bar"><input className="stock-search-input" aria-label="Search catalog" placeholder="Search title, author, ISBN, or ID" value={search} onChange={(e) => setSearch(e.target.value)} /><select className="stock-select" value={category} onChange={(e) => setCategory(e.target.value)}><option value="all">All categories</option>{categories.map((name) => <option key={name}>{name}</option>)}</select><select className="stock-select" value={status} onChange={(e) => setStatus(e.target.value)}><option value="all">All stock</option><option value="available">Available</option><option value="low">Low stock (1–2)</option><option value="out">Out of stock</option></select></div>
-      {loading ? <div className="stock-empty-state"><p>Loading inventory…</p></div> : error ? <div className="stock-empty-state stock-error"><p>{error}</p><button type="button" className="stock-btn-sync" onClick={() => refresh()}>Try again</button></div> : !rows.length ? <div className="stock-empty-state"><p>No books match these filters.</p></div> : <div className="stock-table-responsive"><table className="stock-table"><thead><tr><th>Book</th><th>Category / shelf</th><th>Total</th><th>Available</th><th>Issued</th><th>Adjust</th></tr></thead><tbody>{rows.map((book) => { const busy = saving.has(book.id); return <tr key={book.id}><td><span className="stock-font-mono">{book.code}</span><strong>{book.title}</strong><span className="stock-sub-text">{book.author} · ISBN {book.isbn}</span></td><td><span className="stock-category-badge">{book.category}</span><span className="stock-shelf-tag">{book.shelf}</span></td><td><input className="stock-input-total" type="number" min={book.issued} disabled={busy} value={drafts[book.id] ?? book.total} onChange={(e) => setDrafts((old) => ({ ...old, [book.id]: e.target.value }))} onBlur={(e) => save(book, Number(e.target.value))} onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()} aria-label={`Total stock for ${book.title}`} /></td><td><span className={`stock-count-pill avail ${book.available === 0 ? 'zero' : ''}`}>{book.available}</span></td><td><span className="stock-count-pill issued">{book.issued}</span></td><td><div className="stock-adjust-group"><button type="button" className="stock-btn-step dec" disabled={busy || book.total <= book.issued} onClick={() => save(book, book.total - 1)} aria-label={`Remove one copy of ${book.title}`}>−</button><button type="button" className="stock-btn-step" disabled={busy} onClick={() => save(book, book.total + 1)} aria-label={`Add one copy of ${book.title}`}>+</button><form className="stock-add-form" onSubmit={(e) => { e.preventDefault(); const qty = Number(amounts[book.id]); if (Number.isInteger(qty) && qty > 0) { save(book, book.total + qty); setAmounts((old) => ({ ...old, [book.id]: '' })); } }}><input className="stock-add-input" type="number" min="1" placeholder="Qty" disabled={busy} value={amounts[book.id] || ''} onChange={(e) => setAmounts((old) => ({ ...old, [book.id]: e.target.value }))} aria-label={`Copies to add to ${book.title}`} /><button type="submit" className="stock-add-btn" disabled={busy}>Add</button></form></div></td></tr>; })}</tbody></table></div>}
+      {loading ? <div className="stock-empty-state"><p>Loading inventory…</p></div> : error ? <div className="stock-empty-state stock-error"><p>{error}</p><button type="button" className="stock-btn-sync" onClick={() => refresh()}>Try again</button></div> : !rows.length ? <div className="stock-empty-state"><p>No books match these filters.</p></div> : <><div className="stock-table-responsive"><table className="stock-table"><thead><tr><th>Book</th><th>Category / shelf</th><th>Total</th><th>Available</th><th>Issued</th><th>Adjust</th></tr></thead><tbody>{rows.map((book) => { const busy = saving.has(book.id); return <tr key={book.id}><td><span className="stock-font-mono">{book.code}</span><strong>{book.title}</strong><span className="stock-sub-text">{book.author} · ISBN {book.isbn}</span></td><td><span className="stock-category-badge">{book.category}</span><span className="stock-shelf-tag">{book.shelf}</span></td><td><input className="stock-input-total" type="number" min={book.issued} disabled={busy} value={drafts[book.id] ?? book.total} onChange={(e) => setDrafts((old) => ({ ...old, [book.id]: e.target.value }))} onBlur={(e) => save(book, Number(e.target.value))} onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()} aria-label={`Total stock for ${book.title}`} /></td><td><span className={`stock-count-pill avail ${book.available === 0 ? 'zero' : ''}`}>{book.available}</span></td><td><span className="stock-count-pill issued">{book.issued}</span></td><td><div className="stock-adjust-group"><button type="button" className="stock-btn-step dec" disabled={busy || book.total <= book.issued} onClick={() => save(book, book.total - 1)} aria-label={`Remove one copy of ${book.title}`}>−</button><button type="button" className="stock-btn-step" disabled={busy} onClick={() => save(book, book.total + 1)} aria-label={`Add one copy of ${book.title}`}>+</button><form className="stock-add-form" onSubmit={(e) => { e.preventDefault(); const qty = Number(amounts[book.id]); if (Number.isInteger(qty) && qty > 0) { save(book, book.total + qty); setAmounts((old) => ({ ...old, [book.id]: '' })); } }}><input className="stock-add-input" type="number" min="1" placeholder="Qty" disabled={busy} value={amounts[book.id] || ''} onChange={(e) => setAmounts((old) => ({ ...old, [book.id]: e.target.value }))} aria-label={`Copies to add to ${book.title}`} /><button type="submit" className="stock-add-btn" disabled={busy}>Add</button></form></div></td></tr>; })}</tbody></table></div><div className="librarian-mobile-records">{rows.map((book) => <button type="button" className="librarian-mobile-record" key={book.id} onClick={() => setSelectedBook(book)}><strong>{book.title}</strong><span>{book.author} · {book.available} available</span><em>›</em></button>)}</div></>}
       {!loading && !error && filtered.length > pageSize && <div className="stock-pagination-bar"><span className="stock-page-info">Page {activePage} of {pages}</span><div className="stock-pagination-controls"><button type="button" className="stock-page-btn" disabled={activePage === 1} onClick={() => setPage(activePage - 1)}>Previous</button><button type="button" className="stock-page-btn" disabled={activePage === pages} onClick={() => setPage(activePage + 1)}>Next</button></div></div>}
     </section>
     </main>

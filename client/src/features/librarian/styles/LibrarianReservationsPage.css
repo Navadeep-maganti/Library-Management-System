@@ -345,6 +345,7 @@
 }
 
 @media (max-width: 768px) {
+  .reservations-table-responsive { display: none; }
   .reservations-page-container {
     padding: 20px 14px;
     gap: 18px;

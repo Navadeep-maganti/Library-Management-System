@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import LibrarianMobileDetailsModal from "../components/LibrarianMobileDetailsModal";
 import "../styles/LibrarianDashboard.css";
 
 const LibrarianDashboard = ({ user }) => {
@@ -10,6 +11,7 @@ const LibrarianDashboard = ({ user }) => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [actionLoading, setActionLoading] = useState(null);
   const [notice, setNotice] = useState(null);
+  const [selectedRecord, setSelectedRecord] = useState(null);
 
   const currentUser =
     user ||
@@ -141,6 +143,20 @@ const LibrarianDashboard = ({ user }) => {
 
   return (
     <div className="librarian-dashboard-shell">
+      <LibrarianMobileDetailsModal
+        item={selectedRecord}
+        onClose={() => setSelectedRecord(null)}
+        title={selectedRecord?.book?.title || "Issued book"}
+        subtitle={selectedRecord && `Transaction #TXN-${String(selectedRecord.id).padStart(4, "0")}`}
+        status={selectedRecord?.isReturned ? "Returned" : "In circulation"}
+        fields={selectedRecord ? [
+          { label: "Student", value: selectedRecord.student?.user?.username }, { label: "Student ID", value: selectedRecord.studentId },
+          { label: "Author", value: selectedRecord.book?.author }, { label: "ISBN", value: selectedRecord.book?.isbn },
+          { label: "Issued", value: new Date(selectedRecord.issueDate).toLocaleString() }, { label: "Due", value: new Date(selectedRecord.dueDate).toLocaleString() },
+          { label: "Returned", value: selectedRecord.returnDate ? new Date(selectedRecord.returnDate).toLocaleString() : "Not yet returned" },
+          { label: "Renewals", value: selectedRecord.renewalCount || 0 },
+        ] : []}
+      />
       {/* Hero Header Section */}
       <section className="librarian-hero-section">
         <div className="librarian-hero-badge">
@@ -235,7 +251,7 @@ const LibrarianDashboard = ({ user }) => {
           <p className="librarian-section-subtitle">Direct shortcuts to frequent staff operations</p>
         </div>
         <div className="librarian-actions-row">
-          <button type="button" className="librarian-btn-primary" onClick={() => navigate("/librarian/issue-book")}>
+          <button type="button" className="librarian-btn-primary" onClick={() => navigate("/librarian/issue-book?tab=issue")}>
             <span>📖</span> Issue New Book
           </button>
           <button type="button" className="librarian-btn-secondary" onClick={() => navigate("/librarian/verify-token")}>
@@ -281,7 +297,7 @@ const LibrarianDashboard = ({ user }) => {
               type="button"
               className="librarian-btn-primary"
               style={{ padding: "8px 16px", fontSize: "0.85rem" }}
-              onClick={() => navigate("/librarian/issue-book")}
+              onClick={() => navigate("/librarian/issue-book?tab=issue")}
             >
               + Issue Book
             </button>
@@ -595,7 +611,7 @@ const LibrarianDashboard = ({ user }) => {
                           type="button"
                           className="librarian-btn-primary"
                           style={{ padding: "8px 18px", fontSize: "0.85rem", marginTop: "6px" }}
-                          onClick={() => navigate("/librarian/issue-book")}
+                          onClick={() => navigate("/librarian/issue-book?tab=issue")}
                         >
                           📖 Issue First Book
                         </button>
@@ -607,6 +623,7 @@ const LibrarianDashboard = ({ user }) => {
             </tbody>
           </table>
         </div>
+        {!loadingRecords && filteredRecords.length > 0 && <div className="librarian-mobile-records">{filteredRecords.map((txn) => <button type="button" className="librarian-mobile-record" key={txn.id} onClick={() => setSelectedRecord(txn)}><strong>{txn.book?.title || "Book title unavailable"}</strong><span>{txn.student?.user?.username || txn.studentId} · {txn.isReturned ? "Returned" : "In circulation"}</span><em>›</em></button>)}</div>}
       </section>
 
       {/* Staff Operational Guidelines Banner */}
