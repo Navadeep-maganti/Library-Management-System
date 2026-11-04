@@ -110,8 +110,6 @@ export const getFines = async (req, res) => {
                         book: { select: { id: true, title: true, author: true, isbn: true } }
                     }
                 },
-                student: { select: { rollNo: true, user: { select: { username: true, email: true } } } },
-                issuedBook: { select: { id: true, book: { select: { title: true, author: true } } } },
                 fineType: true,
                 payments: {
                     orderBy: { paymentDate: "desc" }
@@ -132,8 +130,7 @@ export const getFineById = async (req, res) => {
         const fine = await prisma.fine.findUnique({
             where: { id },
             include: {
-                student: { include: { user: { select: { username: true, email: true } } } },
-                student: { select: { rollNo: true, user: { select: { username: true, email: true } } } },
+                student: { select: { rollNo: true, department: true, user: { select: { username: true, email: true } } } },
                 issuedBook: { include: { book: true } },
                 fineType: true,
                 payments: {
@@ -442,4 +439,3 @@ export const verifyRazorpayPayment = async (req, res) => {
         });
     }
 };
-

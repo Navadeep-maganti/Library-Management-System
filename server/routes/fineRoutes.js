@@ -3,8 +3,7 @@ import {
     getFines,
     getFineById,
     payFine,
-    syncFinesEndpoint
-    payFine,
+    syncFinesEndpoint,
     createRazorpayOrder,
     createAllRazorpayOrder,
     verifyRazorpayPayment
@@ -23,4 +22,3 @@ router.post("/create-all-order", createAllRazorpayOrder);
 router.post("/verify-razorpay-payment", verifyRazorpayPayment);
 
 export default router;
-
