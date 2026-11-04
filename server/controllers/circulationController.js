@@ -1,4 +1,5 @@
 import prisma from "../config/db.js";
+import { syncOverdueFines } from "./fineController.js";
 
 /**
  * @desc Get all issued books (active or returned)
@@ -6,6 +7,9 @@ import prisma from "../config/db.js";
  */
 export const getIssuedBooks = async (req, res) => {
     try {
+        // Synchronize any overdue loans so fine records and states remain consistent
+        await syncOverdueFines();
+
         const { isReturned, studentId } = req.query;
         const whereClause = {};
 
@@ -233,10 +237,32 @@ export const returnBook = async (req, res) => {
                 }
             }
 
-            // Create fine if applicable
+            // Handle fine creation or update
+            const existingFine = await tx.fine.findFirst({
+                where: { issuedBookId: issuedRecord.id }
+            });
+
             let fine = null;
             if (fineCreated) {
-                fine = await tx.fine.create({ data: fineCreated });
+                if (existingFine) {
+                    if (!existingFine.isPaid) {
+                        // Update existing unpaid fine with finalized return calculation
+                        fine = await tx.fine.update({
+                            where: { id: existingFine.id },
+                            data: {
+                                amount: fineCreated.amount,
+                                description: fineCreated.description
+                            }
+                        });
+                    } else {
+                        // Already paid previously
+                        fine = existingFine;
+                    }
+                } else {
+                    fine = await tx.fine.create({ data: fineCreated });
+                }
+            } else if (existingFine) {
+                fine = existingFine;
             }
 
             return { updated, fine };

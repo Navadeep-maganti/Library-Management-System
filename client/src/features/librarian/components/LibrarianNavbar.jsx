@@ -52,6 +52,7 @@ const LibrarianNavbar = ({ user, onLogout }) => {
     { to: "/librarian/verify-token", label: "Verify Token", icon: "✓" },
     { to: "/librarian/issue-book?tab=issue", label: "Issue Book", icon: "▣" },
     { to: "/librarian/update-stock", label: "Update Stock", icon: "↻" },
+    { to: "/librarian/fines", label: "Fines", icon: "₹" },
   ];
 
   return (
@@ -100,9 +101,12 @@ const LibrarianNavbar = ({ user, onLogout }) => {
           >
             Update Stock
           </Link>
-          <span className="librarian-nav-link librarian-nav-link-disabled" aria-disabled="true" title="Fines management is coming soon">
+          <Link
+            to="/librarian/fines"
+            className={`librarian-nav-link ${isActive("/librarian/fines") ? "active" : ""}`}
+          >
             Fines
-          </span>
+          </Link>
 
         </nav>
         <div className="librarian-profile-menu" ref={profileMenuRef}>
@@ -170,7 +174,6 @@ const LibrarianNavbar = ({ user, onLogout }) => {
               {label}
             </Link>
           ))}
-          <span className="librarian-sidebar-link is-disabled"><span className="librarian-sidebar-link-icon" aria-hidden="true">₹</span>Fines <small>Coming soon</small></span>
         </nav>
         <button type="button" className="librarian-sidebar-logout" onClick={handleLogoutClick}>Log out</button>
       </aside>

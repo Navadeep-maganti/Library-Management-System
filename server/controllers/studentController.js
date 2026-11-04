@@ -1,7 +1,9 @@
 import prisma from "../config/db.js";
+import { syncOverdueFines } from "./fineController.js";
 
 export const getStudents = async (req, res) => {
     try {
+        await syncOverdueFines();
         const students = await prisma.student.findMany({
             include: {
                 user: { select: { username: true, email: true } },
@@ -17,6 +19,7 @@ export const getStudents = async (req, res) => {
 
 export const getStudentByRollNo = async (req, res) => {
     try {
+        await syncOverdueFines();
         const { rollNo } = req.params;
         const student = await prisma.student.findUnique({
             where: { rollNo },
