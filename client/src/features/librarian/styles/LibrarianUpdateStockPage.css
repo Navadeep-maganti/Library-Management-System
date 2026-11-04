@@ -662,6 +662,12 @@
 }
 
 @media (max-width: 768px) {
+  .stock-table-responsive { display: none; }
+  .stock-mobile-adjust-button, .stock-mobile-add-form button { background: #0f766e; border: 0; border-radius: 8px; color: #fff; cursor: pointer; font: inherit; font-size: .8rem; font-weight: 750; padding: 10px 12px; }
+  .stock-mobile-adjust-button:disabled, .stock-mobile-add-form button:disabled { cursor: not-allowed; opacity: .55; }
+  .stock-mobile-add-form { display: flex; gap: 8px; width: 100%; }
+  .stock-mobile-add-form input { border: 1px solid #cbd5e1; border-radius: 8px; min-width: 0; padding: 9px 10px; width: 100%; }
+  .stock-mobile-add-form button { flex: 0 0 auto; }
   .stock-page-container {
     padding: 20px 14px;
     gap: 18px;

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import LibrarianMobileDetailsModal from "../components/LibrarianMobileDetailsModal";
 import "../styles/LibrarianIssueBookPage.css";
 
 const LibrarianIssueBookPage = () => {
@@ -9,6 +10,10 @@ const LibrarianIssueBookPage = () => {
   // Tab: 'registry' (All Issued Books) or 'issue' (Issue New Book Form)
   const initialTab = searchParams.get("tab") === "issue" || searchParams.get("book") ? "issue" : "registry";
   const [activeTab, setActiveTab] = useState(initialTab);
+
+  useEffect(() => {
+    if (searchParams.get("tab") === "issue") setActiveTab("issue");
+  }, [searchParams]);
 
   // Form states
   const initialStudent = searchParams.get("student") || "";
@@ -36,6 +41,7 @@ const LibrarianIssueBookPage = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [actionLoading, setActionLoading] = useState(null);
   const [notice, setNotice] = useState(null);
+  const [selectedRecordDetails, setSelectedRecordDetails] = useState(null);
 
   // Fetch available books for dropdown
   useEffect(() => {
@@ -206,6 +212,7 @@ const LibrarianIssueBookPage = () => {
 
   return (
     <div className="issue-page-container">
+      <LibrarianMobileDetailsModal item={selectedRecordDetails} onClose={() => setSelectedRecordDetails(null)} title={selectedRecordDetails?.book?.title || "Issued book"} subtitle={selectedRecordDetails && `Transaction #TXN-${String(selectedRecordDetails.id).padStart(4, "0")}`} status={selectedRecordDetails?.isReturned ? "Returned" : "In circulation"} fields={selectedRecordDetails ? [{ label: "Student", value: selectedRecordDetails.student?.user?.username }, { label: "Student ID", value: selectedRecordDetails.studentId }, { label: "Author", value: selectedRecordDetails.book?.author }, { label: "ISBN", value: selectedRecordDetails.book?.isbn }, { label: "Issued", value: new Date(selectedRecordDetails.issueDate).toLocaleString() }, { label: "Due", value: new Date(selectedRecordDetails.dueDate).toLocaleString() }, { label: "Returned", value: selectedRecordDetails.returnDate ? new Date(selectedRecordDetails.returnDate).toLocaleString() : "Not yet returned" }] : []} />
       {/* Header Banner */}
       <header className="issue-header">
         <span className="issue-badge">Step 3 · Issued Books</span>
@@ -516,6 +523,7 @@ const LibrarianIssueBookPage = () => {
                 </tbody>
               </table>
             </div>
+            {!loadingRecords && filteredRecords.length > 0 && <div className="librarian-mobile-records">{filteredRecords.map((txn) => <button type="button" className="librarian-mobile-record" key={txn.id} onClick={() => setSelectedRecordDetails(txn)}><strong>{txn.book?.title || "Book title unavailable"}</strong><span>{txn.student?.user?.username || txn.studentId} · {txn.isReturned ? "Returned" : "In circulation"}</span><em>›</em></button>)}</div>}
           </div>
         </div>
       )}

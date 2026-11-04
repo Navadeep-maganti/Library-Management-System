@@ -6,6 +6,7 @@ const LibrarianNavbar = ({ user, onLogout }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [profileOpen, setProfileOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const profileMenuRef = useRef(null);
 
   const handleLogoutClick = () => {
@@ -28,9 +29,45 @@ const LibrarianNavbar = ({ user, onLogout }) => {
     return () => document.removeEventListener("mousedown", closeProfileMenu);
   }, []);
 
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const handleEscape = (event) => {
+      if (event.key === "Escape") setSidebarOpen(false);
+    };
+
+    document.addEventListener("keydown", handleEscape);
+    document.body.classList.toggle("librarian-sidebar-open", sidebarOpen);
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+      document.body.classList.remove("librarian-sidebar-open");
+    };
+  }, [sidebarOpen]);
+
+  const navigationLinks = [
+    { to: "/librarian-dashboard", label: "Dashboard", icon: "⌂" },
+    { to: "/librarian/reservations", label: "Reservations", icon: "▤" },
+    { to: "/librarian/verify-token", label: "Verify Token", icon: "✓" },
+    { to: "/librarian/issue-book?tab=issue", label: "Issue Book", icon: "▣" },
+    { to: "/librarian/update-stock", label: "Update Stock", icon: "↻" },
+    { to: "/librarian/fines", label: "Fines", icon: "₹" },
+  ];
+
   return (
     <header className="librarian-app-header">
       <div className="librarian-navbar-container">
+        <button
+          type="button"
+          className="librarian-menu-toggle"
+          onClick={() => setSidebarOpen(true)}
+          aria-label="Open librarian navigation"
+          aria-expanded={sidebarOpen}
+          aria-controls="librarian-mobile-sidebar"
+        >
+          {user?.username ? user.username.charAt(0).toUpperCase() : "L"}
+        </button>
         <Link to="/librarian-dashboard" className="librarian-brand-logo">
           <div className="librarian-brand-icon-box">📚</div>
           <div className="librarian-brand-text">
@@ -53,10 +90,10 @@ const LibrarianNavbar = ({ user, onLogout }) => {
             Verify Token
           </Link>
           <Link
-            to="/librarian/issue-book"
+            to="/librarian/issue-book?tab=issue"
             className={`librarian-nav-link ${isActive("/librarian/issue-book") ? "active" : ""}`}
           >
-            Issued Books
+            Issue Book
           </Link>
           <Link
             to="/librarian/update-stock"
@@ -64,9 +101,12 @@ const LibrarianNavbar = ({ user, onLogout }) => {
           >
             Update Stock
           </Link>
-          <span className="librarian-nav-link librarian-nav-link-disabled" aria-disabled="true" title="Fines management is coming soon">
+          <Link
+            to="/librarian/fines"
+            className={`librarian-nav-link ${isActive("/librarian/fines") ? "active" : ""}`}
+          >
             Fines
-          </span>
+          </Link>
 
         </nav>
         <div className="librarian-profile-menu" ref={profileMenuRef}>
@@ -102,6 +142,41 @@ const LibrarianNavbar = ({ user, onLogout }) => {
           )}
         </div>
       </div>
+      <div
+        className={`librarian-sidebar-backdrop ${sidebarOpen ? "is-open" : ""}`}
+        onClick={() => setSidebarOpen(false)}
+        aria-hidden="true"
+      />
+      <aside
+        id="librarian-mobile-sidebar"
+        className={`librarian-mobile-sidebar ${sidebarOpen ? "is-open" : ""}`}
+        aria-label="Librarian navigation"
+        aria-hidden={!sidebarOpen}
+        inert={sidebarOpen ? undefined : ""}
+      >
+        <div className="librarian-sidebar-top">
+          <div className="librarian-sidebar-profile">
+            <div className="librarian-sidebar-avatar">
+              {user?.username ? user.username.charAt(0).toUpperCase() : "L"}
+            </div>
+            <div>
+              <strong>{user?.username || user?.email?.split("@")[0] || "Librarian"}</strong>
+              <span>Librarian Staff</span>
+            </div>
+          </div>
+          <button type="button" className="librarian-sidebar-close" onClick={() => setSidebarOpen(false)} aria-label="Close navigation">×</button>
+        </div>
+        <nav className="librarian-sidebar-nav">
+          <span className="librarian-sidebar-label">LIBRARY OPERATIONS</span>
+          {navigationLinks.map(({ to, label, icon }) => (
+            <Link key={to} to={to} className={`librarian-sidebar-link ${isActive(to.split("?")[0]) ? "active" : ""}`}>
+              <span className="librarian-sidebar-link-icon" aria-hidden="true">{icon}</span>
+              {label}
+            </Link>
+          ))}
+        </nav>
+        <button type="button" className="librarian-sidebar-logout" onClick={handleLogoutClick}>Log out</button>
+      </aside>
     </header>
   );
 };

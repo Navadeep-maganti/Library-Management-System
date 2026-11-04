@@ -5,6 +5,7 @@ import LibrarianReservationsPage from "../features/librarian/pages/LibrarianRese
 import LibrarianVerifyTokenPage from "../features/librarian/pages/LibrarianVerifyTokenPage";
 import LibrarianIssueBookPage from "../features/librarian/pages/LibrarianIssueBookPage";
 import LibrarianUpdateStockPage from "../features/librarian/pages/LibrarianUpdateStockPage";
+import LibrarianFinesPage from "../features/librarian/pages/LibrarianFinesPage";
 
 export const getLibrarianRoutes = (user) => [
   <Route
@@ -31,6 +32,11 @@ export const getLibrarianRoutes = (user) => [
     key="librarian-update-stock"
     path="/librarian/update-stock"
     element={<LibrarianUpdateStockPage />}
+  />,
+  <Route
+    key="librarian-fines"
+    path="/librarian/fines"
+    element={<LibrarianFinesPage />}
   />,
 ];
 

@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import LibrarianMobileDetailsModal from "../components/LibrarianMobileDetailsModal";
 import "../styles/LibrarianReservationsPage.css";
 
 const formatRemaining = (expiresAt, now) => {
@@ -17,6 +18,7 @@ const LibrarianReservationsPage = () => {
   const [now, setNow] = useState(Date.now());
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [selectedReservation, setSelectedReservation] = useState(null);
 
   const loadReservations = useCallback(async (isSilent = false) => {
     try {
@@ -78,6 +80,9 @@ const LibrarianReservationsPage = () => {
 
   return (
     <div className="reservations-page-container">
+      <LibrarianMobileDetailsModal item={selectedReservation} onClose={() => setSelectedReservation(null)} title={selectedReservation?.book?.title || "Reserved book"} subtitle={selectedReservation && `Reservation #RES-${String(selectedReservation.id).padStart(4, "0")}`} status={selectedReservation?.status?.status || "Reservation"} fields={selectedReservation ? [{ label: "Student", value: selectedReservation.student?.user?.username }, { label: "Roll number", value: selectedReservation.student?.rollNo || selectedReservation.studentId }, { label: "Author", value: selectedReservation.book?.author }, { label: "ISBN", value: selectedReservation.book?.isbn }, { label: "Reserved at", value: new Date(selectedReservation.reservedDate).toLocaleString() }, { label: "Verification code", value: selectedReservation.token }, { label: "Expires", value: new Date(selectedReservation.expiresAt).toLocaleString() }] : []}>
+        {selectedReservation?.status?.status === "Reserved" && new Date(selectedReservation.expiresAt).getTime() > now && <button type="button" className="reservations-btn-verify" onClick={() => navigate(`/librarian/verify-token?token=${selectedReservation.token}`)}>Verify OTP</button>}
+      </LibrarianMobileDetailsModal>
       {/* Header Banner */}
       <header className="reservations-header">
         <span className="reservations-badge">Step 1 · Reservations</span>
@@ -281,6 +286,7 @@ const LibrarianReservationsPage = () => {
             </tbody>
           </table>
         </div>
+        {!loading && !error && filteredReservations.length > 0 && <div className="librarian-mobile-records">{filteredReservations.map((reservation) => <button type="button" className="librarian-mobile-record" key={reservation.id} onClick={() => setSelectedReservation(reservation)}><strong>{reservation.book?.title || "Book unavailable"}</strong><span>{reservation.student?.user?.username || reservation.studentId} · {reservation.status?.status || "Reserved"}</span><em>›</em></button>)}</div>}
       </div>
     </div>
   );

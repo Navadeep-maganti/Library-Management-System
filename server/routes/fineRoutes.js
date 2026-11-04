@@ -3,6 +3,8 @@ import {
     getFines,
     getFineById,
     payFine,
+    syncFinesEndpoint
+    payFine,
     createRazorpayOrder,
     createAllRazorpayOrder,
     verifyRazorpayPayment
@@ -11,6 +13,7 @@ import {
 const router = express.Router();
 
 router.get("/", getFines);
+router.post("/sync", syncFinesEndpoint);
 router.get("/:id", getFineById);
 router.post("/:id/pay", payFine);
 
