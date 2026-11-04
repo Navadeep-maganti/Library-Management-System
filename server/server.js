@@ -14,6 +14,7 @@ import announcementRoutes from "./routes/announcementRoutes.js";
 import constantRoutes from "./routes/constantRoutes.js";
 import profileRoutes from "./routes/profileRoutes.js";
 import { processExpiredReservations } from "./controllers/reservationController.js";
+import { syncOverdueFines } from "./controllers/fineController.js";
 
 const app = express();
 
@@ -52,15 +53,24 @@ const PORT = process.env.PORT || 5000;
 
 async function startServer() {
     try {
-        app.listen(PORT, () => {
+        app.listen(PORT, async () => {
             console.log(`🚀 Server running on port ${PORT}`);
 
-            // Periodically check and restore expired reservations every 60 seconds
+            // Perform initial maintenance tasks on startup
+            try {
+                await processExpiredReservations();
+                await syncOverdueFines();
+            } catch (initErr) {
+                console.error("Initial maintenance task error:", initErr.message);
+            }
+
+            // Periodically check and restore expired reservations & sync overdue fines every 60 seconds
             setInterval(async () => {
                 try {
                     await processExpiredReservations();
+                    await syncOverdueFines();
                 } catch (err) {
-                    console.error("Auto-expiry timer error:", err.message);
+                    console.error("Auto-sync background timer error:", err.message);
                 }
             }, 60 * 1000);
         });

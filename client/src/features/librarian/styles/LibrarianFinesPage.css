@@ -1,0 +1,1062 @@
+/* LibrarianFinesPage.css - Matching Librarian Design System & Typography */
+
+.fines-page-container {
+  width: 100%;
+  max-width: none;
+  margin: 0 auto;
+  padding: 40px 24px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  min-height: 100%;
+}
+
+/* Header Banner */
+.fines-header {
+  background: linear-gradient(120deg, rgba(240, 253, 250, 0.96), rgba(255, 255, 255, 0.92));
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(203, 213, 225, 0.7);
+  border-left: 6px solid #0f766e;
+  border-radius: 18px;
+  padding: 26px 28px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.fines-header-content {
+  flex: 1;
+  min-width: 260px;
+}
+
+.fines-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ccfbf1;
+  color: #0f766e;
+  font-weight: 800;
+  font-size: 0.78rem;
+  padding: 4px 12px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 10px;
+  border: 1px solid rgba(15, 118, 110, 0.2);
+}
+
+.fines-header h2 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 6px 0;
+  letter-spacing: normal;
+}
+
+.fines-header p {
+  color: #64748b;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.fines-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.fines-btn-refresh {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.fines-btn-refresh:hover {
+  background: #f8fafc;
+  border-color: #0f766e;
+  color: #0f766e;
+}
+
+.fines-btn-refresh.spinning svg,
+.fines-btn-refresh.spinning span {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Notice Toast */
+.fines-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  gap: 12px;
+  animation: slideDown 0.25s ease;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fines-notice.success {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.fines-notice.error {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.fines-notice-close {
+  background: transparent;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.7;
+}
+
+.fines-notice-close:hover {
+  opacity: 1;
+}
+
+/* =========================================================
+   Fine Policy & Calculation Guide Section
+   ========================================================= */
+.fines-policy-section {
+  background: #ffffff;
+  border-radius: 18px;
+  border: 1px solid #e2e8f0;
+  padding: 24px 26px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.fines-policy-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.fines-policy-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.fines-policy-icon {
+  font-size: 1.5rem;
+  background: #f0fdfa;
+  border: 1px solid #ccfbf1;
+  border-radius: 12px;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fines-policy-title h3 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.fines-policy-title p {
+  margin: 2px 0 0 0;
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+.fines-policy-pill {
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: #f0fdfa;
+  color: #0f766e;
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid #99f6e4;
+  letter-spacing: 0.03em;
+}
+
+.fines-policy-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 14px;
+}
+
+.fines-policy-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 16px 18px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  transition: all 0.2s ease;
+}
+
+.fines-policy-card:hover {
+  background: #ffffff;
+  border-color: #0f766e;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(15, 118, 110, 0.08);
+}
+
+.fines-policy-card.formula {
+  background: linear-gradient(135deg, #f0fdfa, #f8fafc);
+  border-color: #99f6e4;
+}
+
+.fines-policy-card-icon {
+  font-size: 1.4rem;
+  line-height: 1;
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 6px;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+}
+
+.fines-policy-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.fines-policy-card-body strong {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.fines-policy-card-highlight {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #0f766e;
+}
+
+.fines-policy-formula-box {
+  background: #ffffff;
+  border: 1px dashed #0f766e;
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #0f766e;
+  margin: 3px 0;
+}
+
+.fines-policy-card-body span {
+  font-size: 0.76rem;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+/* Metrics Grid matching Stock & Reservations Page */
+.fines-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  width: 100%;
+}
+
+.fines-metric-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(203, 213, 225, 0.7);
+  border-radius: 16px;
+  padding: 18px 20px;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 96px;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.fines-metric-card:hover {
+  border-color: #0f766e;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+}
+
+.fines-metric-card.active {
+  border-color: #0f766e;
+  background: #f0fdfa;
+  box-shadow: 0 4px 14px rgba(15, 118, 110, 0.12);
+}
+
+.fines-metric-label {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.fines-metric-val {
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: #0f172a;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.fines-metric-sub {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.fines-metric-val.pending { color: #b45309; }
+.fines-metric-val.paid { color: #0f766e; }
+.fines-metric-val.defaulters { color: #dc2626; }
+
+/* Main Card */
+.fines-card {
+  background: #ffffff;
+  border-radius: 20px;
+  border: 1px solid #e2e8f0;
+  padding: 28px;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.06);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Toolbar & Filters */
+.fines-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.fines-search-box {
+  position: relative;
+  flex: 1;
+  min-width: 260px;
+  display: flex;
+  align-items: center;
+}
+
+.fines-search-icon {
+  position: absolute;
+  left: 14px;
+  color: #94a3b8;
+  pointer-events: none;
+  font-size: 0.9rem;
+}
+
+.fines-search-input {
+  width: 100%;
+  padding: 10px 36px 10px 38px;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  font-size: 0.9rem;
+  color: #0f172a;
+  outline: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.fines-search-input:focus {
+  border-color: #0f766e;
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
+}
+
+.fines-search-clear-btn {
+  position: absolute;
+  right: 12px;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.fines-toolbar-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.fines-filter-tabs {
+  display: flex;
+  gap: 6px;
+  background: #f1f5f9;
+  padding: 4px;
+  border-radius: 10px;
+}
+
+.fines-filter-tab-btn {
+  padding: 7px 14px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.fines-filter-tab-btn:hover {
+  color: #0f172a;
+}
+
+.fines-filter-tab-btn.active {
+  background: #ffffff;
+  color: #0f766e;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06);
+}
+
+.fines-type-select {
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #334155;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.fines-type-select:focus {
+  border-color: #0f766e;
+}
+
+/* Table Responsive */
+.fines-table-responsive {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.fines-table {
+  width: 100%;
+  min-width: 960px;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  text-align: left;
+}
+
+.fines-table th {
+  background: #f8fafc;
+  color: #475569;
+  padding: 14px 16px;
+  border-bottom: 2px solid #e2e8f0;
+  font-weight: 700;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.fines-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #1e293b;
+  vertical-align: middle;
+}
+
+.fines-table tbody tr {
+  transition: background 0.15s ease;
+  height: 74px;
+}
+
+.fines-table tbody tr:hover {
+  background: rgba(15, 118, 110, 0.02);
+}
+
+.fines-font-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-weight: 700;
+  color: #0f766e;
+  font-size: 0.82rem;
+}
+
+.fines-sub-text {
+  font-size: 0.78rem;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.fines-amount-cell {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.fines-amount-cell.due {
+  color: #dc2626;
+}
+
+.fines-amount-cell.paid {
+  color: #0f766e;
+}
+
+.fines-badge-type {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+.fines-badge-status {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 8px;
+  display: inline-block;
+}
+
+.fines-badge-status.pending {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.fines-badge-status.paid {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+/* Action Buttons */
+.fines-btn-details {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #0f766e;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.fines-btn-details:hover {
+  background: #f0fdfa;
+  border-color: #0f766e;
+  color: #0f766e;
+}
+
+.fines-btn-receipt {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #1e293b;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.fines-btn-receipt:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+
+.fines-empty-state {
+  text-align: center;
+  padding: 50px 20px;
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+.fines-empty-state.error {
+  color: #dc2626;
+}
+
+/* =========================================================
+   Modal Backdrop & Cards
+   ========================================================= */
+.fines-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.fines-modal-card {
+  background: #ffffff;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 560px;
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: modalEnter 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalEnter {
+  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.fines-modal-header {
+  padding: 22px 24px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fines-modal-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.fines-modal-header p {
+  margin: 2px 0 0 0;
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+.fines-modal-close-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.4rem;
+  color: #94a3b8;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.fines-modal-close-btn:hover {
+  color: #0f172a;
+}
+
+.fines-modal-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-height: 75vh;
+  overflow-y: auto;
+}
+
+/* Fine Summary Banner inside modal */
+.fines-modal-summary-box {
+  background: linear-gradient(135deg, #f0fdfa, #f8fafc);
+  border: 1px solid #ccfbf1;
+  border-radius: 14px;
+  padding: 16px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fines-summary-details {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.fines-summary-title {
+  font-weight: 800;
+  color: #0f172a;
+  font-size: 1rem;
+}
+
+.fines-summary-meta {
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+.fines-summary-amount-badge {
+  text-align: right;
+}
+
+.fines-summary-amount-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.fines-summary-amount-val {
+  font-size: 1.65rem;
+  font-weight: 900;
+  color: #0f766e;
+}
+
+/* Details Grid */
+.fines-details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.fines-details-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fines-details-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.fines-details-val {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #0f172a;
+  word-break: break-word;
+}
+
+.fines-details-note {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 0.82rem;
+  color: #1e40af;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  line-height: 1.45;
+}
+
+/* Modal Footer */
+.fines-modal-footer {
+  padding: 18px 24px;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.fines-btn-cancel {
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #475569;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.fines-btn-cancel:hover {
+  background: #f1f5f9;
+}
+
+.fines-btn-submit {
+  padding: 10px 22px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, #0f766e, #2563eb);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fines-btn-submit:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.35);
+}
+
+/* =========================================================
+   Receipt Modal
+   ========================================================= */
+.fines-receipt-card {
+  background: #ffffff;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 580px;
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: modalEnter 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.fines-receipt-printable {
+  padding: 32px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.fines-receipt-top {
+  text-align: center;
+  border-bottom: 2px dashed #cbd5e1;
+  padding-bottom: 16px;
+}
+
+.fines-receipt-institution {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #0f766e;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.fines-receipt-top h2 {
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: #0f172a;
+  margin: 6px 0 2px 0;
+}
+
+.fines-receipt-top p {
+  font-size: 0.82rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.fines-receipt-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px 18px;
+  margin: 0;
+}
+
+.fines-receipt-field dt {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.fines-receipt-field dd {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 2px 0 0 0;
+}
+
+.fines-receipt-amount-block {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 14px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fines-receipt-amount-label {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.fines-receipt-amount-val {
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: #0f766e;
+}
+
+.fines-receipt-stamp {
+  align-self: center;
+  border: 2px solid #059669;
+  color: #059669;
+  padding: 6px 18px;
+  border-radius: 8px;
+  font-weight: 900;
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transform: rotate(-2deg);
+}
+
+.fines-receipt-footer-notes {
+  text-align: center;
+  font-size: 0.74rem;
+  color: #94a3b8;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 12px;
+}
+
+.fines-receipt-actions {
+  padding: 16px 24px;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.fines-btn-print {
+  padding: 9px 18px;
+  border-radius: 10px;
+  border: none;
+  background: #0f766e;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.fines-btn-print:hover {
+  background: #115e59;
+}
+
+/* Mobile responsive records list */
+.librarian-mobile-records {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .fines-page-container {
+    padding: 20px 14px;
+    gap: 20px;
+  }
+
+  .fines-header {
+    padding: 18px 20px;
+  }
+
+  .fines-header h2 {
+    font-size: 1.3rem;
+  }
+
+  .fines-policy-section {
+    padding: 18px 16px;
+  }
+
+  .fines-table-responsive {
+    display: none;
+  }
+
+  .librarian-mobile-records {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .librarian-mobile-record {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+    cursor: pointer;
+    width: 100%;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+  }
+
+  .librarian-mobile-record:hover {
+    border-color: #0f766e;
+    background: #f0fdfa;
+  }
+
+  .librarian-mobile-record strong {
+    font-size: 0.9rem;
+    color: #0f172a;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .librarian-mobile-record span {
+    font-size: 0.78rem;
+    color: #64748b;
+  }
+
+  .librarian-mobile-record em {
+    font-style: normal;
+    font-size: 1.2rem;
+    color: #94a3b8;
+  }
+
+  .fines-details-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .fines-receipt-grid {
+    grid-template-columns: 1fr;
+  }
+}
