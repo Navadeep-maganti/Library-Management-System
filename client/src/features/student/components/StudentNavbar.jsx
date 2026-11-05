@@ -38,7 +38,7 @@ const StudentNavbar = ({
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [selectedBook, setSelectedBook] = useState(null);
   const navigate = useNavigate();
-  const displayName = user?.username || user?.email || "Student";
+  const displayName = user.username || user.email || "Student";
   const profileInitial = displayName.charAt(0).toUpperCase();
 
   useEffect(() => {
@@ -74,7 +74,7 @@ const StudentNavbar = ({
       <nav className="student-action-nav" aria-label="Student sections">
         <NavLink className="student-organization-brand" to="/student-dashboard" aria-label="Central Library home">
           <span className="student-organization-icon" aria-hidden="true">
-            📚
+
           </span>
           <span className="student-organization-copy">
             <strong>Central Library</strong>
@@ -110,7 +110,7 @@ const StudentNavbar = ({
             }}
             placeholder="Search books"
           />
-          <label>🔍</label>
+          <label></label>
           </label>
           {isSearchOpen && (
             <>
@@ -199,10 +199,10 @@ const StudentNavbar = ({
                   </button>
                   <div className="student-profile-drawer-avatar" aria-hidden="true">{profileInitial}</div>
                   <strong id="student-drawer-name">{displayName}</strong>
-                  {user?.email && <span className="student-profile-drawer-email">{user.email}</span>}
+                  {user.email && <span className="student-profile-drawer-email">{user.email}</span>}
                   <span className="student-profile-drawer-meta">
-                    {user?.department?.name || user?.department || "Student"}
-                    {(user?.roll_no || user?.rollNo) && ` · ${user.roll_no || user.rollNo}`}
+                    {user.department?.name || user.department || "Student"}
+                    {(user.roll_no || user.rollNo) && ` · ${user.roll_no || user.rollNo}`}
                   </span>
                 </div>
                 <nav className="student-profile-drawer-links" aria-label="Student account navigation">
@@ -235,7 +235,7 @@ const StudentNavbar = ({
               </div>
               <div className="student-profile-popover-rows">
                 <div><span>Name</span><strong>{displayName}</strong></div>
-                <div><span>Roll</span><strong>{user?.roll_no || user?.rollNo || "Not available"}</strong></div>
+                <div><span>Roll</span><strong>{user.roll_no || user.rollNo || "Not available"}</strong></div>
                 <div><span>Role</span><strong>Student</strong></div>
                 <NavLink className="student-change-password" to="/student-dashboard/profile" onClick={() => setIsProfileOpen(false)}>
                   <span>edit profile</span><strong>→</strong>

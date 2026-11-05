@@ -6,7 +6,7 @@ const API_BASE_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "");
 
 const PayFinePage = () => {
   const { currentUser, showToast } = useOutletContext() || {};
-  const rollNo = currentUser?.roll_no || currentUser?.rollNo || currentUser?.studentId;
+  const rollNo = currentUser.roll_no || currentUser.rollNo || currentUser.studentId;
 
   const [fines, setFines] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -110,8 +110,8 @@ const PayFinePage = () => {
           }
         },
         prefill: {
-          name: currentUser?.username || data.fine?.studentName || "",
-          email: currentUser?.email || data.fine?.studentEmail || "",
+          name: currentUser.username || data.fine.studentName || "",
+          email: currentUser.email || data.fine.studentEmail || "",
         },
         theme: { color: "#0f766e" },
         modal: {
@@ -188,8 +188,8 @@ const PayFinePage = () => {
           }
         },
         prefill: {
-          name: currentUser?.username || data.student?.name || "",
-          email: currentUser?.email || data.student?.email || "",
+          name: currentUser.username || data.student.name || "",
+          email: currentUser.email || data.student.email || "",
         },
         theme: { color: "#0f766e" },
         modal: {
@@ -215,7 +215,7 @@ const PayFinePage = () => {
       {/* Header */}
       <div className="payfine-header">
         <div className="payfine-title-group">
-          <span className="payfine-badge-pill">💳 Razorpay Online Gateway</span>
+          <span className="payfine-badge-pill"> Razorpay Online Gateway</span>
           <h2>Library Fine Status & Settlement</h2>
           <p className="payfine-subtitle">
             Review overdue fees, inspect fee breakdown, and settle dues securely via UPI, Cards, or Netbanking.
@@ -303,7 +303,7 @@ const PayFinePage = () => {
                 onClick={handlePayAll}
                 disabled={payingAll || payingId !== null}
               >
-                <span>💳</span>
+                <span></span>
                 {payingAll ? "Processing All Dues..." : `Pay All Dues (₹${totalPending.toFixed(2)})`}
               </button>
             )}
@@ -315,7 +315,7 @@ const PayFinePage = () => {
             </div>
           ) : pendingFines.length === 0 ? (
             <div className="payfine-empty-state">
-              <div className="payfine-empty-icon">✓</div>
+              <div className="payfine-empty-icon"></div>
               <strong className="payfine-empty-title">All Clear! No Pending Fines</strong>
               <span className="payfine-empty-desc">
                 Your library account currently has zero outstanding dues. Keep returning your borrowed books on or before their due date!
@@ -368,7 +368,7 @@ const PayFinePage = () => {
                           onClick={() => handlePaySingle(item)}
                           disabled={payingId === item.id || payingAll}
                         >
-                          <span>💳</span>
+                          <span></span>
                           {payingId === item.id ? "Opening Razorpay..." : "Pay with Razorpay"}
                         </button>
                       </td>
@@ -394,7 +394,7 @@ const PayFinePage = () => {
             </div>
           ) : paidFines.length === 0 ? (
             <div className="payfine-empty-state">
-              <div className="payfine-empty-icon" style={{ background: "#f1f5f9", color: "#64748b" }}>📄</div>
+              <div className="payfine-empty-icon" style={{ background: "#f1f5f9", color: "#64748b" }}></div>
               <strong className="payfine-empty-title">No Past Transactions</strong>
               <span className="payfine-empty-desc">
                 You do not have any settled fine payments recorded on your account yet.
@@ -421,10 +421,10 @@ const PayFinePage = () => {
                       <tr key={item.id}>
                         <td>
                           <div style={{ fontWeight: 600 }}>
-                            {payment?.paymentDate ? new Date(payment.paymentDate).toLocaleDateString() : new Date(item.issueDate).toLocaleDateString()}
+                            {payment.paymentDate ? new Date(payment.paymentDate).toLocaleDateString() : new Date(item.issueDate).toLocaleDateString()}
                           </div>
                           <div style={{ fontSize: "0.75rem", color: "#94a3b8" }}>
-                            {payment?.paymentDate ? new Date(payment.paymentDate).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : ""}
+                            {payment.paymentDate ? new Date(payment.paymentDate).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : ""}
                           </div>
                         </td>
                         <td className="payfine-font-mono">#FIN-{String(item.id).padStart(4, "0")}</td>
@@ -438,7 +438,7 @@ const PayFinePage = () => {
                         </td>
                         <td>
                           <span style={{ fontWeight: 700, color: "#059669" }}>
-                            ₹{Number(payment?.amountPaid || item.amount).toFixed(2)}
+                            ₹{Number(payment.amountPaid || item.amount).toFixed(2)}
                           </span>
                         </td>
                         <td>
@@ -447,17 +447,17 @@ const PayFinePage = () => {
                             fontWeight: 700,
                             padding: "3px 8px",
                             borderRadius: "4px",
-                            background: payment?.paymentMethod === "RAZORPAY" ? "#ccfbf1" : "#f1f5f9",
-                            color: payment?.paymentMethod === "RAZORPAY" ? "#0f766e" : "#475569"
+                            background: payment.paymentMethod === "RAZORPAY" ? "#ccfbf1" : "#f1f5f9",
+                            color: payment.paymentMethod === "RAZORPAY" ? "#0f766e" : "#475569"
                           }}>
-                            {payment?.paymentMethod || "CASH"}
+                            {payment.paymentMethod || "CASH"}
                           </span>
                         </td>
                         <td className="payfine-font-mono" style={{ fontSize: "0.8rem" }}>
-                          {payment?.transactionId || "--"}
+                          {payment.transactionId || "--"}
                         </td>
                         <td>
-                          <span className="payfine-status-pill clear">✓ Settled</span>
+                          <span className="payfine-status-pill clear"> Settled</span>
                         </td>
                       </tr>
                     );
@@ -485,21 +485,21 @@ const PayFinePage = () => {
             </div>
 
             <div className="payfine-policy-card">
-              <h4>🔄 Book Renewal Window</h4>
+              <h4> Book Renewal Window</h4>
               <p>
                 Each student is allowed up to <strong>2 renewals</strong> for an issued title (extending by 7 days each), provided no other student has queued a reservation for that book.
               </p>
             </div>
 
             <div className="payfine-policy-card">
-              <h4>💳 Payment Gateway Information</h4>
+              <h4> Payment Gateway Information</h4>
               <p>
                 Online settlements are processed securely via <strong>Razorpay</strong>. Accepted methods include UPI (Google Pay, PhonePe, Paytm), Netbanking, and Debit/Credit Cards. Receipts are issued instantaneously upon payment.
               </p>
             </div>
 
             <div className="payfine-policy-card">
-              <h4>📚 Maximum Borrowing Quota</h4>
+              <h4> Maximum Borrowing Quota</h4>
               <p>
                 Students may hold up to <strong>3 issued books</strong> concurrently. Having outstanding fines does not immediately revoke borrowing rights, but unpaid fines exceeding institution thresholds may pause renewals.
               </p>

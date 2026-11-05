@@ -18,7 +18,7 @@ const requestProfileApi = async (path, method, body) => {
 };
 
 const LibrarianProfilePage = ({ user, onUserUpdated }) => {
-  const [draft, setDraft] = useState({ username: user?.username || "", email: user?.email || "" });
+  const [draft, setDraft] = useState({ username: user.username || "", email: user.email || "" });
   const [profileNotice, setProfileNotice] = useState("");
   const [profileBusy, setProfileBusy] = useState(false);
   const [passwordDraft, setPasswordDraft] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
@@ -76,7 +76,7 @@ const LibrarianProfilePage = ({ user, onUserUpdated }) => {
       <div className="librarian-profile-details">
         <p><strong>Name</strong>{draft.username || "Not available"}</p>
         <p><strong>Email</strong>{draft.email || "Not available"}</p>
-        <p><strong>Staff ID</strong>{user?.staff_id || user?.staffId || "Not available"}</p>
+        <p><strong>Staff ID</strong>{user.staff_id || user.staffId || "Not available"}</p>
         <p><strong>Role</strong>Librarian</p>
         <p><strong>Library status</strong>Active</p>
       </div>

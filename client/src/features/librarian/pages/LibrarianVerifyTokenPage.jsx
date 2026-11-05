@@ -130,7 +130,7 @@ const LibrarianVerifyTokenPage = () => {
       {/* Centered Main Verification Card */}
       <div className="verify-card">
         <div className="verify-card-title-box">
-          <h3 className="verify-card-title">🔑 Enter Reservation Code</h3>
+          <h3 className="verify-card-title"><span aria-hidden="true">🔐</span> Enter Reservation Code</h3>
           <p className="verify-card-subtitle">Type or paste student's OTP code (e.g. 907254 or TOK-907254) to retrieve book reservation.</p>
         </div>
 
@@ -157,14 +157,14 @@ const LibrarianVerifyTokenPage = () => {
               {verifying ? "Verifying..." : "Validate OTP"}
             </button>
           </div>
-          {errorMsg && <p className="verify-error-text" role="alert">⚠️ {errorMsg}</p>}
+          {errorMsg && <p className="verify-error-text" role="alert"> {errorMsg}</p>}
         </form>
 
         {details && (
           <div className="verify-success-box">
             <div className="verify-success-header">
               <span className="icon" aria-hidden="true">
-                {issueDetails ? "🎉" : "✓"}
+                {issueDetails ? "✓" : "✓"}
               </span>
               <div>
                 <h4>{issueDetails ? "Book Issued Successfully!" : "Reservation Token Verified"}</h4>
@@ -221,7 +221,7 @@ const LibrarianVerifyTokenPage = () => {
                 onClick={handleIssueBook}
                 disabled={issuing}
               >
-                {issuing ? "Issuing Book & Updating Stock..." : "📖 Confirm & Issue Physical Book"}
+                {issuing ? "Issuing Book & Updating Stock..." : " Confirm & Issue Physical Book"}
               </button>
             )}
 
@@ -233,7 +233,7 @@ const LibrarianVerifyTokenPage = () => {
                   style={{ flex: 1, margin: 0 }}
                   onClick={() => navigate("/librarian/issue-book")}
                 >
-                  📚 View in Issued Books Registry &rarr;
+                   View in Issued Books Registry &rarr;
                 </button>
                 <button
                   type="button"

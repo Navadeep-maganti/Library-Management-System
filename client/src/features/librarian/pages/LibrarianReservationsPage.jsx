@@ -67,8 +67,8 @@ const LibrarianReservationsPage = () => {
       const q = searchTerm.trim().toLowerCase();
       const matchesToken = (r.token || "").toLowerCase().includes(q) || `res-${r.id}`.toLowerCase().includes(q);
       const matchesStudent =
-        (r.student?.user?.username || "").toLowerCase().includes(q) ||
-        (r.student?.rollNo || r.studentId || "").toLowerCase().includes(q);
+        (r.student.user.username || "").toLowerCase().includes(q) ||
+        (r.student.rollNo || r.studentId || "").toLowerCase().includes(q);
       const matchesBook =
         (r.book?.title || "").toLowerCase().includes(q) ||
         (r.book?.author || "").toLowerCase().includes(q) ||
@@ -82,7 +82,7 @@ const LibrarianReservationsPage = () => {
 
   return (
     <div className="reservations-page-container">
-      <LibrarianMobileDetailsModal item={selectedReservation} onClose={() => setSelectedReservation(null)} title={selectedReservation?.book?.title || "Reserved book"} subtitle={selectedReservation && `Reservation #RES-${String(selectedReservation.id).padStart(4, "0")}`} status={selectedReservation?.status?.status || "Reservation"} fields={selectedReservation ? [{ label: "Student", value: selectedReservation.student?.user?.username }, { label: "Roll number", value: selectedReservation.student?.rollNo || selectedReservation.studentId }, { label: "Author", value: selectedReservation.book?.author }, { label: "ISBN", value: selectedReservation.book?.isbn }, { label: "Reserved at", value: new Date(selectedReservation.reservedDate).toLocaleString() }, { label: "Verification code", value: selectedReservation.token }, { label: "Expires", value: new Date(selectedReservation.expiresAt).toLocaleString() }] : []}>
+      <LibrarianMobileDetailsModal item={selectedReservation} onClose={() => setSelectedReservation(null)} title={selectedReservation?.book?.title || "Reserved book"} subtitle={selectedReservation && `Reservation #RES-${String(selectedReservation.id).padStart(4, "0")}`} status={selectedReservation?.status?.status || "Reservation"} fields={selectedReservation ? [{ label: "Student", value: selectedReservation.student.user.username }, { label: "Roll number", value: selectedReservation.student.rollNo || selectedReservation.studentId }, { label: "Author", value: selectedReservation.book?.author }, { label: "ISBN", value: selectedReservation.book?.isbn }, { label: "Reserved at", value: new Date(selectedReservation.reservedDate).toLocaleString() }, { label: "Verification code", value: selectedReservation.token }, { label: "Expires", value: new Date(selectedReservation.expiresAt).toLocaleString() }] : []}>
         {selectedReservation?.status?.status === "Reserved" && new Date(selectedReservation.expiresAt).getTime() > now && <button type="button" className="reservations-btn-verify" onClick={() => navigate(`/librarian/verify-token?token=${selectedReservation.token}`)}>Verify OTP</button>}
       </LibrarianMobileDetailsModal>
       {/* Header Banner */}
@@ -132,7 +132,7 @@ const LibrarianReservationsPage = () => {
         {/* Search and Filters Toolbar */}
         <div className="reservations-toolbar">
           <div className="reservations-search-box">
-            <span className="search-icon">🔍</span>
+            <span className="search-icon"></span>
             <input
               type="text"
               placeholder="Search by student name, roll number, book title, or 6-digit OTP code..."
@@ -147,7 +147,7 @@ const LibrarianReservationsPage = () => {
                 onClick={() => setSearchTerm("")}
                 title="Clear search"
               >
-                ✕
+
               </button>
             )}
           </div>
@@ -204,7 +204,7 @@ const LibrarianReservationsPage = () => {
                 <tr>
                   <td colSpan="8" className="reservations-empty-state">
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
-                      <span className="spinning" style={{ fontSize: "1.5rem" }}>🔄</span>
+                      <span className="spinning" style={{ fontSize: "1.5rem" }}></span>
                       <span>Loading reservations...</span>
                     </div>
                   </td>
@@ -218,16 +218,16 @@ const LibrarianReservationsPage = () => {
                   const isExpired = reservation.status?.status === "Expired" || (reservation.status?.status === "Reserved" && !isActive);
 
                   const statusClass = isIssued ? "issued" : isActive ? "active" : "expired";
-                  const statusLabel = isIssued ? "✓ Issued" : isActive ? "● Reserved" : "⚠ Expired";
+                  const statusLabel = isIssued ? " Issued" : isActive ? "● Reserved" : " Expired";
 
                   return (
                     <tr key={reservation.id}>
                       <td className="reservations-font-mono">RES-{String(reservation.id).padStart(4, "0")}</td>
                       <td>
                         <div style={{ fontWeight: 700, color: "#0f172a" }}>
-                          {reservation.student?.user?.username || "Unknown student"}
+                          {reservation.student.user.username || "Unknown student"}
                         </div>
-                        <div className="reservations-sub-text">Roll: {reservation.student?.rollNo || reservation.studentId}</div>
+                        <div className="reservations-sub-text">Roll: {reservation.student.rollNo || reservation.studentId}</div>
                       </td>
                       <td>
                         <div style={{ fontWeight: 700, color: "#0f172a", maxWidth: "260px" }}>
@@ -263,11 +263,11 @@ const LibrarianReservationsPage = () => {
                             className="reservations-btn-verify"
                             onClick={() => navigate(`/librarian/verify-token?token=${reservation.token}`)}
                           >
-                            🔑 Verify OTP
+                             Verify OTP
                           </button>
                         ) : isIssued ? (
                           <span style={{ fontSize: "0.8rem", color: "#16a34a", fontWeight: 700 }}>
-                            ✓ Completed
+                             Completed
                           </span>
                         ) : (
                           <span style={{ fontSize: "0.8rem", color: "#94a3b8" }}>
@@ -288,7 +288,7 @@ const LibrarianReservationsPage = () => {
             </tbody>
           </table>
         </div>
-        {!loading && !error && filteredReservations.length > 0 && <div className="librarian-mobile-records">{filteredReservations.map((reservation) => <button type="button" className="librarian-mobile-record" key={reservation.id} onClick={() => setSelectedReservation(reservation)}><strong>{reservation.book?.title || "Book unavailable"}</strong><span>{reservation.student?.user?.username || reservation.studentId} · {reservation.status?.status || "Reserved"}</span><em>›</em></button>)}</div>}
+        {!loading && !error && filteredReservations.length > 0 && <div className="librarian-mobile-records">{filteredReservations.map((reservation) => <button type="button" className="librarian-mobile-record" key={reservation.id} onClick={() => setSelectedReservation(reservation)}><strong>{reservation.book?.title || "Book unavailable"}</strong><span>{reservation.student.user.username || reservation.studentId} · {reservation.status?.status || "Reserved"}</span><em>›</em></button>)}</div>}
       </div>
     </div>
   );

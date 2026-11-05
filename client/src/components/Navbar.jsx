@@ -18,13 +18,13 @@ const Navbar = ({ user, onLogout }) => {
 
   const isActive = (path) => location.pathname === path;
 
-  const dashboardPath = user?.role === "librarian" ? "/librarian-dashboard" : "/student-dashboard";
+  const dashboardPath = user.role === "librarian" ? "/librarian-dashboard" : "/student-dashboard";
 
   return (
     <header className="app-header">
       <div className="navbar-container">
         <Link to="/" className="brand-logo">
-          <div className="brand-icon-box">📚</div>
+          <div className="brand-icon-box" aria-hidden="true">📚</div>
           <div className="brand-text">
             <span className="brand-title">Central Library</span>
             <span className="brand-subtitle">Central Management Portal</span>

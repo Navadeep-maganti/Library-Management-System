@@ -13,7 +13,7 @@ const StudentToast = ({ toast, onDismiss }) => {
   return (
     <div className={`student-toast student-toast-${toast.type}`} role="alert" aria-live="polite">
       <span className="student-toast-icon" aria-hidden="true">
-        {toast.type === "success" ? "✓" : toast.type === "error" ? "!" : toast.type === "warning" ? "!" : "i"}
+        {toast.type === "success" ? "" : toast.type === "error" ? "!" : toast.type === "warning" ? "!" : "i"}
       </span>
       <span className="student-toast-message">{toast.message}</span>
       <button type="button" className="student-toast-dismiss" onClick={onDismiss} aria-label="Dismiss notification">

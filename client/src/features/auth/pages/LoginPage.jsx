@@ -75,7 +75,7 @@ const LoginPage = ({ onAuthSuccess }) => {
         }
       }
 
-      const targetPath = data.user?.role === "librarian" ? "/librarian-dashboard" : "/student-dashboard";
+      const targetPath = data.user.role === "librarian" ? "/librarian-dashboard" : "/student-dashboard";
 
       setTimeout(() => {
         navigate(targetPath);

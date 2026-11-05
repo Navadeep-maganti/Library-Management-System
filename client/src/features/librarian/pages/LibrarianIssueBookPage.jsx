@@ -110,9 +110,9 @@ const LibrarianIssueBookPage = () => {
       const q = searchTerm.trim().toLowerCase();
       const matchesTxnId = `txn-${txn.id}`.toLowerCase().includes(q) || String(txn.id).includes(q);
       const matchesStudent =
-        (txn.student?.user?.username || "").toLowerCase().includes(q) ||
+        (txn.student.user.username || "").toLowerCase().includes(q) ||
         (txn.studentId || "").toLowerCase().includes(q) ||
-        (txn.student?.department || "").toLowerCase().includes(q);
+        (txn.student.department || "").toLowerCase().includes(q);
       const matchesBook =
         (txn.book?.title || "").toLowerCase().includes(q) ||
         (txn.book?.author || "").toLowerCase().includes(q) ||
@@ -126,7 +126,7 @@ const LibrarianIssueBookPage = () => {
 
   return (
     <div className="issue-page-container">
-      <LibrarianMobileDetailsModal item={selectedRecordDetails} onClose={() => setSelectedRecordDetails(null)} title={selectedRecordDetails?.book?.title || "Issued book"} subtitle={selectedRecordDetails && `Transaction #TXN-${String(selectedRecordDetails.id).padStart(4, "0")}`} status={selectedRecordDetails?.isReturned ? "Returned" : "In circulation"} fields={selectedRecordDetails ? [{ label: "Student", value: selectedRecordDetails.student?.user?.username }, { label: "Student ID", value: selectedRecordDetails.studentId }, { label: "Author", value: selectedRecordDetails.book?.author }, { label: "ISBN", value: selectedRecordDetails.book?.isbn }, { label: "Issued", value: new Date(selectedRecordDetails.issueDate).toLocaleString() }, { label: "Due", value: new Date(selectedRecordDetails.dueDate).toLocaleString() }, { label: "Returned", value: selectedRecordDetails.returnDate ? new Date(selectedRecordDetails.returnDate).toLocaleString() : "Not yet returned" }] : []} />
+      <LibrarianMobileDetailsModal item={selectedRecordDetails} onClose={() => setSelectedRecordDetails(null)} title={selectedRecordDetails?.book?.title || "Issued book"} subtitle={selectedRecordDetails && `Transaction #TXN-${String(selectedRecordDetails.id).padStart(4, "0")}`} status={selectedRecordDetails?.isReturned ? "Returned" : "In circulation"} fields={selectedRecordDetails ? [{ label: "Student", value: selectedRecordDetails.student.user.username }, { label: "Student ID", value: selectedRecordDetails.studentId }, { label: "Author", value: selectedRecordDetails.book?.author }, { label: "ISBN", value: selectedRecordDetails.book?.isbn }, { label: "Issued", value: new Date(selectedRecordDetails.issueDate).toLocaleString() }, { label: "Due", value: new Date(selectedRecordDetails.dueDate).toLocaleString() }, { label: "Returned", value: selectedRecordDetails.returnDate ? new Date(selectedRecordDetails.returnDate).toLocaleString() : "Not yet returned" }] : []} />
       {returnConfirmation && (
         <div className="return-confirmation-backdrop" onClick={() => setReturnConfirmation(null)} role="presentation">
           <section className="return-confirmation-modal" role="dialog" aria-modal="true" aria-labelledby="return-confirmation-title" onClick={(event) => event.stopPropagation()}>
@@ -150,9 +150,9 @@ const LibrarianIssueBookPage = () => {
       {/* Notice Message */}
       {notice && (
         <div className={`issued-notice-banner ${notice.type}`} role="alert">
-          <span>{notice.type === "success" ? "✓" : "⚠️"}</span>
+          <span>{notice.type === "success" ? "" : ""}</span>
           <span>{notice.text}</span>
-          <button type="button" className="issued-notice-close" onClick={() => setNotice(null)}>✕</button>
+          <button type="button" className="issued-notice-close" onClick={() => setNotice(null)}></button>
         </div>
       )}
 
@@ -197,7 +197,7 @@ const LibrarianIssueBookPage = () => {
             {/* Search & Filter Toolbar */}
             <div className="issued-toolbar">
               <div className="issued-search-box">
-                <span className="search-icon">🔍</span>
+                <span className="search-icon"></span>
                 <input
                   type="text"
                   placeholder="Search by student name, roll number, book title, ISBN, or TXN ID..."
@@ -212,7 +212,7 @@ const LibrarianIssueBookPage = () => {
                     onClick={() => setSearchTerm("")}
                     title="Clear search"
                   >
-                    ✕
+
                   </button>
                 )}
               </div>
@@ -254,7 +254,7 @@ const LibrarianIssueBookPage = () => {
                   title="Refresh records"
                   style={{ marginLeft: "4px" }}
                 >
-                  <span className={loadingRecords ? "spinning" : ""}>🔄</span> Refresh
+                  <span className={loadingRecords ? "spinning" : ""}></span> Refresh
                 </button>
               </div>
             </div>
@@ -279,7 +279,7 @@ const LibrarianIssueBookPage = () => {
                     <tr>
                       <td colSpan="8" style={{ textAlign: "center", padding: "36px", color: "#64748b" }}>
                         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
-                          <span className="spinning" style={{ fontSize: "1.5rem" }}>🔄</span>
+                          <span className="spinning" style={{ fontSize: "1.5rem" }}></span>
                           <span>Loading issued book records...</span>
                         </div>
                       </td>
@@ -288,7 +288,7 @@ const LibrarianIssueBookPage = () => {
                     filteredRecords.map((txn) => {
                       const isOverdue = !txn.isReturned && new Date(txn.dueDate) < new Date();
                       const statusClass = txn.isReturned ? "returned" : isOverdue ? "overdue" : "issued";
-                      const statusLabel = txn.isReturned ? "✓ Returned" : isOverdue ? "⚠ Overdue" : "● Active Loan";
+                      const statusLabel = txn.isReturned ? " Returned" : isOverdue ? " Overdue" : "● Active Loan";
 
                       const dueDateObj = new Date(txn.dueDate);
                       const issueDateObj = new Date(txn.issueDate);
@@ -301,12 +301,12 @@ const LibrarianIssueBookPage = () => {
                           </td>
                           <td className="student-cell">
                             <div style={{ fontWeight: 700, color: "#0f172a" }}>
-                              {txn.student?.user?.username || "Student"}
+                              {txn.student.user.username || "Student"}
                             </div>
                             <div style={{ fontSize: "0.78rem", color: "#64748b" }}>
                               Roll: <strong style={{ color: "#334155" }}>{txn.studentId}</strong>
                             </div>
-                            {txn.student?.department && (
+                            {txn.student.department && (
                               <div style={{ fontSize: "0.72rem", color: "#94a3b8" }}>
                                 {txn.student.department}
                               </div>
@@ -381,7 +381,7 @@ const LibrarianIssueBookPage = () => {
                                   disabled={actionLoading === txn.id}
                                   title="Mark as returned"
                                 >
-                                  {actionLoading === txn.id ? "..." : "✓ Return"}
+                                  {actionLoading === txn.id ? "..." : " Return"}
                                 </button>
                                 <button
                                   type="button"
@@ -395,7 +395,7 @@ const LibrarianIssueBookPage = () => {
                               </div>
                             ) : (
                               <span style={{ fontSize: "0.8rem", color: "#16a34a", fontWeight: 700 }}>
-                                ✓ Returned
+                                 Returned
                               </span>
                             )}
                           </td>
@@ -406,7 +406,7 @@ const LibrarianIssueBookPage = () => {
                     <tr>
                       <td colSpan="8" style={{ textAlign: "center", padding: "36px", color: "#64748b" }}>
                         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}>
-                          <span style={{ fontSize: "2rem" }}>📭</span>
+                          <span style={{ fontSize: "2rem" }}></span>
                           <strong style={{ fontSize: "1.05rem", color: "#334155" }}>
                             {searchTerm
                               ? `No issued books matched "${searchTerm}"`
@@ -436,7 +436,7 @@ const LibrarianIssueBookPage = () => {
                 </tbody>
               </table>
             </div>
-            {!loadingRecords && filteredRecords.length > 0 && <div className="librarian-mobile-records">{filteredRecords.map((txn) => <button type="button" className="librarian-mobile-record" key={txn.id} onClick={() => setSelectedRecordDetails(txn)}><strong>{txn.book?.title || "Book title unavailable"}</strong><span>{txn.student?.user?.username || txn.studentId} · {txn.isReturned ? "Returned" : "In circulation"}</span><em>›</em></button>)}</div>}
+            {!loadingRecords && filteredRecords.length > 0 && <div className="librarian-mobile-records">{filteredRecords.map((txn) => <button type="button" className="librarian-mobile-record" key={txn.id} onClick={() => setSelectedRecordDetails(txn)}><strong>{txn.book?.title || "Book title unavailable"}</strong><span>{txn.student.user.username || txn.studentId} · {txn.isReturned ? "Returned" : "In circulation"}</span><em>›</em></button>)}</div>}
           </div>
         </div>
     </div>
