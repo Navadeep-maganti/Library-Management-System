@@ -1137,6 +1137,11 @@
 .browse-book-details { background: #f4faf8; border: 1px solid #afd8d1; border-radius: 6px; color: var(--teal-dark); cursor: pointer; font-size: 0.78rem; font-weight: 800; min-height: 36px; padding: 8px 12px; }
 .browse-book-details:hover { background: var(--teal-soft); border-color: #82c2b5; }
 .browse-books-grid .book-button { min-height: 40px; margin-top: 0; }
+.browse-books-results { min-height: 378px; position: relative; }
+.book-card-placeholder {
+  min-height: 378px;
+  visibility: hidden;
+}
 .book-details-description { color: var(--muted); font-size: 0.8rem; line-height: 1.5; margin: 14px 0 16px; }
 .sr-only { height: 1px; margin: -1px; overflow: hidden; position: absolute; width: 1px; clip: rect(0, 0, 0, 0); }
 
@@ -1171,6 +1176,7 @@
   .browse-books-filter { flex: 1 1 145px; }
   .browse-books-reset { padding: 0 14px; }
   .browse-books-recommendations { padding: 24px 18px; }
+  .browse-books-results { min-height: 760px; }
   .browse-books-heading { align-items: flex-start; flex-direction: column; gap: 12px; }
   .browse-books-result-count { align-self: flex-start; }
   .browse-books-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -1279,11 +1285,61 @@
 .text-button, .catalog-requests-link { color: var(--student-teal); }
 .text-button:hover, .catalog-requests-link:hover { color: var(--student-blue); }
 
+.student-toast {
+  align-items: center;
+  animation: student-toast-in 180ms ease-out;
+  border: 1px solid;
+  border-radius: 14px;
+  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.18);
+  display: flex;
+  gap: 12px;
+  max-width: min(420px, calc(100vw - 32px));
+  padding: 14px 16px;
+  position: fixed;
+  right: 24px;
+  top: 84px;
+  z-index: 300;
+}
+.student-toast-success { background: #ecfdf5; border-color: #86efac; color: #166534; }
+.student-toast-error { background: #fff1f2; border-color: #fda4af; color: #be123c; }
+.student-toast-warning { background: #fffbeb; border-color: #fcd34d; color: #a16207; }
+.student-toast-info { background: #eff6ff; border-color: #93c5fd; color: #1d4ed8; }
+.student-toast-icon {
+  align-items: center;
+  background: currentColor;
+  border-radius: 50%;
+  color: #fff;
+  display: inline-flex;
+  flex: 0 0 22px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  height: 22px;
+  justify-content: center;
+  width: 22px;
+}
+.student-toast-message { flex: 1; font-size: 0.9rem; font-weight: 700; line-height: 1.4; }
+.student-toast-dismiss {
+  background: transparent;
+  border: 0;
+  color: currentColor;
+  cursor: pointer;
+  font-size: 1.35rem;
+  line-height: 1;
+  opacity: 0.7;
+  padding: 0 2px;
+}
+.student-toast-dismiss:hover { opacity: 1; }
+@keyframes student-toast-in {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 @media (max-width: 700px) {
   .student-dashboard-shell { padding: 0 16px 42px; }
   .student-navbar-shell { padding-top: 16px; }
   .student-action-nav { border-radius: 16px; padding: 8px; }
   .student-info-panel, .catalog-section, .borrowed-books-section { border-radius: 14px; padding: 20px 16px; }
+  .student-toast { left: 16px; right: 16px; top: 72px; }
 }
 
 /* Match the librarian portal navigation on desktop and tablet. */
@@ -1523,4 +1579,124 @@
 @keyframes student-drawer-in {
   from { opacity: 0.8; transform: translateX(-14px); }
   to { opacity: 1; transform: translateX(0); }
+}
+
+/* Keep the student portal fluid on wide screens while preserving readable content. */
+.student-dashboard-shell {
+  max-width: none;
+  padding-left: clamp(16px, 3vw, 48px);
+  padding-right: clamp(16px, 3vw, 48px);
+}
+
+.student-navbar-shell,
+.student-dashboard-content,
+.browse-books-page {
+  max-width: 1440px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.issuance-notice {
+  animation: student-notice-in 220ms ease-out both;
+  height: auto;
+  left: 50%;
+  max-height: calc(100vh - 48px);
+  max-width: 1120px;
+  overflow: auto;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(100% - 48px);
+}
+
+.issuance-notice-copy h2 {
+  letter-spacing: -0.02em;
+}
+
+.issuance-notice-copy p {
+  max-width: 760px;
+}
+
+@keyframes student-notice-in {
+  from { opacity: 0; transform: translate(-50%, calc(-50% - 12px)); }
+  to { opacity: 1; transform: translate(-50%, -50%); }
+}
+
+@media (max-width: 900px) {
+  .student-action-nav {
+    grid-template-columns: minmax(180px, 1fr) minmax(140px, 200px) 38px 38px;
+  }
+
+  .student-organization-brand {
+    min-width: 180px;
+  }
+
+  .browse-books-grid,
+  .book-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .student-dashboard-shell {
+    gap: 18px;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .student-navbar-shell {
+    margin-left: -12px;
+    width: calc(100% + 24px);
+  }
+
+  .issuance-notice {
+    gap: 12px;
+    grid-template-columns: 42px minmax(0, 1fr);
+    padding: 18px;
+    width: calc(100% - 32px);
+  }
+
+  .issuance-notice-close {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .browse-books-grid,
+  .book-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .browse-books-search-panel,
+  .browse-books-recommendations {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .issuance-notice {
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+
+  .issuance-notice-icon {
+    height: 42px;
+    width: 42px;
+  }
+
+  .issuance-notice-close {
+    grid-column: 1;
+    justify-self: stretch;
+  }
+
+  .browse-books-grid,
+  .book-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .browse-books-heading,
+  .catalog-heading,
+  .section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }

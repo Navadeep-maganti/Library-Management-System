@@ -3,7 +3,7 @@ import { useOutletContext } from "react-router-dom";
 import "../styles/PayFinePage.css";
 
 const PayFinePage = () => {
-  const { currentUser } = useOutletContext() || {};
+  const { currentUser, showToast } = useOutletContext() || {};
   const rollNo = currentUser?.roll_no || currentUser?.rollNo || currentUser?.studentId;
 
   const [fines, setFines] = useState([]);
@@ -11,7 +11,6 @@ const PayFinePage = () => {
   const [activeTab, setActiveTab] = useState("pending");
   const [payingId, setPayingId] = useState(null);
   const [payingAll, setPayingAll] = useState(false);
-  const [banner, setBanner] = useState(null);
 
   const fetchFines = useCallback(async () => {
     if (!rollNo) return;
@@ -24,11 +23,11 @@ const PayFinePage = () => {
       }
     } catch (err) {
       console.error("Failed to fetch fines:", err);
-      setBanner({ type: "error", text: "Unable to load fine records. Please try again later." });
+      showToast("error", "Unable to load fine records. Please try again later.");
     } finally {
       setLoading(false);
     }
-  }, [rollNo]);
+  }, [rollNo, showToast]);
 
   useEffect(() => {
     fetchFines();
@@ -56,7 +55,6 @@ const PayFinePage = () => {
 
   // Pay single fine via Razorpay
   const handlePaySingle = async (fine) => {
-    setBanner(null);
     setPayingId(fine.id);
 
     try {
@@ -98,16 +96,13 @@ const PayFinePage = () => {
             });
             const verifyData = await verifyRes.json();
             if (verifyRes.ok && verifyData.success) {
-              setBanner({
-                type: "success",
-                text: `Payment of ₹${Number(fine.amount).toFixed(2)} received successfully! Transaction ID: ${response.razorpay_payment_id}`,
-              });
+              showToast("success", `Payment of ₹${Number(fine.amount).toFixed(2)} received successfully! Transaction ID: ${response.razorpay_payment_id}`);
               await fetchFines();
             } else {
-              setBanner({ type: "error", text: verifyData.message || "Payment verification failed." });
+              showToast("error", verifyData.message || "Payment verification failed.");
             }
           } catch (verifyErr) {
-            setBanner({ type: "error", text: verifyErr.message || "Verification network error." });
+            showToast("error", verifyErr.message || "Verification network error.");
           } finally {
             setPayingId(null);
           }
@@ -124,16 +119,13 @@ const PayFinePage = () => {
 
       const rzp = new window.Razorpay(options);
       rzp.on("payment.failed", (errResp) => {
-        setBanner({
-          type: "error",
-          text: `Payment failed: ${errResp?.error?.description || "Transaction declined."}`,
-        });
+        showToast("error", `Payment failed: ${errResp?.error?.description || "Transaction declined."}`);
         setPayingId(null);
       });
       rzp.open();
     } catch (err) {
       console.error("Razorpay error:", err);
-      setBanner({ type: "error", text: err.message || "Failed to launch payment checkout." });
+      showToast("error", err.message || "Failed to launch payment checkout.");
       setPayingId(null);
     }
   };
@@ -141,7 +133,6 @@ const PayFinePage = () => {
   // Pay all pending fines at once
   const handlePayAll = async () => {
     if (!rollNo || pendingFines.length === 0) return;
-    setBanner(null);
     setPayingAll(true);
 
     try {
@@ -183,16 +174,13 @@ const PayFinePage = () => {
             });
             const verifyData = await verifyRes.json();
             if (verifyRes.ok && verifyData.success) {
-              setBanner({
-                type: "success",
-                text: `All ${data.fineIds.length} dues (₹${totalPending.toFixed(2)}) cleared successfully! Transaction ID: ${response.razorpay_payment_id}`,
-              });
+              showToast("success", `All ${data.fineIds.length} dues (₹${totalPending.toFixed(2)}) cleared successfully! Transaction ID: ${response.razorpay_payment_id}`);
               await fetchFines();
             } else {
-              setBanner({ type: "error", text: verifyData.message || "Payment verification failed." });
+              showToast("error", verifyData.message || "Payment verification failed.");
             }
           } catch (verifyErr) {
-            setBanner({ type: "error", text: verifyErr.message || "Verification network error." });
+            showToast("error", verifyErr.message || "Verification network error.");
           } finally {
             setPayingAll(false);
           }
@@ -209,16 +197,13 @@ const PayFinePage = () => {
 
       const rzp = new window.Razorpay(options);
       rzp.on("payment.failed", (errResp) => {
-        setBanner({
-          type: "error",
-          text: `Payment failed: ${errResp?.error?.description || "Transaction declined."}`,
-        });
+        showToast("error", `Payment failed: ${errResp?.error?.description || "Transaction declined."}`);
         setPayingAll(false);
       });
       rzp.open();
     } catch (err) {
       console.error("Razorpay error:", err);
-      setBanner({ type: "error", text: err.message || "Failed to launch payment checkout." });
+      showToast("error", err.message || "Failed to launch payment checkout.");
       setPayingAll(false);
     }
   };
@@ -235,21 +220,6 @@ const PayFinePage = () => {
           </p>
         </div>
       </div>
-
-      {/* Banner Notice */}
-      {banner && (
-        <div className={`payfine-banner ${banner.type}`}>
-          <span>{banner.type === "success" ? "✓" : "⚠️"} {banner.text}</span>
-          <button
-            type="button"
-            className="payfine-banner-close"
-            onClick={() => setBanner(null)}
-            aria-label="Dismiss banner"
-          >
-            ×
-          </button>
-        </div>
-      )}
 
       {/* Metrics Grid */}
       <div className="payfine-stats-grid">

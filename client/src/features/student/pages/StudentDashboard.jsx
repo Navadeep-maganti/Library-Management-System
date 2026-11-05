@@ -1,7 +1,8 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 
 import StudentNavbar from "../components/StudentNavbar";
+import StudentToast from "../components/StudentToast";
 import { dummyStudentUser } from "../data/studentData";
 import "../styles/StudentDashboard.css";
 
@@ -50,7 +51,6 @@ const StudentDashboard = ({ user, onLogout }) => {
   const [profileUserUpdates, setProfileUserUpdates] = useState({});
   const [issuanceNoticeBook, setIssuanceNoticeBook] = useState(null);
   const [requests, setRequests] = useState([]);
-  const [requestsError, setRequestsError] = useState("");
   const [requestingBookId, setRequestingBookId] = useState(null);
   const [catalogBooks, setCatalogBooks] = useState([]);
   const [borrowedBooks, setBorrowedBooks] = useState([]);
@@ -58,9 +58,11 @@ const StudentDashboard = ({ user, onLogout }) => {
   const [reservationQuota, setReservationQuota] = useState({ totalUsedToday: 0, totalDailyLimit: 5, totalRemainingToday: 0 });
   const [category, setCategory] = useState("All");
   const [sortBy, setSortBy] = useState("title");
+  const [toast, setToast] = useState(null);
 
   const location = useLocation();
   const navigate = useNavigate();
+  const showToast = useCallback((type, message) => setToast({ type, message, id: Date.now() }), []);
 
   /*
   |--------------------------------------------------------------------------
@@ -103,7 +105,7 @@ const StudentDashboard = ({ user, onLogout }) => {
         totalRemainingToday: Number(quota.totalRemainingToday || 0),
       });
     } catch (quotaError) {
-      setRequestsError((prev) => prev || quotaError.message);
+      showToast("error", quotaError.message);
     }
   };
 
@@ -124,7 +126,7 @@ const StudentDashboard = ({ user, onLogout }) => {
         if (!response.ok) throw new Error(data.message || "Could not load your reservations.");
         setRequests((data.reservations || []).map(normalizeReservation));
       } catch (loadError) {
-        setRequestsError(loadError.message);
+        showToast("error", loadError.message);
       }
 
       await loadReservationQuota(rollNo);
@@ -133,7 +135,7 @@ const StudentDashboard = ({ user, onLogout }) => {
     loadReservations();
     const refreshTimer = window.setInterval(loadReservations, 30000);
     return () => window.clearInterval(refreshTimer);
-  }, [currentUser.rollNo, currentUser.roll_no]);
+  }, [currentUser.rollNo, currentUser.roll_no, showToast]);
 
   useEffect(() => {
     const rollNo = currentUser.roll_no || currentUser.rollNo;
@@ -163,12 +165,12 @@ const StudentDashboard = ({ user, onLogout }) => {
           finePaid: fines.filter((fine) => fine.isPaid).reduce((total, fine) => total + Number(fine.amount), 0),
         });
       } catch (loadError) {
-        setRequestsError(loadError.message);
+        showToast("error", loadError.message);
       }
     };
 
     loadStudentSummary();
-  }, [currentUser.rollNo, currentUser.roll_no]);
+  }, [currentUser.rollNo, currentUser.roll_no, showToast]);
 
   useEffect(() => {
     const loadCatalog = async () => {
@@ -178,12 +180,12 @@ const StudentDashboard = ({ user, onLogout }) => {
         if (!response.ok) throw new Error(data.message || "Could not load the library catalog.");
         setCatalogBooks(data.books || []);
       } catch (loadError) {
-        setRequestsError(loadError.message);
+        showToast("error", loadError.message);
       }
     };
 
     loadCatalog();
-  }, []);
+  }, [showToast]);
 
   /*
   |--------------------------------------------------------------------------
@@ -234,17 +236,16 @@ const StudentDashboard = ({ user, onLogout }) => {
     const rollNo = currentUser.roll_no || currentUser.rollNo;
 
     if (!rollNo) {
-      setRequestsError("Your student roll number is not available. Please sign in again.");
+      showToast("error", "Your student roll number is not available. Please sign in again.");
       return;
     }
     if (reservationQuota.totalRemainingToday <= 0) {
-      setRequestsError("Daily reservation limit reached. You can make up to 5 requests per day.");
+      showToast("warning", "Daily reservation limit reached. You can make up to 5 requests per day.");
       return;
     }
     if (requestingBookId === book.id) return;
 
     setRequestingBookId(book.id);
-    setRequestsError("");
     try {
       const response = await fetch("/api/reservations", {
         body: JSON.stringify({ studentId: rollNo, bookId: book.id }),
@@ -264,11 +265,10 @@ const StudentDashboard = ({ user, onLogout }) => {
         totalUsedToday: current.totalUsedToday + 1,
         totalRemainingToday: Math.max(0, current.totalRemainingToday - 1),
       }));
-      setRequestsError("");
       setIssuanceNoticeBook({ book, token: formatReservationToken(data.token || reservation.token) });
       await loadReservationQuota(rollNo);
     } catch (requestError) {
-      setRequestsError(requestError.message);
+      showToast("error", requestError.message);
     } finally {
       setRequestingBookId(null);
     }
@@ -327,7 +327,7 @@ const StudentDashboard = ({ user, onLogout }) => {
         onLogout={onLogout}
       />
 
-      {requestsError && <div className="student-api-error" role="alert">{requestsError}</div>}
+      <StudentToast toast={toast} onDismiss={() => setToast(null)} />
 
       {issuanceNoticeBook && (
         <>
@@ -769,6 +769,7 @@ const StudentDashboard = ({ user, onLogout }) => {
             cancelReservation,
             searchTerm,
             reservationQuota,
+            showToast,
           }}
         />
 

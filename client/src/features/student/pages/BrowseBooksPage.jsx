@@ -15,8 +15,10 @@ const normalizeBook = (book) => {
   };
 };
 
+const BOOK_SLOTS = 12;
+
 const BrowseBooksPage = () => {
-  const { requests, requestBook, requestingBookId, reservationQuota = { totalRemainingToday: 0 } } = useOutletContext();
+  const { requests, requestBook, requestingBookId, showToast, reservationQuota = { totalRemainingToday: 0 } } = useOutletContext();
   const dailyQuotaReached = reservationQuota.totalRemainingToday <= 0;
   const [books, setBooks] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -25,7 +27,6 @@ const BrowseBooksPage = () => {
   const [categories, setCategories] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState("");
   const [selectedBook, setSelectedBook] = useState(null);
 
   useEffect(() => {
@@ -44,12 +45,12 @@ const BrowseBooksPage = () => {
         setCategories(categoriesData.categories || []);
         setDepartments(departmentsData.departments || []);
       } catch (loadError) {
-        setError(loadError.message);
+        showToast("error", loadError.message);
       }
     };
 
     loadFilters();
-  }, []);
+  }, [showToast]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -69,9 +70,8 @@ const BrowseBooksPage = () => {
         const data = await response.json();
         if (!response.ok) throw new Error(data.message || "The library catalog could not be loaded.");
         setBooks((data.books || []).map(normalizeBook));
-        setError("");
       } catch (loadError) {
-        if (loadError.name !== "AbortError") setError(loadError.message);
+        if (loadError.name !== "AbortError") showToast("error", loadError.message);
       } finally {
         if (!controller.signal.aborted) setIsLoading(false);
       }
@@ -79,7 +79,7 @@ const BrowseBooksPage = () => {
 
     loadBooks();
     return () => controller.abort();
-  }, [categoryId, departmentId, searchTerm]);
+  }, [categoryId, departmentId, searchTerm, showToast]);
 
   const visibleBooks = books;
 
@@ -154,10 +154,10 @@ const BrowseBooksPage = () => {
           <span className="browse-books-result-count">{isLoading ? "Loading..." : `${visibleBooks.length} ${visibleBooks.length === 1 ? "title" : "titles"}`}</span>
         </div>
 
-        {error && <div className="browse-books-message">{error}</div>}
-        {!isLoading && !error && visibleBooks.length === 0 && <div className="browse-books-message">No books match your search and filters.</div>}
-        <div className="book-grid browse-books-grid">
-          {visibleBooks.map((book) => (
+        {!isLoading && visibleBooks.length === 0 && <div className="browse-books-message">No books match your search and filters.</div>}
+        <div className="browse-books-results">
+          <div className="book-grid browse-books-grid">
+          {(isLoading ? Array.from({ length: BOOK_SLOTS }, () => null) : visibleBooks).map((book, index) => book ? (
             <article className="book-card" key={book.id}>
               <div className="book-cover">{book.title.charAt(0)}</div>
               <div className="book-card-content">
@@ -178,7 +178,8 @@ const BrowseBooksPage = () => {
                 </div>
               </div>
             </article>
-          ))}
+          ) : <article className="book-card book-card-placeholder" aria-hidden="true" key={`book-slot-${index}`} />)}
+          </div>
         </div>
       </section>
 
