@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 
+const API_BASE_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "");
+
 const formatDate = (value) => value ? new Date(value).toLocaleString() : "Not available";
 const formatToken = (reservation) => {
   if (!reservation) return "-";
@@ -65,7 +67,7 @@ const ViewHistoryPage = () => {
 
     const loadHistory = async () => {
       try {
-        const response = await fetch(`/api/students/${encodeURIComponent(rollNo)}`);
+        const response = await fetch(`${API_BASE_URL}/api/students/${encodeURIComponent(rollNo)}`);
         const data = await response.json();
         if (!response.ok) throw new Error(data.message || "Could not load borrowing history.");
         setHistoryItems(normalizeHistory(data.student));

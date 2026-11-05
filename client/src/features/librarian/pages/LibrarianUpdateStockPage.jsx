@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import LibrarianMobileDetailsModal from "../components/LibrarianMobileDetailsModal";
 import "../styles/LibrarianUpdateStockPage.css";
 
+const API_BASE_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "");
 const STOCK_ENDPOINT = (bookId) => `/api/books/${bookId}/stock`;
 
 const getData = async (response) => {
@@ -11,7 +12,7 @@ const getData = async (response) => {
 };
 
 const request = async (url, options) => {
-  try { return await fetch(url, options); }
+  try { return await fetch(`${API_BASE_URL}${url}`, options); }
   catch { throw new Error("Cannot reach the server. Start the backend and try again."); }
 };
 

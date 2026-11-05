@@ -192,8 +192,10 @@ EMAIL_PASS=your_app_specific_password
 Create a file named `.env` inside the `client/` directory:
 
 ```env
-VITE_API_URL=http://localhost:5000/api
+VITE_API_URL=http://localhost:5000
 ```
+
+For a deployed frontend, set `VITE_API_URL` to the backend origin (for example, `https://your-backend.onrender.com`) without a trailing slash or `/api`. Leave it unset locally to use the Vite development proxy.
 
 ---
 

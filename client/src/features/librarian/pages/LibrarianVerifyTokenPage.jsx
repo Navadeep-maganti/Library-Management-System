@@ -2,7 +2,8 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import "../styles/LibrarianVerifyTokenPage.css";
 
-const VERIFY_ENDPOINT = "/api/reservations/verify-token";
+const API_BASE_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "");
+const VERIFY_ENDPOINT = `${API_BASE_URL}/api/reservations/verify-token`;
 
 const formatRemaining = (expiresAt, now) => {
   const remainingMs = Math.max(0, new Date(expiresAt).getTime() - now);
@@ -27,7 +28,7 @@ const LibrarianVerifyTokenPage = () => {
 
   const loadReservations = useCallback(async (isSilent = false) => {
     try {
-      const response = await fetch("/api/reservations");
+      const response = await fetch(`${API_BASE_URL}/api/reservations`);
       const data = await response.json().catch(() => ({}));
       if (data.success && Array.isArray(data.reservations)) {
         setReservations(data.reservations);

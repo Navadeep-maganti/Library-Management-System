@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import LibrarianMobileDetailsModal from "../components/LibrarianMobileDetailsModal";
 import "../styles/LibrarianIssueBookPage.css";
 
+const API_BASE_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "");
+
 const LibrarianIssueBookPage = () => {
   // Issued-books registry state
   const [issuedRecords, setIssuedRecords] = useState([]);
@@ -17,7 +19,7 @@ const LibrarianIssueBookPage = () => {
   const fetchIssuedBooks = useCallback(async (isSilent = false) => {
     try {
       if (!isSilent) setLoadingRecords(true);
-      const res = await fetch("/api/issued-books");
+      const res = await fetch(`${API_BASE_URL}/api/issued-books`);
       const data = await res.json();
       if (data.success && Array.isArray(data.issuedBooks)) {
         setIssuedRecords(data.issuedBooks);
@@ -48,7 +50,7 @@ const LibrarianIssueBookPage = () => {
     try {
       setActionLoading(id);
       setNotice(null);
-      const res = await fetch(`/api/issued-books/${id}/return`, {
+      const res = await fetch(`${API_BASE_URL}/api/issued-books/${id}/return`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
@@ -71,7 +73,7 @@ const LibrarianIssueBookPage = () => {
     try {
       setActionLoading(id);
       setNotice(null);
-      const res = await fetch(`/api/issued-books/${id}/renew`, {
+      const res = await fetch(`${API_BASE_URL}/api/issued-books/${id}/renew`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });

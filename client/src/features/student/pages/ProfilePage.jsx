@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useOutletContext } from "react-router-dom";
 
+const API_BASE_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "");
 const PASSWORD_RULE = /^(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,}$/;
 
 const requestProfileApi = async (path, method, body) => {
@@ -9,7 +10,7 @@ const requestProfileApi = async (path, method, body) => {
     throw new Error("Your session has expired. Please sign in again.");
   }
 
-  const response = await fetch(path, {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
     method,
     headers: {
       Authorization: `Bearer ${token}`,
