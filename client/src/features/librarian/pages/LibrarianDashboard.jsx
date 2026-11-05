@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { apiFetch } from "../../../api";
 import LibrarianMobileDetailsModal from "../components/LibrarianMobileDetailsModal";
 import "../styles/LibrarianDashboard.css";
 
@@ -35,7 +36,7 @@ const LibrarianDashboard = ({ user }) => {
   const fetchIssuedBooks = useCallback(async (isSilent = false) => {
     try {
       if (!isSilent) setLoadingRecords(true);
-      const res = await fetch("/api/issued-books");
+      const res = await apiFetch("/api/issued-books");
       const data = await res.json();
       if (data.success && Array.isArray(data.issuedBooks)) {
         setIssuedRecords(data.issuedBooks);
@@ -67,7 +68,7 @@ const LibrarianDashboard = ({ user }) => {
     try {
       setActionLoading(id);
       setNotice(null);
-      const res = await fetch(`/api/issued-books/${id}/return`, {
+      const res = await apiFetch(`/api/issued-books/${id}/return`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
@@ -90,7 +91,7 @@ const LibrarianDashboard = ({ user }) => {
     try {
       setActionLoading(id);
       setNotice(null);
-      const res = await fetch(`/api/issued-books/${id}/renew`, {
+      const res = await apiFetch(`/api/issued-books/${id}/renew`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });

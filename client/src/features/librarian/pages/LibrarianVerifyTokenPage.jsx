@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import { apiFetch } from "../../../api";
 import "../styles/LibrarianVerifyTokenPage.css";
 
 const VERIFY_ENDPOINT = "/api/reservations/verify-token";
@@ -27,7 +28,7 @@ const LibrarianVerifyTokenPage = () => {
 
   const loadReservations = useCallback(async (isSilent = false) => {
     try {
-      const response = await fetch("/api/reservations");
+      const response = await apiFetch("/api/reservations");
       const data = await response.json().catch(() => ({}));
       if (data.success && Array.isArray(data.reservations)) {
         setReservations(data.reservations);
@@ -49,7 +50,7 @@ const LibrarianVerifyTokenPage = () => {
   }, []);
 
   const callVerificationApi = async (body) => {
-    const response = await fetch(VERIFY_ENDPOINT, {
+    const response = await apiFetch(VERIFY_ENDPOINT, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),

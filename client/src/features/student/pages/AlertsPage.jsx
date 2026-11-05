@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useOutletContext } from "react-router-dom";
+import { apiFetch } from "../../../api";
 
 const formatReceivedAt = (value) => new Date(value).toLocaleString([], {
   dateStyle: "medium",
@@ -14,7 +15,7 @@ const AlertsPage = () => {
   useEffect(() => {
     const loadAnnouncements = async () => {
       try {
-        const response = await fetch("/api/announcements");
+        const response = await apiFetch("/api/announcements");
         const data = await response.json();
         if (!response.ok) throw new Error(data.message || "Could not load library updates.");
         setAlerts((data.announcements || []).map((announcement) => ({

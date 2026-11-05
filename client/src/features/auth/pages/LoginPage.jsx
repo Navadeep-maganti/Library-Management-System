@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { apiFetch } from "../../../api";
 import "../styles/LoginPage.css";
 
 const LoginPage = ({ onAuthSuccess }) => {
@@ -43,7 +44,7 @@ const LoginPage = ({ onAuthSuccess }) => {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("/api/auth/login", {
+      const response = await apiFetch("/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

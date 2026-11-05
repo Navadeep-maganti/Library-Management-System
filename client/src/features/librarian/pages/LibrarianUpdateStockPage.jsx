@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { apiFetch } from "../../../api";
 import LibrarianMobileDetailsModal from "../components/LibrarianMobileDetailsModal";
 import "../styles/LibrarianUpdateStockPage.css";
 
@@ -11,7 +12,7 @@ const getData = async (response) => {
 };
 
 const request = async (url, options) => {
-  try { return await fetch(url, options); }
+  try { return await apiFetch(url, options); }
   catch { throw new Error("Cannot reach the server. Start the backend and try again."); }
 };
 

@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { apiFetch } from "../../../api";
 import LibrarianMobileDetailsModal from "../components/LibrarianMobileDetailsModal";
 import "../styles/LibrarianFinesPage.css";
 
@@ -30,7 +31,7 @@ const LibrarianFinesPage = () => {
 
   // Load policy constants
   useEffect(() => {
-    fetch("/api/constants")
+    apiFetch("/api/constants")
       .then((res) => res.json())
       .then((data) => {
         if (data.success && data.constants) {
@@ -49,7 +50,7 @@ const LibrarianFinesPage = () => {
       } else {
         setRefreshing(true);
       }
-      const res = await fetch("/api/fines");
+      const res = await apiFetch("/api/fines");
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.success) {
         throw new Error(data.message || "Failed to load fine records.");
@@ -70,7 +71,7 @@ const LibrarianFinesPage = () => {
     try {
       setSyncing(true);
       setNotice(null);
-      const res = await fetch("/api/fines/sync", { method: "POST" });
+      const res = await apiFetch("/api/fines/sync", { method: "POST" });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.success) {
         throw new Error(data.message || "Failed to synchronize overdue fines.");

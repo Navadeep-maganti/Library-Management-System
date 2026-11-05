@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useOutletContext } from "react-router-dom";
+import { apiFetch } from "../../../api";
 import "../styles/PayFinePage.css";
 
 const PayFinePage = () => {
@@ -16,7 +17,7 @@ const PayFinePage = () => {
     if (!rollNo) return;
     try {
       setLoading(true);
-      const res = await fetch(`/api/fines?studentId=${encodeURIComponent(rollNo)}`);
+      const res = await apiFetch(`/api/fines?studentId=${encodeURIComponent(rollNo)}`);
       const data = await res.json();
       if (data.success && Array.isArray(data.fines)) {
         setFines(data.fines);
@@ -64,7 +65,7 @@ const PayFinePage = () => {
       }
 
       // 1. Create order on backend
-      const res = await fetch(`/api/fines/${fine.id}/create-razorpay-order`, {
+      const res = await apiFetch(`/api/fines/${fine.id}/create-razorpay-order`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
@@ -84,7 +85,7 @@ const PayFinePage = () => {
         order_id: data.order.id,
         handler: async (response) => {
           try {
-            const verifyRes = await fetch("/api/fines/verify-razorpay-payment", {
+            const verifyRes = await apiFetch("/api/fines/verify-razorpay-payment", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
@@ -142,7 +143,7 @@ const PayFinePage = () => {
       }
 
       // 1. Create combined order on backend
-      const res = await fetch("/api/fines/create-all-order", {
+      const res = await apiFetch("/api/fines/create-all-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ studentId: rollNo }),
@@ -162,7 +163,7 @@ const PayFinePage = () => {
         order_id: data.order.id,
         handler: async (response) => {
           try {
-            const verifyRes = await fetch("/api/fines/verify-razorpay-payment", {
+            const verifyRes = await apiFetch("/api/fines/verify-razorpay-payment", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({

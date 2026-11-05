@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useOutletContext } from "react-router-dom";
+import { apiFetch } from "../../../api";
 
 const normalizeBook = (book) => {
   const availability = book.availabilities?.reduce(
@@ -33,8 +34,8 @@ const BrowseBooksPage = () => {
     const loadFilters = async () => {
       try {
         const [categoriesResponse, departmentsResponse] = await Promise.all([
-          fetch("/api/categories"),
-          fetch("/api/departments"),
+          apiFetch("/api/categories"),
+          apiFetch("/api/departments"),
         ]);
         if (!categoriesResponse.ok || !departmentsResponse.ok) throw new Error("The catalog filters could not be loaded.");
 
@@ -66,7 +67,7 @@ const BrowseBooksPage = () => {
     const loadBooks = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch(`/api/books?${query.toString()}`, { signal: controller.signal });
+        const response = await apiFetch(`/api/books?${query.toString()}`, { signal: controller.signal });
         const data = await response.json();
         if (!response.ok) throw new Error(data.message || "The library catalog could not be loaded.");
         setBooks((data.books || []).map(normalizeBook));

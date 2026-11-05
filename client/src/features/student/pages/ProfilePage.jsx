@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useOutletContext } from "react-router-dom";
-
+import { apiFetch } from "../../../api";
 const PASSWORD_RULE = /^(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,}$/;
 
 const requestProfileApi = async (path, method, body) => {
@@ -9,7 +9,7 @@ const requestProfileApi = async (path, method, body) => {
     throw new Error("Your session has expired. Please sign in again.");
   }
 
-  const response = await fetch(path, {
+  const response = await apiFetch(path, {
     method,
     headers: {
       Authorization: `Bearer ${token}`,

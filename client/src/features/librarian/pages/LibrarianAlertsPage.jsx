@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { apiFetch } from "../../../api";
 import "../styles/LibrarianProfilePage.css";
 
 const LibrarianAlertsPage = () => {
@@ -11,7 +12,7 @@ const LibrarianAlertsPage = () => {
     setLoading(true);
     setError("");
     try {
-      const response = await fetch("/api/announcements");
+      const response = await apiFetch("/api/announcements");
       const data = await response.json().catch(() => ({}));
       if (!response.ok || !data.success) throw new Error(data.message || "Could not load alerts.");
       setAlerts(Array.isArray(data.announcements) ? data.announcements : []);
@@ -30,7 +31,7 @@ const LibrarianAlertsPage = () => {
     setActionLoading(id);
     setError("");
     try {
-      const response = await fetch(`/api/announcements/${id}`, { method: "DELETE" });
+      const response = await apiFetch(`/api/announcements/${id}`, { method: "DELETE" });
       const data = await response.json().catch(() => ({}));
       if (!response.ok || !data.success) throw new Error(data.message || "Could not dismiss alert.");
       setAlerts((current) => current.filter((alert) => alert.id !== id));
@@ -46,7 +47,7 @@ const LibrarianAlertsPage = () => {
     setActionLoading("all");
     setError("");
     try {
-      const results = await Promise.all(alerts.map((alert) => fetch(`/api/announcements/${alert.id}`, { method: "DELETE" })));
+      const results = await Promise.all(alerts.map((alert) => apiFetch(`/api/announcements/${alert.id}`, { method: "DELETE" })));
       const failed = results.find((response) => !response.ok);
       if (failed) throw new Error("Some alerts could not be cleared. Please try again.");
       setAlerts([]);

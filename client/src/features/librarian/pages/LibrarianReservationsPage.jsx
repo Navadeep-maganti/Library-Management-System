@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { apiFetch } from "../../../api";
 import LibrarianMobileDetailsModal from "../components/LibrarianMobileDetailsModal";
 import "../styles/LibrarianReservationsPage.css";
 
@@ -23,7 +24,7 @@ const LibrarianReservationsPage = () => {
   const loadReservations = useCallback(async (isSilent = false) => {
     try {
       if (!isSilent) setError("");
-      const response = await fetch("/api/reservations");
+      const response = await apiFetch("/api/reservations");
       const data = await response.json().catch(() => ({}));
       if (!response.ok || !data.success) throw new Error(data.message || "Unable to load reservations.");
       setReservations(data.reservations || []);
