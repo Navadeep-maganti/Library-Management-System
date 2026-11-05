@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import LibrarianMobileDetailsModal from "../components/LibrarianMobileDetailsModal";
 import "../styles/LibrarianDashboard.css";
 
-const API_BASE_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "");
+const API_BASE_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "").replace(/\/api$/, "");
 
 const LibrarianDashboard = ({ user }) => {
   const navigate = useNavigate();

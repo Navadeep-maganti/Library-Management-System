@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useOutletContext } from "react-router-dom";
 import "../styles/PayFinePage.css";
 
-const API_BASE_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "");
+const API_BASE_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "").replace(/\/api$/, "");
 
 const PayFinePage = () => {
   const { currentUser, showToast } = useOutletContext() || {};

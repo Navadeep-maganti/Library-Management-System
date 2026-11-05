@@ -18,7 +18,7 @@ const Navbar = ({ user, onLogout }) => {
 
   const isActive = (path) => location.pathname === path;
 
-  const dashboardPath = user.role === "librarian" ? "/librarian-dashboard" : "/student-dashboard";
+  const dashboardPath = user?.role === "librarian" ? "/librarian-dashboard" : "/student-dashboard";
 
   return (
     <header className="app-header">
