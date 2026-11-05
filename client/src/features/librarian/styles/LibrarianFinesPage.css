@@ -83,6 +83,7 @@
   font-size: 0.85rem;
   cursor: pointer;
   transition: all 0.2s ease;
+  animation: none;
 }
 
 .fines-btn-refresh:hover {
@@ -91,8 +92,13 @@
   color: #0f766e;
 }
 
-.fines-btn-refresh.spinning svg,
-.fines-btn-refresh.spinning span {
+.fines-btn-refresh .fines-btn-icon {
+  display: inline-block;
+  line-height: 1;
+}
+
+.fines-btn-refresh .fines-btn-icon.spinning {
+  display: inline-block;
   animation: spin 1s linear infinite;
 }
 
