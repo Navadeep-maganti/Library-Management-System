@@ -5,7 +5,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      "/api": "https://library-management-system-zwwf.onrender.com",
+      "/api":VITE_API_URL,
     },
   },
 })
