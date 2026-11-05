@@ -2,7 +2,6 @@ import { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../styles/RegistrationPage.css";
 
-const API_BASE_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "").replace(/\/api$/, "");
 const OTP_VALIDITY_MINUTES = 10;
 const OTP_VALIDITY_MS = OTP_VALIDITY_MINUTES * 60 * 1000;
 const OTP_RESEND_LOCK_MS = 60 * 1000;
@@ -202,7 +201,7 @@ function RegistrationPage({ onAuthSuccess }) {
     setLoadingState((prev) => ({ ...prev, sendingOtp: true }));
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/send-otp`, {
+      const response = await fetch("/api/auth/send-otp", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -255,7 +254,7 @@ function RegistrationPage({ onAuthSuccess }) {
     setLoadingState((prev) => ({ ...prev, verifyingOtp: true }));
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/verify-otp`, {
+      const response = await fetch("/api/auth/verify-otp", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -313,7 +312,7 @@ function RegistrationPage({ onAuthSuccess }) {
         payload.staff_id = activeForm.identifier.trim();
       }
 
-      const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
+      const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

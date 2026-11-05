@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "../styles/LibrarianProfilePage.css";
 
-const API_BASE_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "").replace(/\/api$/, "");
-
 const LibrarianAlertsPage = () => {
   const [alerts, setAlerts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -13,7 +11,7 @@ const LibrarianAlertsPage = () => {
     setLoading(true);
     setError("");
     try {
-      const response = await fetch(`${API_BASE_URL}/api/announcements`);
+      const response = await fetch("/api/announcements");
       const data = await response.json().catch(() => ({}));
       if (!response.ok || !data.success) throw new Error(data.message || "Could not load alerts.");
       setAlerts(Array.isArray(data.announcements) ? data.announcements : []);
@@ -32,7 +30,7 @@ const LibrarianAlertsPage = () => {
     setActionLoading(id);
     setError("");
     try {
-      const response = await fetch(`${API_BASE_URL}/api/announcements/${id}`, { method: "DELETE" });
+      const response = await fetch(`/api/announcements/${id}`, { method: "DELETE" });
       const data = await response.json().catch(() => ({}));
       if (!response.ok || !data.success) throw new Error(data.message || "Could not dismiss alert.");
       setAlerts((current) => current.filter((alert) => alert.id !== id));
@@ -48,7 +46,7 @@ const LibrarianAlertsPage = () => {
     setActionLoading("all");
     setError("");
     try {
-      const results = await Promise.all(alerts.map((alert) => fetch(`${API_BASE_URL}/api/announcements/${alert.id}`, { method: "DELETE" })));
+      const results = await Promise.all(alerts.map((alert) => fetch(`/api/announcements/${alert.id}`, { method: "DELETE" })));
       const failed = results.find((response) => !response.ok);
       if (failed) throw new Error("Some alerts could not be cleared. Please try again.");
       setAlerts([]);

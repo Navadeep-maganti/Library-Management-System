@@ -6,8 +6,6 @@ import StudentToast from "../components/StudentToast";
 import { dummyStudentUser } from "../data/studentData";
 import "../styles/StudentDashboard.css";
 
-const API_BASE_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "").replace(/\/api$/, "");
-
 /*
 |--------------------------------------------------------------------------
 | TEMPORARY DASHBOARD DATA
@@ -93,7 +91,7 @@ const StudentDashboard = ({ user, onLogout }) => {
     if (!studentId) return;
 
     try {
-      const quotaResponse = await fetch(`${API_BASE_URL}/api/reservations/quota/${encodeURIComponent(studentId)}`);
+      const quotaResponse = await fetch(`/api/reservations/quota/${encodeURIComponent(studentId)}`);
       const quotaData = await quotaResponse.json();
 
       if (!quotaResponse.ok) {
@@ -117,13 +115,13 @@ const StudentDashboard = ({ user, onLogout }) => {
 
     const loadReservations = async () => {
       try {
-        await fetch(`${API_BASE_URL}/api/reservations/check-expired`, { method: "POST" });
+        await fetch("/api/reservations/check-expired", { method: "POST" });
       } catch (expiryError) {
         console.warn("Reservation expiry check failed:", expiryError);
       }
 
       try {
-        const response = await fetch(`${API_BASE_URL}/api/reservations?studentId=${encodeURIComponent(rollNo)}`);
+        const response = await fetch(`/api/reservations?studentId=${encodeURIComponent(rollNo)}`);
         const data = await response.json();
         if (!response.ok) throw new Error(data.message || "Could not load your reservations.");
         setRequests((data.reservations || []).map(normalizeReservation));
@@ -145,7 +143,7 @@ const StudentDashboard = ({ user, onLogout }) => {
 
     const loadStudentSummary = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/students/${encodeURIComponent(rollNo)}`);
+        const response = await fetch(`/api/students/${encodeURIComponent(rollNo)}`);
         const data = await response.json();
         if (!response.ok) throw new Error(data.message || "Could not load your library summary.");
 
@@ -177,7 +175,7 @@ const StudentDashboard = ({ user, onLogout }) => {
   useEffect(() => {
     const loadCatalog = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/books?limit=8&sortBy=title&order=asc`);
+        const response = await fetch("/api/books?limit=8&sortBy=title&order=asc");
         const data = await response.json();
         if (!response.ok) throw new Error(data.message || "Could not load the library catalog.");
         setCatalogBooks(data.books || []);
@@ -249,7 +247,7 @@ const StudentDashboard = ({ user, onLogout }) => {
 
     setRequestingBookId(book.id);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/reservations`, {
+      const response = await fetch("/api/reservations", {
         body: JSON.stringify({ studentId: rollNo, bookId: book.id }),
         headers: { "Content-Type": "application/json" },
         method: "POST",
@@ -277,7 +275,7 @@ const StudentDashboard = ({ user, onLogout }) => {
   };
 
   const cancelReservation = async (reservationId) => {
-    const response = await fetch(`${API_BASE_URL}/api/reservations/${reservationId}/cancel`, {
+    const response = await fetch(`/api/reservations/${reservationId}/cancel`, {
       method: "PATCH",
     });
     const data = await response.json();

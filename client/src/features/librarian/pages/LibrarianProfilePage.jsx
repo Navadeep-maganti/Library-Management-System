@@ -1,13 +1,12 @@
 import React, { useState } from "react";
 import "../styles/LibrarianProfilePage.css";
 
-const API_BASE_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "").replace(/\/api$/, "");
 const PASSWORD_RULE = /^(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,}$/;
 
 const requestProfileApi = async (path, method, body) => {
   const token = localStorage.getItem("libraryToken");
   if (!token) throw new Error("Your session has expired. Please sign in again.");
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  const response = await fetch(path, {
     method,
     headers: { Authorization: `Bearer ${token}`, ...(body && { "Content-Type": "application/json" }) },
     ...(body && { body: JSON.stringify(body) }),

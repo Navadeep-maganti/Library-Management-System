@@ -3,8 +3,6 @@ import { useNavigate } from "react-router-dom";
 import LibrarianMobileDetailsModal from "../components/LibrarianMobileDetailsModal";
 import "../styles/LibrarianReservationsPage.css";
 
-const API_BASE_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "").replace(/\/api$/, "");
-
 const formatRemaining = (expiresAt, now) => {
   const remainingMs = Math.max(0, new Date(expiresAt).getTime() - now);
   const minutes = Math.floor(remainingMs / 60_000);
@@ -25,7 +23,7 @@ const LibrarianReservationsPage = () => {
   const loadReservations = useCallback(async (isSilent = false) => {
     try {
       if (!isSilent) setError("");
-      const response = await fetch(`${API_BASE_URL}/api/reservations`);
+      const response = await fetch("/api/reservations");
       const data = await response.json().catch(() => ({}));
       if (!response.ok || !data.success) throw new Error(data.message || "Unable to load reservations.");
       setReservations(data.reservations || []);

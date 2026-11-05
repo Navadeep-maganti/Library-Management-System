@@ -2,8 +2,6 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../styles/LoginPage.css";
 
-const API_BASE_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "").replace(/\/api$/, "");
-
 const LoginPage = ({ onAuthSuccess }) => {
   const STUDENT_EMAIL_SUFFIX = "@student.nitandhra.ac.in";
   const navigate = useNavigate();
@@ -45,7 +43,7 @@ const LoginPage = ({ onAuthSuccess }) => {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+      const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
