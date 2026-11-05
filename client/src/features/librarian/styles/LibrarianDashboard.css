@@ -433,6 +433,78 @@
   opacity: 1;
 }
 
+.return-confirmation-backdrop {
+  align-items: center;
+  background: rgba(15, 23, 42, 0.55);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 20px;
+  position: fixed;
+  z-index: 400;
+}
+
+.return-confirmation-modal {
+  background: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.25);
+  max-width: 420px;
+  padding: 28px;
+  text-align: center;
+  width: 100%;
+}
+
+.return-confirmation-icon {
+  align-items: center;
+  background: #ccfbf1;
+  border-radius: 50%;
+  color: #0f766e;
+  display: flex;
+  font-size: 1.5rem;
+  height: 48px;
+  justify-content: center;
+  margin: 0 auto 14px;
+  width: 48px;
+}
+
+.return-confirmation-modal h2 {
+  color: #0f172a;
+  font-size: 1.2rem;
+  margin: 0 0 8px;
+}
+
+.return-confirmation-modal p {
+  color: #64748b;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.return-confirmation-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+.return-confirmation-actions button {
+  border: 0;
+  border-radius: 9px;
+  cursor: pointer;
+  font-weight: 700;
+  padding: 10px 16px;
+}
+
+.return-confirmation-cancel {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.return-confirmation-submit {
+  background: #0f766e;
+  color: #ffffff;
+}
+
 /* Metrics Grid matching Stock */
 .issued-metrics-grid {
   display: grid;

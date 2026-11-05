@@ -311,21 +311,21 @@ const LibrarianFinesPage = () => {
         <div className="fines-header-actions">
           <button
             type="button"
-            className={`fines-btn-refresh ${syncing ? "spinning" : ""}`}
+            className="fines-btn-refresh"
             onClick={handleSyncOverdues}
             title="Recalculate and synchronize all overdue loans with fines registry"
             disabled={syncing || loading}
           >
-            <span>⚡</span> {syncing ? "Syncing..." : "Sync Overdues"}
+            <span className={`fines-btn-icon ${syncing ? "spinning" : ""}`}>⚡</span> {syncing ? "Syncing..." : "Sync Overdues"}
           </button>
           <button
             type="button"
-            className={`fines-btn-refresh ${refreshing ? "spinning" : ""}`}
+            className="fines-btn-refresh"
             onClick={() => loadFines(true)}
             title="Refresh fines list"
             disabled={refreshing || loading}
           >
-            <span>🔄</span> Refresh
+            <span className={`fines-btn-icon ${refreshing ? "spinning" : ""}`}>🔄</span> Refresh
           </button>
         </div>
       </header>
@@ -566,10 +566,9 @@ const LibrarianFinesPage = () => {
                       }}
                     >
                       <span
-                        className="fines-btn-refresh spinning"
+                        className="spinning"
                         style={{
-                          border: "none",
-                          background: "transparent",
+                          display: "inline-block",
                           fontSize: "1.5rem",
                         }}
                       >
