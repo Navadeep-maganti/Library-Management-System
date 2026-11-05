@@ -12,6 +12,7 @@ const LibrarianDashboard = ({ user }) => {
   const [actionLoading, setActionLoading] = useState(null);
   const [notice, setNotice] = useState(null);
   const [selectedRecord, setSelectedRecord] = useState(null);
+  const [returnConfirmation, setReturnConfirmation] = useState(null);
 
   const currentUser =
     user ||
@@ -56,8 +57,13 @@ const LibrarianDashboard = ({ user }) => {
   }, [fetchIssuedBooks]);
 
   // Handle Mark as Returned
-  const handleReturnBook = async (id, title) => {
-    if (!window.confirm(`Confirm return for "${title || 'this book'}"?`)) return;
+  const handleReturnBook = (id, title) => {
+    setReturnConfirmation({ id, title });
+  };
+
+  const confirmReturnBook = async () => {
+    const { id, title } = returnConfirmation;
+    setReturnConfirmation(null);
     try {
       setActionLoading(id);
       setNotice(null);
@@ -157,6 +163,19 @@ const LibrarianDashboard = ({ user }) => {
           { label: "Renewals", value: selectedRecord.renewalCount || 0 },
         ] : []}
       />
+      {returnConfirmation && (
+        <div className="return-confirmation-backdrop" onClick={() => setReturnConfirmation(null)} role="presentation">
+          <section className="return-confirmation-modal" role="dialog" aria-modal="true" aria-labelledby="return-confirmation-title" onClick={(event) => event.stopPropagation()}>
+            <div className="return-confirmation-icon">↩</div>
+            <h2 id="return-confirmation-title">Confirm book return</h2>
+            <p>Are you sure you want to mark <strong>{returnConfirmation.title || "this book"}</strong> as returned?</p>
+            <div className="return-confirmation-actions">
+              <button type="button" className="return-confirmation-cancel" onClick={() => setReturnConfirmation(null)}>Cancel</button>
+              <button type="button" className="return-confirmation-submit" onClick={confirmReturnBook}>Confirm Return</button>
+            </div>
+          </section>
+        </div>
+      )}
       {/* Hero Header Section */}
       <section className="librarian-hero-section">
         <div className="librarian-hero-badge">
@@ -229,9 +248,9 @@ const LibrarianDashboard = ({ user }) => {
           <Link to="/librarian/issue-book" className="librarian-flow-card">
             <span className="librarian-flow-step-tag">Step 3</span>
             <div className="librarian-flow-icon">📖</div>
-            <h3 className="librarian-flow-title">Issue Book</h3>
-            <p className="librarian-flow-desc">Assign physical volume & configure return due date.</p>
-            <span className="librarian-flow-btn">Issue Book &rarr;</span>
+            <h3 className="librarian-flow-title">Issued Books</h3>
+            <p className="librarian-flow-desc">View every book issued in the library up to now.</p>
+            <span className="librarian-flow-btn">View Issued Books &rarr;</span>
           </Link>
 
           <Link to="/librarian/update-stock" className="librarian-flow-card">
@@ -251,8 +270,8 @@ const LibrarianDashboard = ({ user }) => {
           <p className="librarian-section-subtitle">Direct shortcuts to frequent staff operations</p>
         </div>
         <div className="librarian-actions-row">
-          <button type="button" className="librarian-btn-primary" onClick={() => navigate("/librarian/issue-book?tab=issue")}>
-            <span>📖</span> Issue New Book
+          <button type="button" className="librarian-btn-primary" onClick={() => navigate("/librarian/issue-book")}>
+            <span>📚</span> View Issued Books
           </button>
           <button type="button" className="librarian-btn-secondary" onClick={() => navigate("/librarian/verify-token")}>
             <span>🔑</span> Verify Student OTP
@@ -292,14 +311,6 @@ const LibrarianDashboard = ({ user }) => {
               title="Refresh all issued book records"
             >
               <span className={loadingRecords ? "spinning" : ""}>🔄</span> Refresh
-            </button>
-            <button
-              type="button"
-              className="librarian-btn-primary"
-              style={{ padding: "8px 16px", fontSize: "0.85rem" }}
-              onClick={() => navigate("/librarian/issue-book?tab=issue")}
-            >
-              + Issue Book
             </button>
           </div>
         </div>
@@ -595,7 +606,7 @@ const LibrarianDashboard = ({ user }) => {
                       <p style={{ margin: 0, fontSize: "0.88rem", maxWidth: "450px" }}>
                         {searchTerm
                           ? "Try searching for a different roll number, book title, or author name."
-                          : "Issue physical books to students using Step 3 (Issue Book) or by verifying student OTP tokens."}
+                          : "Issued-book records will appear here after a librarian completes issuance through the reservation verification flow."}
                       </p>
                       {searchTerm ? (
                         <button
@@ -606,16 +617,7 @@ const LibrarianDashboard = ({ user }) => {
                         >
                           Clear Search
                         </button>
-                      ) : (
-                        <button
-                          type="button"
-                          className="librarian-btn-primary"
-                          style={{ padding: "8px 18px", fontSize: "0.85rem", marginTop: "6px" }}
-                          onClick={() => navigate("/librarian/issue-book?tab=issue")}
-                        >
-                          📖 Issue First Book
-                        </button>
-                      )}
+                      ) : null}
                     </div>
                   </td>
                 </tr>

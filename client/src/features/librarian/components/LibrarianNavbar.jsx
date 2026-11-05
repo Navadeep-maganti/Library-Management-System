@@ -50,7 +50,7 @@ const LibrarianNavbar = ({ user, onLogout }) => {
     { to: "/librarian-dashboard", label: "Dashboard", icon: "⌂" },
     { to: "/librarian/reservations", label: "Reservations", icon: "▤" },
     { to: "/librarian/verify-token", label: "Verify Token", icon: "✓" },
-    { to: "/librarian/issue-book?tab=issue", label: "Issue Book", icon: "▣" },
+    { to: "/librarian/issue-book", label: "Issued Books", icon: "▣" },
     { to: "/librarian/update-stock", label: "Update Stock", icon: "↻" },
     { to: "/librarian/fines", label: "Fines", icon: "₹" },
   ];
@@ -90,10 +90,10 @@ const LibrarianNavbar = ({ user, onLogout }) => {
             Verify Token
           </Link>
           <Link
-            to="/librarian/issue-book?tab=issue"
+            to="/librarian/issue-book"
             className={`librarian-nav-link ${isActive("/librarian/issue-book") ? "active" : ""}`}
           >
-            Issue Book
+            Issued Books
           </Link>
           <Link
             to="/librarian/update-stock"

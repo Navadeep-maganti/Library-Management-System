@@ -1,40 +1,9 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
 import LibrarianMobileDetailsModal from "../components/LibrarianMobileDetailsModal";
 import "../styles/LibrarianIssueBookPage.css";
 
 const LibrarianIssueBookPage = () => {
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-
-  // Tab: 'registry' (All Issued Books) or 'issue' (Issue New Book Form)
-  const initialTab = searchParams.get("tab") === "issue" || searchParams.get("book") ? "issue" : "registry";
-  const [activeTab, setActiveTab] = useState(initialTab);
-
-  useEffect(() => {
-    if (searchParams.get("tab") === "issue") setActiveTab("issue");
-  }, [searchParams]);
-
-  // Form states
-  const initialStudent = searchParams.get("student") || "";
-  const initialRoll = searchParams.get("roll") || "";
-  const initialBook = searchParams.get("book") || "";
-
-  const [studentName, setStudentName] = useState(initialStudent);
-  const [rollNo, setRollNo] = useState(initialRoll);
-  const [selectedBook, setSelectedBook] = useState(initialBook);
-  const [availableBooks, setAvailableBooks] = useState([]);
-  const [dueDate, setDueDate] = useState(() => {
-    const d = new Date();
-    d.setDate(d.getDate() + 14);
-    return d.toISOString().split("T")[0];
-  });
-  const [issuedSuccess, setIssuedSuccess] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("");
-  const [formLoading, setFormLoading] = useState(false);
-  const [createdTxn, setCreatedTxn] = useState(null);
-
-  // Registry states
+  // Issued-books registry state
   const [issuedRecords, setIssuedRecords] = useState([]);
   const [loadingRecords, setLoadingRecords] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -42,22 +11,7 @@ const LibrarianIssueBookPage = () => {
   const [actionLoading, setActionLoading] = useState(null);
   const [notice, setNotice] = useState(null);
   const [selectedRecordDetails, setSelectedRecordDetails] = useState(null);
-
-  // Fetch available books for dropdown
-  useEffect(() => {
-    const loadBooks = async () => {
-      try {
-        const res = await fetch("/api/books?limit=all");
-        const data = await res.json();
-        if (data.success && Array.isArray(data.books)) {
-          setAvailableBooks(data.books);
-        }
-      } catch (e) {
-        console.error("Could not fetch books for issue list:", e);
-      }
-    };
-    loadBooks();
-  }, []);
+  const [returnConfirmation, setReturnConfirmation] = useState(null);
 
   // Fetch all issued books from database
   const fetchIssuedBooks = useCallback(async (isSilent = false) => {
@@ -84,8 +38,13 @@ const LibrarianIssueBookPage = () => {
   }, [fetchIssuedBooks]);
 
   // Handle Return Book
-  const handleReturnBook = async (id, title) => {
-    if (!window.confirm(`Confirm return for "${title || 'this book'}"?`)) return;
+  const handleReturnBook = (id, title) => {
+    setReturnConfirmation({ id, title });
+  };
+
+  const confirmReturnBook = async () => {
+    const { id, title } = returnConfirmation;
+    setReturnConfirmation(null);
     try {
       setActionLoading(id);
       setNotice(null);
@@ -129,53 +88,6 @@ const LibrarianIssueBookPage = () => {
     }
   };
 
-  // Handle Issue Book form submit
-  const handleIssueBook = async (e) => {
-    e.preventDefault();
-    setErrorMsg("");
-
-    const matchedBook = availableBooks.find(
-      (b) =>
-        b.title.trim().toLowerCase() === selectedBook.trim().toLowerCase() ||
-        String(b.id) === String(selectedBook)
-    );
-
-    if (!matchedBook) {
-      setErrorMsg("Please select a valid book from the available catalog list.");
-      return;
-    }
-
-    if (!rollNo.trim()) {
-      setErrorMsg("Please enter the student roll number.");
-      return;
-    }
-
-    try {
-      setFormLoading(true);
-      const res = await fetch("/api/issued-books", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          studentId: rollNo.trim(),
-          bookId: matchedBook.id,
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.message || "Failed to issue book.");
-      }
-
-      setCreatedTxn(data.issuedBook);
-      setIssuedSuccess(true);
-      fetchIssuedBooks(true);
-    } catch (err) {
-      setErrorMsg(err.message || "An error occurred while issuing the book.");
-    } finally {
-      setFormLoading(false);
-    }
-  };
-
   // KPI counts
   const totalIssuedAllTime = issuedRecords.length;
   const activeLoansCount = issuedRecords.filter((r) => !r.isReturned).length;
@@ -213,6 +125,19 @@ const LibrarianIssueBookPage = () => {
   return (
     <div className="issue-page-container">
       <LibrarianMobileDetailsModal item={selectedRecordDetails} onClose={() => setSelectedRecordDetails(null)} title={selectedRecordDetails?.book?.title || "Issued book"} subtitle={selectedRecordDetails && `Transaction #TXN-${String(selectedRecordDetails.id).padStart(4, "0")}`} status={selectedRecordDetails?.isReturned ? "Returned" : "In circulation"} fields={selectedRecordDetails ? [{ label: "Student", value: selectedRecordDetails.student?.user?.username }, { label: "Student ID", value: selectedRecordDetails.studentId }, { label: "Author", value: selectedRecordDetails.book?.author }, { label: "ISBN", value: selectedRecordDetails.book?.isbn }, { label: "Issued", value: new Date(selectedRecordDetails.issueDate).toLocaleString() }, { label: "Due", value: new Date(selectedRecordDetails.dueDate).toLocaleString() }, { label: "Returned", value: selectedRecordDetails.returnDate ? new Date(selectedRecordDetails.returnDate).toLocaleString() : "Not yet returned" }] : []} />
+      {returnConfirmation && (
+        <div className="return-confirmation-backdrop" onClick={() => setReturnConfirmation(null)} role="presentation">
+          <section className="return-confirmation-modal" role="dialog" aria-modal="true" aria-labelledby="return-confirmation-title" onClick={(event) => event.stopPropagation()}>
+            <div className="return-confirmation-icon">↩</div>
+            <h2 id="return-confirmation-title">Confirm book return</h2>
+            <p>Are you sure you want to mark <strong>{returnConfirmation.title || "this book"}</strong> as returned?</p>
+            <div className="return-confirmation-actions">
+              <button type="button" className="return-confirmation-cancel" onClick={() => setReturnConfirmation(null)}>Cancel</button>
+              <button type="button" className="return-confirmation-submit" onClick={confirmReturnBook}>Confirm Return</button>
+            </div>
+          </section>
+        </div>
+      )}
       {/* Header Banner */}
       <header className="issue-header">
         <span className="issue-badge">Step 3 · Issued Books</span>
@@ -229,9 +154,7 @@ const LibrarianIssueBookPage = () => {
         </div>
       )}
 
-      {/* VIEW 1: ALL ISSUED BOOKS REGISTRY */}
-      {activeTab === "registry" && (
-        <div className="issue-registry-wrapper">
+      <div className="issue-registry-wrapper">
           {/* Overview Metric Cards */}
           <div className="issued-metrics-grid">
             <div
@@ -492,7 +415,7 @@ const LibrarianIssueBookPage = () => {
                           <p style={{ margin: 0, fontSize: "0.88rem", maxWidth: "450px" }}>
                             {searchTerm
                               ? "Try searching for a different roll number, student name, or book title."
-                              : "Click '+ Issue New Book' above to create a new issuance record."}
+                              : "No issuance records are available yet."}
                           </p>
                           {searchTerm ? (
                             <button
@@ -503,19 +426,7 @@ const LibrarianIssueBookPage = () => {
                             >
                               Clear Search
                             </button>
-                          ) : (
-                            <button
-                              type="button"
-                              className="librarian-btn-primary"
-                              style={{ padding: "8px 18px", fontSize: "0.85rem", marginTop: "6px" }}
-                              onClick={() => {
-                                setActiveTab("issue");
-                                setIssuedSuccess(false);
-                              }}
-                            >
-                              ➕ Issue First Book
-                            </button>
-                          )}
+                          ) : null}
                         </div>
                       </td>
                     </tr>
@@ -526,151 +437,6 @@ const LibrarianIssueBookPage = () => {
             {!loadingRecords && filteredRecords.length > 0 && <div className="librarian-mobile-records">{filteredRecords.map((txn) => <button type="button" className="librarian-mobile-record" key={txn.id} onClick={() => setSelectedRecordDetails(txn)}><strong>{txn.book?.title || "Book title unavailable"}</strong><span>{txn.student?.user?.username || txn.studentId} · {txn.isReturned ? "Returned" : "In circulation"}</span><em>›</em></button>)}</div>}
           </div>
         </div>
-      )}
-
-      {/* VIEW 2: ISSUE NEW BOOK FORM */}
-      {activeTab === "issue" && (
-        <div className="issue-card">
-          {!issuedSuccess ? (
-            <form onSubmit={handleIssueBook} className="issue-form">
-              <div style={{ marginBottom: "6px" }}>
-                <h3 style={{ margin: "0 0 4px 0", fontSize: "1.25rem", color: "#0f172a" }}>Issue Book to Student</h3>
-                <p style={{ margin: 0, fontSize: "0.88rem", color: "#64748b" }}>Assign a physical volume and set due return date.</p>
-              </div>
-
-              <div className="issue-form-group">
-                <label htmlFor="student-name" className="issue-form-label">
-                  Student Name
-                </label>
-                <input
-                  id="student-name"
-                  type="text"
-                  className="issue-input"
-                  value={studentName}
-                  onChange={(e) => setStudentName(e.target.value)}
-                  placeholder="e.g. Rahul Sharma"
-                  required
-                />
-              </div>
-
-              <div className="issue-form-group">
-                <label htmlFor="roll-no" className="issue-form-label">
-                  Student Roll Number (Unique ID)
-                </label>
-                <input
-                  id="roll-no"
-                  type="text"
-                  className="issue-input"
-                  value={rollNo}
-                  onChange={(e) => setRollNo(e.target.value)}
-                  placeholder="e.g. 421101 or roll number in system"
-                  required
-                />
-              </div>
-
-              <div className="issue-form-group">
-                <label htmlFor="select-book" className="issue-form-label">
-                  Select Book from Catalog
-                </label>
-                <input
-                  id="select-book"
-                  type="text"
-                  list="books-datalist"
-                  className="issue-input"
-                  value={selectedBook}
-                  onChange={(e) => setSelectedBook(e.target.value)}
-                  placeholder="Type to search book title..."
-                  required
-                />
-                <datalist id="books-datalist">
-                  {availableBooks.map((b) => (
-                    <option key={b.id} value={b.title}>
-                      {b.author} (ISBN: {b.isbn})
-                    </option>
-                  ))}
-                </datalist>
-              </div>
-
-              <div className="issue-form-group">
-                <label htmlFor="due-date" className="issue-form-label">
-                  Due Return Date (14 Days Standard)
-                </label>
-                <input
-                  id="due-date"
-                  type="date"
-                  className="issue-input"
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
-                  required
-                />
-              </div>
-
-              {errorMsg && (
-                <div style={{ padding: "10px 14px", background: "#fee2e2", color: "#991b1b", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 600 }}>
-                  ⚠️ {errorMsg}
-                </div>
-              )}
-
-              <button type="submit" className="issue-submit-btn" disabled={formLoading}>
-                {formLoading ? "Issuing Book..." : "📖 Complete Book Issuance"}
-              </button>
-            </form>
-          ) : (
-            <div className="issue-success-box">
-              <div className="issue-success-header">
-                <span className="icon">🎉</span>
-                <div>
-                  <h4>Book Issued Successfully</h4>
-                  <p>Transaction has been recorded and saved in the central catalog registry.</p>
-                </div>
-              </div>
-
-              <div className="issue-details-grid">
-                <div className="issue-detail-item">
-                  <span className="label">Transaction ID</span>
-                  <span className="value">#TXN-{createdTxn?.id ? String(createdTxn.id).padStart(4, "0") : "REC"}</span>
-                </div>
-                <div className="issue-detail-item">
-                  <span className="label">Student</span>
-                  <span className="value">{createdTxn?.student?.user?.username || studentName} ({rollNo})</span>
-                </div>
-                <div className="issue-detail-item">
-                  <span className="label">Book Title</span>
-                  <span className="value">{createdTxn?.book?.title || selectedBook}</span>
-                </div>
-                <div className="issue-detail-item">
-                  <span className="label">Due Date</span>
-                  <span className="value">{createdTxn?.dueDate ? new Date(createdTxn.dueDate).toLocaleDateString() : dueDate}</span>
-                </div>
-              </div>
-
-              <div style={{ display: "flex", gap: "12px", marginTop: "20px", flexWrap: "wrap" }}>
-                <button
-                  type="button"
-                  className="issue-next-btn"
-                  style={{ background: "#0f766e", flex: 1, margin: 0 }}
-                  onClick={() => setActiveTab("registry")}
-                >
-                  📚 View in Issued Books Registry &rarr;
-                </button>
-                <button
-                  type="button"
-                  className="issue-next-btn"
-                  style={{ background: "#334155", flex: 1, margin: 0 }}
-                  onClick={() => {
-                    setIssuedSuccess(false);
-                    setSelectedBook("");
-                    setStudentName("");
-                    setRollNo("");
-                  }}
-                >
-                  ➕ Issue Another Book
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 };
