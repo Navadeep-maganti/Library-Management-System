@@ -159,7 +159,7 @@ function RegistrationPage({ onAuthSuccess }) {
       return {
         ok: response.ok,
         data,
-        message: data?.message || fallbackMessage,
+        message: data.message || fallbackMessage,
       };
     } catch {
       return {
@@ -327,10 +327,10 @@ function RegistrationPage({ onAuthSuccess }) {
         return;
       }
 
-      if (result.data?.token) {
+      if (result.data.token) {
         localStorage.setItem("libraryToken", result.data.token);
       }
-      if (result.data?.user) {
+      if (result.data.user) {
         localStorage.setItem("libraryUser", JSON.stringify(result.data.user));
       }
 
@@ -432,7 +432,7 @@ function RegistrationPage({ onAuthSuccess }) {
                   {loadingState.sendingOtp
                     ? "Sending..."
                     : otpVerified
-                      ? "✓ Verified"
+                      ? " Verified"
                       : otpSent && (resendTimeLeftMs === 0 || isOtpExpired)
                         ? "Resend OTP"
                         : "Send OTP"}
@@ -443,11 +443,11 @@ function RegistrationPage({ onAuthSuccess }) {
             {otpSent ? (
               otpVerified ? (
                 <p className="otp-feedback-note otp-success-note">
-                  <span>✓</span> Email verified successfully! Please set your password to complete registration.
+                  <span></span> Email verified successfully! Please set your password to complete registration.
                 </p>
               ) : isOtpExpired ? (
                 <p className="otp-feedback-note otp-warning-note">
-                  <span>⚠️</span> Previous OTP has expired and is invalid. Please click &ldquo;Resend OTP&rdquo; to receive a new verification code.
+                  <span></span> Previous OTP has expired and is invalid. Please click &ldquo;Resend OTP&rdquo; to receive a new verification code.
                 </p>
               ) : (
                 <p className="otp-feedback-note">
@@ -479,7 +479,7 @@ function RegistrationPage({ onAuthSuccess }) {
                   {loadingState.verifyingOtp
                     ? "Verifying..."
                     : otpVerified
-                      ? "✓ Verified"
+                      ? " Verified"
                       : "Verify OTP"}
                 </button>
               </div>

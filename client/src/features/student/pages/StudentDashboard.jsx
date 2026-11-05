@@ -202,14 +202,14 @@ const StudentDashboard = ({ user, onLogout }) => {
   */
 
   const filteredBooks = catalogBooks.filter((book) =>
-    `${book.title} ${book.author} ${book.category?.name || ""}`
+    `${book.title} ${book.author} ${book.category?.name || book.category || ""}`
       .toLowerCase()
       .includes(searchTerm.toLowerCase()),
   );
 
   const categories = [
     "All",
-    ...new Set(filteredBooks.map((book) => book.category?.name || "Uncategorized")),
+    ...new Set(filteredBooks.map((book) => book.category?.name || book.category || "Uncategorized")),
   ];
 
   const visibleBooks = useMemo(
@@ -217,11 +217,11 @@ const StudentDashboard = ({ user, onLogout }) => {
       filteredBooks
         .filter(
           (book) =>
-            category === "All" || (book.category?.name || "Uncategorized") === category,
+            category === "All" || (book.category?.name || book.category || "Uncategorized") === category,
         )
         .sort((firstBook, secondBook) =>
-          (sortBy === "category" ? firstBook.category?.name || "" : firstBook[sortBy])
-            .localeCompare(sortBy === "category" ? secondBook.category?.name || "" : secondBook[sortBy]),
+          (sortBy === "category" ? firstBook.category?.name || firstBook.category || "" : firstBook[sortBy])
+            .localeCompare(sortBy === "category" ? secondBook.category?.name || secondBook.category || "" : secondBook[sortBy]),
         ),
     [category, filteredBooks, sortBy],
   );
@@ -333,7 +333,7 @@ const StudentDashboard = ({ user, onLogout }) => {
         <>
           <button className="issuance-notice-backdrop" type="button" aria-label="Close issuance notice" onClick={() => setIssuanceNoticeBook(null)} />
           <section className="issuance-notice" role="dialog" aria-modal="true" aria-labelledby="booking-notice-title">
-            <div className="issuance-notice-icon" aria-hidden="true">✓</div>
+            <div className="issuance-notice-icon" aria-hidden="true"></div>
             <div className="issuance-notice-copy">
               <span className="student-kicker">BOOKING CONFIRMED</span>
               <h2 id="booking-notice-title"><span >"</span>{issuanceNoticeBook.book.title}<span >"---</span> booking confirmed</h2>
@@ -364,7 +364,7 @@ const StudentDashboard = ({ user, onLogout }) => {
 
             <h1>
               Welcome back,{" "}
-              {currentUser.username || "Student"} 👋
+              {currentUser.username || "Student"}
             </h1>
 
             <p>
@@ -403,7 +403,7 @@ const StudentDashboard = ({ user, onLogout }) => {
 
               </div>
 
-            
+
 
             </section>
           )}
@@ -431,7 +431,7 @@ const StudentDashboard = ({ user, onLogout }) => {
                   className="stat-card-icon"
                   aria-hidden="true"
                 >
-                  📚
+
                 </span>
 
               </div>
@@ -469,7 +469,7 @@ const StudentDashboard = ({ user, onLogout }) => {
                   className="stat-card-icon"
                   aria-hidden="true"
                 >
-                  ⚠
+
                 </span>
 
               </div>
@@ -533,7 +533,7 @@ const StudentDashboard = ({ user, onLogout }) => {
                   className="stat-card-icon"
                   aria-hidden="true"
                 >
-                  ✓
+
                 </span>
 
               </div>
@@ -706,7 +706,7 @@ const StudentDashboard = ({ user, onLogout }) => {
                     borrowed books
                   </span>
 
-           
+
 
                 </div>
 
@@ -721,7 +721,7 @@ const StudentDashboard = ({ user, onLogout }) => {
               <div className="borrowed-books-empty">
 
                 <div className="empty-state-icon">
-                  📚
+
                 </div>
 
                 <h3>
@@ -748,7 +748,7 @@ const StudentDashboard = ({ user, onLogout }) => {
 
           </section>
 
-         
+
 
         </main>
 

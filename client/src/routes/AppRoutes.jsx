@@ -7,7 +7,7 @@ import { getLibrarianRoutes } from "./LibrarianRoutes";
 
 const AppRoutes = ({ user, onAuthSuccess, onLogout, onUserUpdated }) => {
   const dashboardPath =
-    user?.role === "librarian" ? "/librarian-dashboard" : "/student-dashboard";
+    user.role === "librarian" ? "/librarian-dashboard" : "/student-dashboard";
 
   return (
     <Routes>

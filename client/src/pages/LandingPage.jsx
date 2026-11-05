@@ -56,7 +56,7 @@ const LandingPage = () => {
         <div className="cards-grid">
           {/* Student Card */}
           <div className="role-card">
-            <div className="card-icon student">🎓</div>
+            <div className="card-icon student"></div>
             <h3 className="card-title">Student Portal</h3>
             <p className="card-text">
               Requires your student academic email (e.g. <code>rollno@student.nitandhra.ac.in</code>) and verified OTP. Access borrowing history and catalog reservation.
@@ -69,7 +69,7 @@ const LandingPage = () => {
 
           {/* Librarian Card */}
           <div className="role-card">
-            <div className="card-icon librarian">📚</div>
+            <div className="card-icon librarian"></div>
             <h3 className="card-title">Librarian Portal</h3>
             <p className="card-text">
               Requires official staff email or personal email (e.g. <code>staff@nitandhra.ac.in</code> or Gmail), staff ID, and OTP verification. Manage library records and book checkout logs.
@@ -88,21 +88,21 @@ const LandingPage = () => {
       <section className="features-section">
         <div className="feature-box">
           <div className="feature-item">
-            <span className="feature-icon">🔒</span>
+            <span className="feature-icon"></span>
             <div>
               <h4 className="feature-title">Email Domain Security</h4>
               <p className="feature-desc">Only authorized domain emails can complete registration.</p>
             </div>
           </div>
           <div className="feature-item">
-            <span className="feature-icon">⚡</span>
+            <span className="feature-icon"></span>
             <div>
               <h4 className="feature-title">Instant OTP Dispatch</h4>
               <p className="feature-desc">Receive 6-digit verification codes valid for 10 minutes directly in your inbox.</p>
             </div>
           </div>
           <div className="feature-item">
-            <span className="feature-icon">🔑</span>
+            <span className="feature-icon"></span>
             <div>
               <h4 className="feature-title">JWT Authenticated Sessions</h4>
               <p className="feature-desc">Secure 24-hour token based authentication for smooth operations.</p>

@@ -129,9 +129,9 @@ const LibrarianDashboard = ({ user }) => {
       const q = searchTerm.trim().toLowerCase();
       const matchesTxnId = `txn-${txn.id}`.toLowerCase().includes(q) || String(txn.id).includes(q);
       const matchesStudent =
-        (txn.student?.user?.username || "").toLowerCase().includes(q) ||
+        (txn.student.user.username || "").toLowerCase().includes(q) ||
         (txn.studentId || "").toLowerCase().includes(q) ||
-        (txn.student?.department || "").toLowerCase().includes(q);
+        (txn.student.department || "").toLowerCase().includes(q);
       const matchesBook =
         (txn.book?.title || "").toLowerCase().includes(q) ||
         (txn.book?.author || "").toLowerCase().includes(q) ||
@@ -156,7 +156,7 @@ const LibrarianDashboard = ({ user }) => {
         subtitle={selectedRecord && `Transaction #TXN-${String(selectedRecord.id).padStart(4, "0")}`}
         status={selectedRecord?.isReturned ? "Returned" : "In circulation"}
         fields={selectedRecord ? [
-          { label: "Student", value: selectedRecord.student?.user?.username }, { label: "Student ID", value: selectedRecord.studentId },
+          { label: "Student", value: selectedRecord.student.user.username }, { label: "Student ID", value: selectedRecord.studentId },
           { label: "Author", value: selectedRecord.book?.author }, { label: "ISBN", value: selectedRecord.book?.isbn },
           { label: "Issued", value: new Date(selectedRecord.issueDate).toLocaleString() }, { label: "Due", value: new Date(selectedRecord.dueDate).toLocaleString() },
           { label: "Returned", value: selectedRecord.returnDate ? new Date(selectedRecord.returnDate).toLocaleString() : "Not yet returned" },
@@ -183,7 +183,7 @@ const LibrarianDashboard = ({ user }) => {
           Central Library • Staff Operations Hub
         </div>
         <h1 className="librarian-hero-title">
-          Welcome back, <span className="librarian-gradient-text">{currentUser?.username || "Librarian"}</span>
+          Welcome back, <span className="librarian-gradient-text">{currentUser.username || "Librarian"}</span>
         </h1>
         <p className="librarian-hero-subtitle">
           Manage circulation, verify student authorization OTP tokens, issue physical books, and keep library stock synchronized in real time.
@@ -194,13 +194,13 @@ const LibrarianDashboard = ({ user }) => {
       <section className="librarian-stats-grid">
         <div className="librarian-stat-card">
           <span className="librarian-stat-label">Staff Administrator</span>
-          <span className="librarian-stat-value">{currentUser?.username || "Librarian Staff"}</span>
+          <span className="librarian-stat-value">{currentUser.username || "Librarian Staff"}</span>
           <div className="librarian-stat-badge">Active Session</div>
         </div>
 
         <div className="librarian-stat-card">
           <span className="librarian-stat-label">Staff ID</span>
-          <span className="librarian-stat-value">{currentUser?.staff_id || "LIB-STAFF-01"}</span>
+          <span className="librarian-stat-value">{currentUser.staff_id || "LIB-STAFF-01"}</span>
           <div className="librarian-stat-badge">Verified ID</div>
         </div>
 
@@ -213,7 +213,7 @@ const LibrarianDashboard = ({ user }) => {
         <div className="librarian-stat-card">
           <span className="librarian-stat-label">Official Email</span>
           <span className="librarian-stat-value" style={{ fontSize: "1.05rem" }}>
-            {currentUser?.email || "staff@nitandhra.ac.in"}
+            {currentUser.email || "staff@nitandhra.ac.in"}
           </span>
           <div className="librarian-stat-badge">Domain Authenticated</div>
         </div>
@@ -231,7 +231,7 @@ const LibrarianDashboard = ({ user }) => {
         <div className="librarian-flow-grid">
           <Link to="/librarian/reservations" className="librarian-flow-card">
             <span className="librarian-flow-step-tag">Step 1</span>
-            <div className="librarian-flow-icon">📋</div>
+            <div className="librarian-flow-icon"></div>
             <h3 className="librarian-flow-title">View Requests</h3>
             <p className="librarian-flow-desc">Review pending book bookings requested by students.</p>
             <span className="librarian-flow-btn">Open Requests &rarr;</span>
@@ -239,7 +239,7 @@ const LibrarianDashboard = ({ user }) => {
 
           <Link to="/librarian/verify-token" className="librarian-flow-card">
             <span className="librarian-flow-step-tag">Step 2</span>
-            <div className="librarian-flow-icon">🔑</div>
+            <div className="librarian-flow-icon"></div>
             <h3 className="librarian-flow-title">Verify Token</h3>
             <p className="librarian-flow-desc">Scan or manually enter student reservation OTP code.</p>
             <span className="librarian-flow-btn">Validate OTP &rarr;</span>
@@ -247,7 +247,7 @@ const LibrarianDashboard = ({ user }) => {
 
           <Link to="/librarian/issue-book" className="librarian-flow-card">
             <span className="librarian-flow-step-tag">Step 3</span>
-            <div className="librarian-flow-icon">📖</div>
+            <div className="librarian-flow-icon"></div>
             <h3 className="librarian-flow-title">Issued Books</h3>
             <p className="librarian-flow-desc">View every book issued in the library up to now.</p>
             <span className="librarian-flow-btn">View Issued Books &rarr;</span>
@@ -255,7 +255,7 @@ const LibrarianDashboard = ({ user }) => {
 
           <Link to="/librarian/update-stock" className="librarian-flow-card">
             <span className="librarian-flow-step-tag">Step 4</span>
-            <div className="librarian-flow-icon">📦</div>
+            <div className="librarian-flow-icon"></div>
             <h3 className="librarian-flow-title">Update Stock</h3>
             <p className="librarian-flow-desc">Synchronize physical catalog inventory & stock levels.</p>
             <span className="librarian-flow-btn">Catalog Stock &rarr;</span>
@@ -271,16 +271,16 @@ const LibrarianDashboard = ({ user }) => {
         </div>
         <div className="librarian-actions-row">
           <button type="button" className="librarian-btn-primary" onClick={() => navigate("/librarian/issue-book")}>
-            <span>📚</span> View Issued Books
+            <span></span> View Issued Books
           </button>
           <button type="button" className="librarian-btn-secondary" onClick={() => navigate("/librarian/verify-token")}>
-            <span>🔑</span> Verify Student OTP
+            <span></span> Verify Student OTP
           </button>
           <button type="button" className="librarian-btn-secondary" onClick={() => navigate("/librarian/reservations")}>
-            <span>📋</span> View Pending Requests
+            <span></span> View Pending Requests
           </button>
           <button type="button" className="librarian-btn-secondary" onClick={() => navigate("/librarian/update-stock")}>
-            <span>📦</span> Update Inventory
+            <span></span> Update Inventory
           </button>
         </div>
       </section>
@@ -292,7 +292,7 @@ const LibrarianDashboard = ({ user }) => {
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
               <h2 className="librarian-section-title" style={{ fontSize: "1.35rem" }}>
-                📚 Issued Books Records
+                 Issued Books Records
               </h2>
               <span className="circulation-live-badge">
                 <span className="circulation-pulse-dot"></span> Live Registry
@@ -310,7 +310,7 @@ const LibrarianDashboard = ({ user }) => {
               disabled={loadingRecords}
               title="Refresh all issued book records"
             >
-              <span className={loadingRecords ? "spinning" : ""}>🔄</span> Refresh
+              <span className={loadingRecords ? "spinning" : ""}></span> Refresh
             </button>
           </div>
         </div>
@@ -318,9 +318,9 @@ const LibrarianDashboard = ({ user }) => {
         {/* Notice Message */}
         {notice && (
           <div className={`issued-notice-banner ${notice.type}`} role="alert">
-            <span>{notice.type === "success" ? "✓" : "⚠️"}</span>
+            <span>{notice.type === "success" ? "" : ""}</span>
             <span>{notice.text}</span>
-            <button type="button" className="issued-notice-close" onClick={() => setNotice(null)}>✕</button>
+            <button type="button" className="issued-notice-close" onClick={() => setNotice(null)}></button>
           </div>
         )}
 
@@ -330,7 +330,7 @@ const LibrarianDashboard = ({ user }) => {
             className={`issued-metric-chip ${statusFilter === "all" ? "active" : ""}`}
             onClick={() => setStatusFilter("all")}
           >
-            <div className="metric-chip-icon all">📚</div>
+            <div className="metric-chip-icon all"></div>
             <div className="metric-chip-content">
               <span className="metric-chip-label">Total Issued (Up to Now)</span>
               <span className="metric-chip-count">{totalIssuedAllTime}</span>
@@ -341,7 +341,7 @@ const LibrarianDashboard = ({ user }) => {
             className={`issued-metric-chip ${statusFilter === "active" ? "active" : ""}`}
             onClick={() => setStatusFilter("active")}
           >
-            <div className="metric-chip-icon active">📖</div>
+            <div className="metric-chip-icon active"></div>
             <div className="metric-chip-content">
               <span className="metric-chip-label">Currently Issued</span>
               <span className="metric-chip-count">{activeLoansCount}</span>
@@ -352,7 +352,7 @@ const LibrarianDashboard = ({ user }) => {
             className={`issued-metric-chip ${statusFilter === "overdue" ? "active" : ""}`}
             onClick={() => setStatusFilter("overdue")}
           >
-            <div className="metric-chip-icon overdue">⚠️</div>
+            <div className="metric-chip-icon overdue"></div>
             <div className="metric-chip-content">
               <span className="metric-chip-label">Overdue Loans</span>
               <span className="metric-chip-count">{overdueCount}</span>
@@ -363,7 +363,7 @@ const LibrarianDashboard = ({ user }) => {
             className={`issued-metric-chip ${statusFilter === "returned" ? "active" : ""}`}
             onClick={() => setStatusFilter("returned")}
           >
-            <div className="metric-chip-icon returned">✓</div>
+            <div className="metric-chip-icon returned"></div>
             <div className="metric-chip-content">
               <span className="metric-chip-label">Returned Books</span>
               <span className="metric-chip-count">{returnedCount}</span>
@@ -374,7 +374,7 @@ const LibrarianDashboard = ({ user }) => {
         {/* Search & Filter Toolbar */}
         <div className="issued-toolbar">
           <div className="issued-search-box">
-            <span className="search-icon">🔍</span>
+            <span className="search-icon"></span>
             <input
               type="text"
               placeholder="Search by student name, roll no, book title, ISBN, or TXN ID..."
@@ -389,7 +389,7 @@ const LibrarianDashboard = ({ user }) => {
                 onClick={() => setSearchTerm("")}
                 title="Clear search"
               >
-                ✕
+
               </button>
             )}
           </div>
@@ -446,7 +446,7 @@ const LibrarianDashboard = ({ user }) => {
                 <tr>
                   <td colSpan="8" style={{ textAlign: "center", padding: "36px", color: "#64748b" }}>
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
-                      <span className="spinning" style={{ fontSize: "1.5rem" }}>🔄</span>
+                      <span className="spinning" style={{ fontSize: "1.5rem" }}></span>
                       <span>Loading all issued book records...</span>
                     </div>
                   </td>
@@ -455,7 +455,7 @@ const LibrarianDashboard = ({ user }) => {
                 filteredRecords.map((txn) => {
                   const isOverdue = !txn.isReturned && new Date(txn.dueDate) < new Date();
                   const statusClass = txn.isReturned ? "returned" : isOverdue ? "overdue" : "issued";
-                  const statusLabel = txn.isReturned ? "✓ Returned" : isOverdue ? "⚠ Overdue" : "● Active Loan";
+                  const statusLabel = txn.isReturned ? " Returned" : isOverdue ? " Overdue" : "● Active Loan";
 
                   const dueDateObj = new Date(txn.dueDate);
                   const issueDateObj = new Date(txn.issueDate);
@@ -471,12 +471,12 @@ const LibrarianDashboard = ({ user }) => {
                       {/* Student */}
                       <td className="student-cell">
                         <div style={{ fontWeight: 700, color: "#0f172a" }}>
-                          {txn.student?.user?.username || "Student"}
+                          {txn.student.user.username || "Student"}
                         </div>
                         <div style={{ fontSize: "0.78rem", color: "#64748b" }}>
                           Roll: <strong style={{ color: "#334155" }}>{txn.studentId}</strong>
                         </div>
-                        {txn.student?.department && (
+                        {txn.student.department && (
                           <div style={{ fontSize: "0.72rem", color: "#94a3b8" }}>
                             Dept: {txn.student.department}
                           </div>
@@ -570,7 +570,7 @@ const LibrarianDashboard = ({ user }) => {
                               disabled={actionLoading === txn.id}
                               title="Mark this book as returned"
                             >
-                              {actionLoading === txn.id ? "Processing..." : "✓ Return"}
+                              {actionLoading === txn.id ? "Processing..." : " Return"}
                             </button>
                             <button
                               type="button"
@@ -584,7 +584,7 @@ const LibrarianDashboard = ({ user }) => {
                           </div>
                         ) : (
                           <span style={{ fontSize: "0.8rem", color: "#16a34a", fontWeight: 700 }}>
-                            ✓ Closed
+                             Closed
                           </span>
                         )}
                       </td>
@@ -595,7 +595,7 @@ const LibrarianDashboard = ({ user }) => {
                 <tr>
                   <td colSpan="8" style={{ textAlign: "center", padding: "36px", color: "#64748b" }}>
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}>
-                      <span style={{ fontSize: "2rem" }}>📭</span>
+                      <span style={{ fontSize: "2rem" }}></span>
                       <strong style={{ fontSize: "1.05rem", color: "#334155" }}>
                         {searchTerm
                           ? `No issued books matched "${searchTerm}"`
@@ -625,13 +625,13 @@ const LibrarianDashboard = ({ user }) => {
             </tbody>
           </table>
         </div>
-        {!loadingRecords && filteredRecords.length > 0 && <div className="librarian-mobile-records">{filteredRecords.map((txn) => <button type="button" className="librarian-mobile-record" key={txn.id} onClick={() => setSelectedRecord(txn)}><strong>{txn.book?.title || "Book title unavailable"}</strong><span>{txn.student?.user?.username || txn.studentId} · {txn.isReturned ? "Returned" : "In circulation"}</span><em>›</em></button>)}</div>}
+        {!loadingRecords && filteredRecords.length > 0 && <div className="librarian-mobile-records">{filteredRecords.map((txn) => <button type="button" className="librarian-mobile-record" key={txn.id} onClick={() => setSelectedRecord(txn)}><strong>{txn.book?.title || "Book title unavailable"}</strong><span>{txn.student.user.username || txn.studentId} · {txn.isReturned ? "Returned" : "In circulation"}</span><em>›</em></button>)}</div>}
       </section>
 
       {/* Staff Operational Guidelines Banner */}
       <section className="librarian-guidelines-box">
         <div className="librarian-guideline-item">
-          <span className="librarian-guideline-icon">🔐</span>
+          <span className="librarian-guideline-icon"></span>
           <div>
             <h4 className="librarian-guideline-title">OTP Token Validation</h4>
             <p className="librarian-guideline-desc">
@@ -641,7 +641,7 @@ const LibrarianDashboard = ({ user }) => {
         </div>
 
         <div className="librarian-guideline-item">
-          <span className="librarian-guideline-icon">⚡</span>
+          <span className="librarian-guideline-icon"></span>
           <div>
             <h4 className="librarian-guideline-title">Instant Inventory Sync</h4>
             <p className="librarian-guideline-desc">
@@ -651,7 +651,7 @@ const LibrarianDashboard = ({ user }) => {
         </div>
 
         <div className="librarian-guideline-item">
-          <span className="librarian-guideline-icon">🛡️</span>
+          <span className="librarian-guideline-icon"></span>
           <div>
             <h4 className="librarian-guideline-title">Due Date Enforcement</h4>
             <p className="librarian-guideline-desc">

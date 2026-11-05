@@ -45,7 +45,7 @@ function AppContent() {
   return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
       {!isStudentDashboard && (
-        user?.role === "librarian" ? (
+        user.role === "librarian" ? (
           <LibrarianNavbar user={user} onLogout={handleLogout} />
         ) : (
           <Navbar user={user} onLogout={handleLogout} />

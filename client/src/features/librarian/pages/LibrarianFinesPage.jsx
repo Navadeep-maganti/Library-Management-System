@@ -164,9 +164,9 @@ const LibrarianFinesPage = () => {
           `fine-${f.id}`.toLowerCase().includes(q) ||
           `#${f.id}`.includes(q);
         const matchesStudent =
-          (f.student?.user?.username || "").toLowerCase().includes(q) ||
-          (f.student?.rollNo || f.studentId || "").toLowerCase().includes(q) ||
-          (f.student?.user?.email || "").toLowerCase().includes(q);
+          (f.student.user.username || "").toLowerCase().includes(q) ||
+          (f.student.rollNo || f.studentId || "").toLowerCase().includes(q) ||
+          (f.student.user.email || "").toLowerCase().includes(q);
         const matchesBook = (f.issuedBook?.book?.title || "")
           .toLowerCase()
           .includes(q);
@@ -227,23 +227,23 @@ const LibrarianFinesPage = () => {
             ? [
                 {
                   label: "Payable By (Student)",
-                  value: selectedMobileFine.student?.user?.username,
+                  value: selectedMobileFine.student.user.username,
                 },
                 {
                   label: "Student Roll No",
                   value:
-                    selectedMobileFine.student?.rollNo ||
+                    selectedMobileFine.student.rollNo ||
                     selectedMobileFine.studentId,
                 },
                 {
                   label: "Department",
                   value:
-                    selectedMobileFine.student?.department || "General",
+                    selectedMobileFine.student.department || "General",
                 },
                 {
                   label: "Institutional Email",
                   value:
-                    selectedMobileFine.student?.user?.email || "—",
+                    selectedMobileFine.student.user.email || "—",
                 },
                 {
                   label: "Book Borrowed",
@@ -267,8 +267,8 @@ const LibrarianFinesPage = () => {
                   label: "Loan Status",
                   value: selectedMobileFine.issuedBook
                     ? selectedMobileFine.issuedBook.isReturned
-                      ? "✓ Book Returned"
-                      : "⚠️ Still with Student (Overdue)"
+                      ? " Book Returned"
+                      : " Still with Student (Overdue)"
                     : "Standard Penalty",
                 },
                 {
@@ -293,7 +293,7 @@ const LibrarianFinesPage = () => {
               setReceiptFine(f);
             }}
           >
-            🧾 View Receipt
+             View Receipt
           </button>
         )}
       </LibrarianMobileDetailsModal>
@@ -316,7 +316,7 @@ const LibrarianFinesPage = () => {
             title="Recalculate and synchronize all overdue loans with fines registry"
             disabled={syncing || loading}
           >
-            <span className={`fines-btn-icon ${syncing ? "spinning" : ""}`}>⚡</span> {syncing ? "Syncing..." : "Sync Overdues"}
+            <span className={`fines-btn-icon ${syncing ? "spinning" : ""}`}></span> {syncing ? "Syncing..." : "Sync Overdues"}
           </button>
           <button
             type="button"
@@ -325,7 +325,7 @@ const LibrarianFinesPage = () => {
             title="Refresh fines list"
             disabled={refreshing || loading}
           >
-            <span className={`fines-btn-icon ${refreshing ? "spinning" : ""}`}>🔄</span> Refresh
+            <span className={`fines-btn-icon ${refreshing ? "spinning" : ""}`}></span> Refresh
           </button>
         </div>
       </header>
@@ -340,7 +340,7 @@ const LibrarianFinesPage = () => {
             onClick={() => setNotice(null)}
             aria-label="Dismiss notice"
           >
-            ✕
+
           </button>
         </div>
       )}
@@ -351,7 +351,7 @@ const LibrarianFinesPage = () => {
       <section className="fines-policy-section">
         <div className="fines-policy-header">
           <div className="fines-policy-title">
-            <span className="fines-policy-icon">📋</span>
+            <span className="fines-policy-icon"></span>
             <div>
               <h3>How Fines Are Charged & Calculated</h3>
               <p>Official Central Library Circulation Penalty Rules & Daily Rates</p>
@@ -362,7 +362,7 @@ const LibrarianFinesPage = () => {
 
         <div className="fines-policy-grid">
           <div className="fines-policy-card">
-            <div className="fines-policy-card-icon">⏱️</div>
+            <div className="fines-policy-card-icon">⏱</div>
             <div className="fines-policy-card-body">
               <strong>Overdue Daily Rate</strong>
               <div className="fines-policy-card-highlight">
@@ -373,7 +373,7 @@ const LibrarianFinesPage = () => {
           </div>
 
           <div className="fines-policy-card">
-            <div className="fines-policy-card-icon">📅</div>
+            <div className="fines-policy-card-icon"></div>
             <div className="fines-policy-card-body">
               <strong>Standard Loan Duration</strong>
               <div className="fines-policy-card-highlight">
@@ -384,7 +384,7 @@ const LibrarianFinesPage = () => {
           </div>
 
           <div className="fines-policy-card">
-            <div className="fines-policy-card-icon">🔄</div>
+            <div className="fines-policy-card-icon"></div>
             <div className="fines-policy-card-body">
               <strong>Renewals & Extension</strong>
               <div className="fines-policy-card-highlight">
@@ -395,7 +395,7 @@ const LibrarianFinesPage = () => {
           </div>
 
           <div className="fines-policy-card formula">
-            <div className="fines-policy-card-icon">🧮</div>
+            <div className="fines-policy-card-icon"></div>
             <div className="fines-policy-card-body">
               <strong>Penalty Formula</strong>
               <div className="fines-policy-formula-box">
@@ -469,7 +469,7 @@ const LibrarianFinesPage = () => {
         {/* Search and Filters Toolbar */}
         <div className="fines-toolbar">
           <div className="fines-search-box">
-            <span className="search-icon">🔍</span>
+            <span className="search-icon"></span>
             <input
               type="text"
               placeholder="Search by student name, roll no, email, book title, fine ID..."
@@ -484,7 +484,7 @@ const LibrarianFinesPage = () => {
                 onClick={() => setSearchTerm("")}
                 title="Clear search"
               >
-                ✕
+
               </button>
             )}
           </div>
@@ -572,7 +572,7 @@ const LibrarianFinesPage = () => {
                           fontSize: "1.5rem",
                         }}
                       >
-                        🔄
+
                       </span>
                       <span>Loading fines and settlements...</span>
                     </div>
@@ -589,11 +589,11 @@ const LibrarianFinesPage = () => {
                   const payment = fine.payments?.[0];
                   const fineCode = `FINE-${String(fine.id).padStart(4, "0")}`;
                   const studentName =
-                    fine.student?.user?.username || "Unknown student";
+                    fine.student.user.username || "Unknown student";
                   const studentRoll =
-                    fine.student?.rollNo || fine.studentId || "—";
+                    fine.student.rollNo || fine.studentId || "—";
                   const studentDept =
-                    fine.student?.department || "General";
+                    fine.student.department || "General";
                   const bookTitle = fine.issuedBook?.book?.title;
                   const typeLabel = fine.fineType?.type || "Fine";
                   const fineAmountNum = Number(fine.amount) || 0;
@@ -647,10 +647,10 @@ const LibrarianFinesPage = () => {
                                   }}
                                 >
                                   {isOverdueActive
-                                    ? `⚠️ Still with Student (Due: ${new Date(
+                                    ? ` Still with Student (Due: ${new Date(
                                         fine.issuedBook.dueDate
                                       ).toLocaleDateString()})`
-                                    : "✓ Book Returned"}
+                                    : " Book Returned"}
                                 </span>
                               </div>
                             )}
@@ -702,8 +702,8 @@ const LibrarianFinesPage = () => {
                           }`}
                         >
                           {fine.isPaid
-                            ? `✓ Settled (${
-                                payment?.paymentMethod || "CASH"
+                            ? ` Settled (${
+                                payment.paymentMethod || "CASH"
                               })`
                             : "● Pending Payment"}
                         </span>
@@ -722,7 +722,7 @@ const LibrarianFinesPage = () => {
                             onClick={() => setSelectedDetailFine(fine)}
                             title="View student debtor breakdown and loan info"
                           >
-                            🔍 Details
+                             Details
                           </button>
                           {fine.isPaid && (
                             <button
@@ -731,7 +731,7 @@ const LibrarianFinesPage = () => {
                               onClick={() => setReceiptFine(fine)}
                               title="View / Print Receipt"
                             >
-                              🧾 Receipt
+                               Receipt
                             </button>
                           )}
                         </div>
@@ -769,7 +769,7 @@ const LibrarianFinesPage = () => {
                   — ₹{Number(fine.amount).toFixed(2)}
                 </strong>
                 <span>
-                  By: {fine.student?.user?.username || fine.studentId} ·{" "}
+                  By: {fine.student.user.username || fine.studentId} ·{" "}
                   {fine.isPaid ? "Settled" : "Due from student"}
                 </span>
                 <em>›</em>
@@ -811,7 +811,7 @@ const LibrarianFinesPage = () => {
                 onClick={() => setSelectedDetailFine(null)}
                 aria-label="Close modal"
               >
-                ✕
+
               </button>
             </div>
 
@@ -820,21 +820,21 @@ const LibrarianFinesPage = () => {
               <div className="fines-modal-summary-box">
                 <div className="fines-summary-details">
                   <span className="fines-summary-title">
-                    {selectedDetailFine.student?.user?.username ||
+                    {selectedDetailFine.student.user.username ||
                       "Student Account"}
                   </span>
                   <span className="fines-summary-meta">
                     Roll No:{" "}
                     <strong>
-                      {selectedDetailFine.student?.rollNo ||
+                      {selectedDetailFine.student.rollNo ||
                         selectedDetailFine.studentId}
                     </strong>
                   </span>
                   <span className="fines-summary-meta">
                     Department:{" "}
-                    {selectedDetailFine.student?.department || "General"}
+                    {selectedDetailFine.student.department || "General"}
                   </span>
-                  {selectedDetailFine.student?.user?.email && (
+                  {selectedDetailFine.student.user.email && (
                     <span className="fines-summary-meta">
                       Email: {selectedDetailFine.student.user.email}
                     </span>
@@ -886,8 +886,8 @@ const LibrarianFinesPage = () => {
                   <span className="fines-details-label">Circulation Status</span>
                   <span className="fines-details-val">
                     {selectedDetailFine.issuedBook?.isReturned
-                      ? "✓ Book Returned"
-                      : "⚠️ Still with Student (Active Loan)"}
+                      ? " Book Returned"
+                      : " Still with Student (Active Loan)"}
                   </span>
                 </div>
 
@@ -908,7 +908,7 @@ const LibrarianFinesPage = () => {
 
               {/* Policy note */}
               <div className="fines-details-note">
-                <span>ℹ️</span>
+                <span>ℹ</span>
                 <span>
                   {selectedDetailFine.isPaid
                     ? "This fine has been settled and cleared. An official receipt is available."
@@ -935,7 +935,7 @@ const LibrarianFinesPage = () => {
                     setReceiptFine(f);
                   }}
                 >
-                  🧾 View Receipt
+                   View Receipt
                 </button>
               )}
             </div>
@@ -986,13 +986,13 @@ const LibrarianFinesPage = () => {
                 <div className="fines-receipt-field">
                   <dt>Student Name</dt>
                   <dd>
-                    {receiptFine.student?.user?.username || "Student Member"}
+                    {receiptFine.student.user.username || "Student Member"}
                   </dd>
                 </div>
                 <div className="fines-receipt-field">
                   <dt>Roll Number</dt>
                   <dd>
-                    {receiptFine.student?.rollNo || receiptFine.studentId || "—"}
+                    {receiptFine.student.rollNo || receiptFine.studentId || "—"}
                   </dd>
                 </div>
                 <div className="fines-receipt-field">
@@ -1033,7 +1033,7 @@ const LibrarianFinesPage = () => {
               </div>
 
               <div className="fines-receipt-stamp">
-                <span>✓</span> SETTLED & CLEARED
+                <span></span> SETTLED & CLEARED
               </div>
 
               <div className="fines-receipt-footer-notes">
@@ -1055,7 +1055,7 @@ const LibrarianFinesPage = () => {
                 className="fines-btn-print"
                 onClick={() => window.print()}
               >
-                🖨️ Print Receipt
+                 Print Receipt
               </button>
             </div>
           </div>

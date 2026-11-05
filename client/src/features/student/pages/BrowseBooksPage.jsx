@@ -10,7 +10,7 @@ const normalizeBook = (book) => {
   return {
     ...book,
     availableCopies: availability,
-    categoryName: book.category?.name || "Uncategorized",
+    categoryName: book.category?.name || book.category || "Uncategorized",
     departmentName: book.department?.name || "General",
   };
 };

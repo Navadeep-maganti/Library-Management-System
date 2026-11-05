@@ -45,7 +45,7 @@ export default function LibrarianUpdateStockPage() {
         return {
           id: book.id, code: `BK-${String(book.id).padStart(4, "0")}`,
           title: book.title, author: book.author, isbn: book.isbn,
-          category: book.category?.name || "General",
+          category: book.category?.name || book.category || "General",
           shelf: availability?.shelf ? `${availability.shelf.section} (${availability.shelf.rackNumber})` : "General Stack",
           total: Number(availability?.totalCopies || 0),
           available: Number(availability?.availableCopies || 0),
