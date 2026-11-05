@@ -6,8 +6,10 @@ import LibrarianVerifyTokenPage from "../features/librarian/pages/LibrarianVerif
 import LibrarianIssueBookPage from "../features/librarian/pages/LibrarianIssueBookPage";
 import LibrarianUpdateStockPage from "../features/librarian/pages/LibrarianUpdateStockPage";
 import LibrarianFinesPage from "../features/librarian/pages/LibrarianFinesPage";
+import LibrarianProfilePage from "../features/librarian/pages/LibrarianProfilePage";
+import LibrarianAlertsPage from "../features/librarian/pages/LibrarianAlertsPage";
 
-export const getLibrarianRoutes = (user) => [
+export const getLibrarianRoutes = (user, onUserUpdated) => [
   <Route
     key="librarian-dashboard"
     path="/librarian-dashboard"
@@ -38,6 +40,8 @@ export const getLibrarianRoutes = (user) => [
     path="/librarian/fines"
     element={<LibrarianFinesPage />}
   />,
+  <Route key="librarian-profile" path="/librarian/profile" element={<LibrarianProfilePage user={user} onUserUpdated={onUserUpdated} />} />,
+  <Route key="librarian-alerts" path="/librarian/alerts" element={<LibrarianAlertsPage />} />,
 ];
 
 export default getLibrarianRoutes;

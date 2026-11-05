@@ -5,7 +5,7 @@ import { getAuthRoutes } from "./AuthRoutes";
 import { getStudentRoutes } from "./StudentRoutes";
 import { getLibrarianRoutes } from "./LibrarianRoutes";
 
-const AppRoutes = ({ user, onAuthSuccess, onLogout }) => {
+const AppRoutes = ({ user, onAuthSuccess, onLogout, onUserUpdated }) => {
   const dashboardPath =
     user?.role === "librarian" ? "/librarian-dashboard" : "/student-dashboard";
 
@@ -19,7 +19,7 @@ const AppRoutes = ({ user, onAuthSuccess, onLogout }) => {
       />
       {getAuthRoutes(onAuthSuccess, user)}
       {getStudentRoutes(user, onLogout)}
-      {getLibrarianRoutes(user)}
+      {getLibrarianRoutes(user, onUserUpdated)}
       <Route
         path="*"
         element={<Navigate to={user ? dashboardPath : "/"} replace />}
