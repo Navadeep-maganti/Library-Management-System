@@ -32,9 +32,8 @@ const requestProfileApi = async (path, method, body) => {
 };
 
 const ProfilePage = () => {
-  const { currentUser, onUserUpdated } = useOutletContext();
+  const { currentUser, onUserUpdated, showToast } = useOutletContext();
   const [editing, setEditing] = useState(false);
-  const [saved, setSaved] = useState(false);
   const [profileBusy, setProfileBusy] = useState(false);
   const [draft, setDraft] = useState({
     username: currentUser.username || "Student",
@@ -43,15 +42,12 @@ const ProfilePage = () => {
     yearOfStudy: currentUser.yearOfStudy || currentUser.year_of_study || "",
   });
   const [usernameDraft, setUsernameDraft] = useState(currentUser.username || "Student");
-  const [usernameNotice, setUsernameNotice] = useState("");
   const [usernameBusy, setUsernameBusy] = useState(false);
-  const [profileNotice, setProfileNotice] = useState("");
   const [passwordDraft, setPasswordDraft] = useState({
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
   });
-  const [passwordNotice, setPasswordNotice] = useState("");
   const [passwordBusy, setPasswordBusy] = useState(false);
 
   const updateDraft = (field, value) => setDraft((current) => ({ ...current, [field]: value }));
@@ -73,8 +69,6 @@ const ProfilePage = () => {
   const saveProfile = async (event) => {
     event.preventDefault();
     setProfileBusy(true);
-    setSaved(false);
-    setProfileNotice("");
     try {
       const result = await requestProfileApi("/api/profile", "PUT", {
         username: draft.username,
@@ -83,10 +77,9 @@ const ProfilePage = () => {
       });
       storeUpdatedProfile(result.profile || result.user, result.token);
       setEditing(false);
-      setSaved(true);
+      showToast("success", "Profile changes saved successfully.");
     } catch (error) {
-      setSaved(false);
-      setProfileNotice(error.message);
+      showToast("error", error.message);
     } finally {
       setProfileBusy(false);
     }
@@ -96,19 +89,18 @@ const ProfilePage = () => {
     event.preventDefault();
     const username = usernameDraft.trim();
     if (username.length < 2 || username.length > 255) {
-      setUsernameNotice("Username must be between 2 and 255 characters.");
+      showToast("warning", "Username must be between 2 and 255 characters.");
       return;
     }
 
     setUsernameBusy(true);
-    setUsernameNotice("");
     try {
       const result = await requestProfileApi("/api/profile/username", "PATCH", { username });
       storeUpdatedProfile(result.profile || result.user, result.token);
       updateDraft("username", username);
-      setUsernameNotice(result.message || "Username updated successfully.");
+      showToast("success", result.message || "Username updated successfully.");
     } catch (error) {
-      setUsernameNotice(error.message);
+      showToast("error", error.message);
     } finally {
       setUsernameBusy(false);
     }
@@ -117,16 +109,15 @@ const ProfilePage = () => {
   const changePassword = async (event) => {
     event.preventDefault();
     if (passwordDraft.newPassword !== passwordDraft.confirmPassword) {
-      setPasswordNotice("The new password and confirmation do not match.");
+      showToast("warning", "The new password and confirmation do not match.");
       return;
     }
     if (!PASSWORD_RULE.test(passwordDraft.newPassword)) {
-      setPasswordNotice("Password must be at least 8 characters and include 1 uppercase letter and 1 special character.");
+      showToast("warning", "Password must be at least 8 characters and include 1 uppercase letter and 1 special character.");
       return;
     }
 
     setPasswordBusy(true);
-    setPasswordNotice("");
     try {
       const result = await requestProfileApi("/api/profile/password", "PATCH", {
         currentPassword: passwordDraft.currentPassword,
@@ -134,9 +125,9 @@ const ProfilePage = () => {
         confirmPassword: passwordDraft.confirmPassword,
       });
       setPasswordDraft({ currentPassword: "", newPassword: "", confirmPassword: "" });
-      setPasswordNotice(result.message || "Password updated successfully.");
+      showToast("success", result.message || "Password updated successfully.");
     } catch (error) {
-      setPasswordNotice(error.message);
+      showToast("error", error.message);
     } finally {
       setPasswordBusy(false);
     }
@@ -149,12 +140,10 @@ const ProfilePage = () => {
           <p className="student-kicker">PROFILE</p>
           <h2>Student Profile</h2>
         </div>
-        <button className="text-button" type="button" onClick={() => { setEditing((isEditing) => !isEditing); setSaved(false); }}>
+        <button className="text-button" type="button" onClick={() => setEditing((isEditing) => !isEditing)}>
           {editing ? "Cancel" : "Edit profile"}
         </button>
       </div>
-      {profileNotice && <p className="account-setting-notice" role="alert">{profileNotice}</p>}
-      {saved && <p className="success-note" role="status">Profile changes saved successfully.</p>}
       {editing ? <form className="profile-form" onSubmit={saveProfile}>
         <label><span>Username</span><input minLength={2} maxLength={255} value={draft.username} onChange={(event) => { updateDraft("username", event.target.value); setUsernameDraft(event.target.value); }} required /></label>
         <label><span>Email</span><input type="email" value={draft.email} readOnly /></label>
@@ -212,12 +201,11 @@ const ProfilePage = () => {
                 id="student-username"
                 maxLength={255}
                 minLength={2}
-                onChange={(event) => { setUsernameDraft(event.target.value); setUsernameNotice(""); }}
+                onChange={(event) => setUsernameDraft(event.target.value)}
                 required
                 value={usernameDraft}
               />
               <button className="book-button" type="submit" disabled={usernameBusy}>{usernameBusy ? "Updating..." : "Update username"}</button>
-              {usernameNotice && <p className="account-setting-notice" role="status">{usernameNotice}</p>}
             </form>
           </section>
           <section className="account-setting-card" aria-labelledby="password-settings-title">
@@ -230,7 +218,7 @@ const ProfilePage = () => {
               <input
                 autoComplete="current-password"
                 id="student-current-password"
-                onChange={(event) => { setPasswordDraft((current) => ({ ...current, currentPassword: event.target.value })); setPasswordNotice(""); }}
+                onChange={(event) => setPasswordDraft((current) => ({ ...current, currentPassword: event.target.value }))}
                 required
                 type="password"
                 value={passwordDraft.currentPassword}
@@ -242,7 +230,7 @@ const ProfilePage = () => {
                 minLength={8}
                 pattern="(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,}"
                 title="Use at least 8 characters, including an uppercase letter and a special character."
-                onChange={(event) => { setPasswordDraft((current) => ({ ...current, newPassword: event.target.value })); setPasswordNotice(""); }}
+                onChange={(event) => setPasswordDraft((current) => ({ ...current, newPassword: event.target.value }))}
                 required
                 type="password"
                 value={passwordDraft.newPassword}
@@ -252,13 +240,12 @@ const ProfilePage = () => {
                 autoComplete="new-password"
                 id="student-confirm-password"
                 minLength={8}
-                onChange={(event) => { setPasswordDraft((current) => ({ ...current, confirmPassword: event.target.value })); setPasswordNotice(""); }}
+                onChange={(event) => setPasswordDraft((current) => ({ ...current, confirmPassword: event.target.value }))}
                 required
                 type="password"
                 value={passwordDraft.confirmPassword}
               />
               <button className="book-button" type="submit" disabled={passwordBusy}>{passwordBusy ? "Updating..." : "Update password"}</button>
-              {passwordNotice && <p className="account-setting-notice" role="status">{passwordNotice}</p>}
             </form>
           </section>
         </div>

@@ -3,7 +3,13 @@ import prisma from "../config/db.js";
 export const getAnnouncements = async (req, res) => {
     try {
         const announcements = await prisma.announcement.findMany({
-            where: { isActive: true },
+            where: {
+                isActive: true,
+                OR: [
+                    { expiresAt: null },
+                    { expiresAt: { gt: new Date() } }
+                ]
+            },
             include: { librarian: { select: { staffId: true, user: { select: { username: true } } } } },
             orderBy: { createdAt: "desc" }
         });

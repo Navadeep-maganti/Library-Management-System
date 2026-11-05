@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useOutletContext } from "react-router-dom";
 
 const formatReceivedAt = (value) => new Date(value).toLocaleString([], {
   dateStyle: "medium",
@@ -8,7 +9,7 @@ const formatReceivedAt = (value) => new Date(value).toLocaleString([], {
 const AlertsPage = () => {
   const [alerts, setAlerts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState("");
+  const { showToast } = useOutletContext();
 
   useEffect(() => {
     const loadAnnouncements = async () => {
@@ -27,14 +28,14 @@ const AlertsPage = () => {
           unread: true,
         })));
       } catch (loadError) {
-        setError(loadError.message);
+        showToast("error", loadError.message);
       } finally {
         setIsLoading(false);
       }
     };
 
     loadAnnouncements();
-  }, []);
+  }, [showToast]);
   const unreadCount = alerts.filter((alert) => alert.unread).length;
 
   const markAllRead = () => setAlerts((current) => current.map((alert) => ({ ...alert, unread: false })));
@@ -49,7 +50,7 @@ const AlertsPage = () => {
         <button className="text-button" type="button" onClick={markAllRead} disabled={!unreadCount}>Mark all as read</button>
       </div>
       <div className="alert-list">
-        {isLoading ? <p className="empty-search">Loading library updates...</p> : error ? <p className="browse-books-message">{error}</p> : alerts.length ? alerts.map((alert) => (
+        {isLoading ? <p className="empty-search">Loading library updates...</p> : alerts.length ? alerts.map((alert) => (
           <article className={`library-alert alert-${alert.type} ${alert.unread ? "alert-unread" : ""}`} key={alert.id}>
             <div className="library-alert-icon" aria-hidden="true">{alert.icon}</div>
             <div className="library-alert-copy"><span className="library-alert-label">{alert.label}</span><strong>{alert.title}</strong><span>{alert.detail}</span><time dateTime={alert.receivedAt}>Received {formatReceivedAt(alert.receivedAt)}</time></div>

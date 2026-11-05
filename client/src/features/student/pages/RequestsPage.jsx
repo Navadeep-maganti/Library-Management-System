@@ -72,10 +72,9 @@ const RequestsTable = ({ requests, emptyMessage, now, cancellingId, onCancel }) 
 );
 
 const RequestsPage = () => {
-  const { requests, cancelReservation, reservationQuota = { totalUsedToday: 0, totalDailyLimit: 5 } } = useOutletContext();
+  const { requests, cancelReservation, showToast, reservationQuota = { totalUsedToday: 0, totalDailyLimit: 5 } } = useOutletContext();
   const [now, setNow] = useState(Date.now());
   const [cancellingId, setCancellingId] = useState(null);
-  const [cancelError, setCancelError] = useState("");
   const [groupMode, setGroupMode] = useState("all");
 
   useEffect(() => {
@@ -85,11 +84,11 @@ const RequestsPage = () => {
 
   const handleCancel = async (reservationId) => {
     setCancellingId(reservationId);
-    setCancelError("");
     try {
       await cancelReservation(reservationId);
+      showToast("success", "Book request cancelled successfully.");
     } catch (error) {
-      setCancelError(error.message);
+      showToast("error", error.message);
     } finally {
       setCancellingId(null);
     }
@@ -156,7 +155,6 @@ const RequestsPage = () => {
             ))}
           </div>
         </div>
-        {cancelError && <div className="browse-books-message" role="alert">{cancelError}</div>}
         {groupMode === "all" ? (
           <RequestsTable requests={requests} {...tableProps} />
         ) : groupedRequests.length ? (

@@ -49,18 +49,17 @@ const normalizeHistory = (student) => {
 };
 
 const ViewHistoryPage = () => {
-  const { currentUser } = useOutletContext();
+  const { currentUser, showToast } = useOutletContext();
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All");
   const [historyItems, setHistoryItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState("");
 
   useEffect(() => {
     const rollNo = currentUser.roll_no || currentUser.rollNo;
     if (!rollNo) {
       setIsLoading(false);
-      setError("Student roll number is not available.");
+      showToast("error", "Student roll number is not available.");
       return;
     }
 
@@ -71,14 +70,14 @@ const ViewHistoryPage = () => {
         if (!response.ok) throw new Error(data.message || "Could not load borrowing history.");
         setHistoryItems(normalizeHistory(data.student));
       } catch (loadError) {
-        setError(loadError.message);
+        showToast("error", loadError.message);
       } finally {
         setIsLoading(false);
       }
     };
 
     loadHistory();
-  }, [currentUser.rollNo, currentUser.roll_no]);
+  }, [currentUser.rollNo, currentUser.roll_no, showToast]);
 
   const visibleItems = useMemo(() => historyItems.filter((item) =>
     (status === "All" || item.status === status) &&
@@ -115,8 +114,6 @@ const ViewHistoryPage = () => {
         </div>
         {isLoading ? (
           <p className="empty-search">Loading issued books...</p>
-        ) : error ? (
-          <p className="browse-books-message">{error}</p>
         ) : (
           <div className="history-table-wrap">
             <div className="history-table" role="table">
