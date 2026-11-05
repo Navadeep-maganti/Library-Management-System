@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "../styles/LibrarianProfilePage.css";
 
-const API_BASE_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "");
+const API_BASE_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "").replace(/\/api$/, "");
 
 const LibrarianAlertsPage = () => {
   const [alerts, setAlerts] = useState([]);

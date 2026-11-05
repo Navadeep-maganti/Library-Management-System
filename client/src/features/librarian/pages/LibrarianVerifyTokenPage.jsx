@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import "../styles/LibrarianVerifyTokenPage.css";
 
-const API_BASE_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "");
+const API_BASE_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "").replace(/\/api$/, "");
 const VERIFY_ENDPOINT = `${API_BASE_URL}/api/reservations/verify-token`;
 
 const formatRemaining = (expiresAt, now) => {

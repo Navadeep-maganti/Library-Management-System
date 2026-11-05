@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../styles/RegistrationPage.css";
 
-const API_BASE_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "");
+const API_BASE_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "").replace(/\/api$/, "");
 const OTP_VALIDITY_MINUTES = 10;
 const OTP_VALIDITY_MS = OTP_VALIDITY_MINUTES * 60 * 1000;
 const OTP_RESEND_LOCK_MS = 60 * 1000;

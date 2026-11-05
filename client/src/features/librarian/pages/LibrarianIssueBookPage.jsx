@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import LibrarianMobileDetailsModal from "../components/LibrarianMobileDetailsModal";
 import "../styles/LibrarianIssueBookPage.css";
 
-const API_BASE_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "");
+const API_BASE_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "").replace(/\/api$/, "");
 
 const LibrarianIssueBookPage = () => {
   // Issued-books registry state

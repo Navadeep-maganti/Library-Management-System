@@ -6,7 +6,7 @@ import StudentToast from "../components/StudentToast";
 import { dummyStudentUser } from "../data/studentData";
 import "../styles/StudentDashboard.css";
 
-const API_BASE_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "");
+const API_BASE_URL = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "").replace(/\/api$/, "");
 
 /*
 |--------------------------------------------------------------------------
