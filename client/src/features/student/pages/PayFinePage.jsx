@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useOutletContext } from "react-router-dom";
 import { apiFetch } from "../../../api";
+import StudentLoadingOverlay from "../components/StudentLoadingOverlay";
 import "../styles/PayFinePage.css";
 
 const PayFinePage = () => {
@@ -214,7 +215,8 @@ const PayFinePage = () => {
   };
 
   return (
-    <div className="payfine-container">
+    <div className="payfine-container student-loading-surface" aria-busy={loading}>
+      <StudentLoadingOverlay active={loading} label="Loading your fine records" />
       {/* Header */}
       <div className="payfine-header">
         <div className="payfine-title-group">

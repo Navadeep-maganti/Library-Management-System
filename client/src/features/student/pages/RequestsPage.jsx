@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useOutletContext } from "react-router-dom";
+import StudentLoadingOverlay from "../components/StudentLoadingOverlay";
 
 const RESERVATION_WINDOW_MS = 30 * 60 * 1000;
 const formatDate = (value) => new Date(value).toLocaleString();
@@ -72,7 +73,7 @@ const RequestsTable = ({ requests, emptyMessage, now, cancellingId, onCancel }) 
 );
 
 const RequestsPage = () => {
-  const { requests, cancelReservation, showToast, reservationQuota = { totalUsedToday: 0, totalDailyLimit: 5 } } = useOutletContext();
+  const { requests, requestsLoading, cancelReservation, showToast, reservationQuota = { totalUsedToday: 0, totalDailyLimit: 5 } } = useOutletContext();
   const [now, setNow] = useState(Date.now());
   const [cancellingId, setCancellingId] = useState(null);
   const [groupMode, setGroupMode] = useState("all");
@@ -121,7 +122,8 @@ const RequestsPage = () => {
   };
 
   return (
-    <main className="requests-page">
+    <main className="requests-page student-loading-surface" aria-busy={requestsLoading}>
+      <StudentLoadingOverlay active={requestsLoading} label="Loading your book requests" />
       <section className="student-info-panel requests-intro">
         <p className="student-kicker">LIBRARY REQUESTS</p>
         <h1>Requests</h1>

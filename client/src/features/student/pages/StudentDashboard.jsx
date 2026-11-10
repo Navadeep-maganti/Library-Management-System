@@ -3,6 +3,7 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { apiFetch } from "../../../api";
 import StudentNavbar from "../components/StudentNavbar";
 import StudentToast from "../components/StudentToast";
+import StudentLoadingOverlay from "../components/StudentLoadingOverlay";
 import { dummyStudentUser } from "../data/studentData";
 import "../styles/StudentDashboard.css";
 
@@ -51,9 +52,12 @@ const StudentDashboard = ({ user, onLogout }) => {
   const [profileUserUpdates, setProfileUserUpdates] = useState({});
   const [issuanceNoticeBook, setIssuanceNoticeBook] = useState(null);
   const [requests, setRequests] = useState([]);
+  const [requestsLoading, setRequestsLoading] = useState(true);
   const [requestingBookId, setRequestingBookId] = useState(null);
   const [catalogBooks, setCatalogBooks] = useState([]);
+  const [catalogLoading, setCatalogLoading] = useState(true);
   const [borrowedBooks, setBorrowedBooks] = useState([]);
+  const [summaryLoading, setSummaryLoading] = useState(true);
   const [dashboardStats, setDashboardStats] = useState({ borrowed: 0, overdue: 0, pendingFine: 0, finePaid: 0 });
   const [reservationQuota, setReservationQuota] = useState({ totalUsedToday: 0, totalDailyLimit: 5, totalRemainingToday: 0 });
   const [category, setCategory] = useState("All");
@@ -148,7 +152,10 @@ const StudentDashboard = ({ user, onLogout }) => {
 
   useEffect(() => {
     const rollNo = currentUser.roll_no || currentUser.rollNo;
-    if (!rollNo) return;
+    if (!rollNo) {
+      setRequestsLoading(false);
+      return;
+    }
 
     const loadReservations = async () => {
       try {
@@ -167,6 +174,7 @@ const StudentDashboard = ({ user, onLogout }) => {
       }
 
       await loadReservationQuota(rollNo);
+      setRequestsLoading(false);
     };
 
     loadReservations();
@@ -176,7 +184,10 @@ const StudentDashboard = ({ user, onLogout }) => {
 
   useEffect(() => {
     const rollNo = currentUser.roll_no || currentUser.rollNo;
-    if (!rollNo) return;
+    if (!rollNo) {
+      setSummaryLoading(false);
+      return;
+    }
 
     const loadStudentSummary = async () => {
       try {
@@ -203,6 +214,8 @@ const StudentDashboard = ({ user, onLogout }) => {
         });
       } catch (loadError) {
         showToast("error", loadError.message);
+      } finally {
+        setSummaryLoading(false);
       }
     };
 
@@ -218,6 +231,8 @@ const StudentDashboard = ({ user, onLogout }) => {
         setCatalogBooks(data.books || []);
       } catch (loadError) {
         showToast("error", loadError.message);
+      } finally {
+        setCatalogLoading(false);
       }
     };
 
@@ -387,7 +402,11 @@ const StudentDashboard = ({ user, onLogout }) => {
       ========================================================== */}
 
       {isDashboardHome ? (
-        <main className="student-dashboard-content">
+        <main className="student-dashboard-content student-loading-surface" aria-busy={summaryLoading || catalogLoading || requestsLoading}>
+          <StudentLoadingOverlay
+            active={summaryLoading || catalogLoading || requestsLoading}
+            label="Loading your library dashboard"
+          />
 
           {/* =====================================================
               WELCOME SECTION
@@ -464,13 +483,6 @@ const StudentDashboard = ({ user, onLogout }) => {
                   BORROWED BOOKS
                 </span>
 
-                <span
-                  className="stat-card-icon"
-                  aria-hidden="true"
-                >
-
-                </span>
-
               </div>
 
               <h2>
@@ -502,13 +514,6 @@ const StudentDashboard = ({ user, onLogout }) => {
                   OVERDUE BOOKS
                 </span>
 
-                <span
-                  className="stat-card-icon"
-                  aria-hidden="true"
-                >
-
-                </span>
-
               </div>
 
               <h2>
@@ -534,13 +539,6 @@ const StudentDashboard = ({ user, onLogout }) => {
                   PENDING FINE
                 </span>
 
-                <span
-                  className="stat-card-icon"
-                  aria-hidden="true"
-                >
-                  ₹
-                </span>
-
               </div>
 
               <h2>
@@ -564,13 +562,6 @@ const StudentDashboard = ({ user, onLogout }) => {
 
                 <span className="stat-card-label">
                   FINE PAID
-                </span>
-
-                <span
-                  className="stat-card-icon"
-                  aria-hidden="true"
-                >
-
                 </span>
 
               </div>
@@ -806,6 +797,7 @@ const StudentDashboard = ({ user, onLogout }) => {
             cancelReservation,
             searchTerm,
             reservationQuota,
+            requestsLoading,
             showToast,
           }}
         />

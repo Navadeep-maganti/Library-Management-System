@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { apiFetch } from "../../../api";
+import StudentLoadingOverlay from "../components/StudentLoadingOverlay";
 
 const normalizeBook = (book) => {
   const availability = book.availabilities?.reduce(
@@ -89,7 +90,8 @@ const BrowseBooksPage = () => {
   );
 
   return (
-    <main className="browse-books-page">
+    <main className="browse-books-page student-loading-surface" aria-busy={isLoading}>
+      <StudentLoadingOverlay active={isLoading} label="Loading the library collection" />
       <section className="browse-books-search-panel">
         <div className="browse-books-search-copy">
           <p className="student-kicker">LIBRARY CATALOG</p>

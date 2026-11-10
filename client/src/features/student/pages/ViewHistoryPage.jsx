@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { apiFetch } from "../../../api";
+import StudentLoadingOverlay from "../components/StudentLoadingOverlay";
 
 const formatDate = (value) => value ? new Date(value).toLocaleString() : "Not available";
 const formatToken = (reservation) => {
@@ -86,7 +87,8 @@ const ViewHistoryPage = () => {
   ), [historyItems, query, status]);
 
   return (
-    <section className="student-info-panel history-page-panel">
+    <section className="student-info-panel history-page-panel student-loading-surface" aria-busy={isLoading}>
+      <StudentLoadingOverlay active={isLoading} label="Loading your borrowing history" />
       <div className="catalog-heading">
         <div>
           <p className="student-kicker">BORROWING RECORD</p>

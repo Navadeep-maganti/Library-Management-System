@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { apiFetch } from "../../../api";
+import StudentLoadingOverlay from "../components/StudentLoadingOverlay";
 
 const formatReceivedAt = (value) => new Date(value).toLocaleString([], {
   dateStyle: "medium",
@@ -70,7 +71,8 @@ const AlertsPage = () => {
   };
 
   return (
-    <section className="student-info-panel">
+    <section className="student-info-panel student-loading-surface" aria-busy={isLoading}>
+      <StudentLoadingOverlay active={isLoading} label="Loading your library alerts" />
       <div className="catalog-heading">
         <div>
           <p className="student-kicker">LIBRARY UPDATES</p>
