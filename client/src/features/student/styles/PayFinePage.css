@@ -17,7 +17,7 @@
 }
 
 .payfine-title-group h2 {
-  font-family: Georgia, serif;
+  font-family: var(--font-sans);
   font-size: 2.25rem;
   font-weight: 700;
   color: #0f172a;
@@ -393,7 +393,7 @@
 
 .payfine-receipt-header h2 {
   margin: 8px 0 4px;
-  font-family: Georgia, serif;
+  font-family: var(--font-sans);
   font-size: 1.55rem;
 }
 

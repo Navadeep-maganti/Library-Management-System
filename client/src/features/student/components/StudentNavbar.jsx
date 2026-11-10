@@ -74,7 +74,9 @@ const StudentNavbar = ({
       <nav className="student-action-nav" aria-label="Student sections">
         <NavLink className="student-organization-brand" to="/student-dashboard" aria-label="Central Library home">
           <span className="student-organization-icon" aria-hidden="true">
-
+            <span className="brand-book brand-book-green" />
+            <span className="brand-book brand-book-pink" />
+            <span className="brand-book brand-book-blue" />
           </span>
           <span className="student-organization-copy">
             <strong>Central Library</strong>
