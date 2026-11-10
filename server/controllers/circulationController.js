@@ -1,5 +1,5 @@
 import prisma from "../config/db.js";
-import { syncOverdueFines } from "./fineController.js";
+import { getCalendarDaysSince, syncOverdueFines } from "./fineController.js";
 
 /**
  * @desc Get all issued books (active or returned)
@@ -238,25 +238,44 @@ export const returnBook = async (req, res) => {
             }
 
             // Handle fine creation or update
-            const existingFine = await tx.fine.findFirst({
-                where: { issuedBookId: issuedRecord.id }
+            const existingFines = await tx.fine.findMany({
+                where: { issuedBookId: issuedRecord.id },
+                include: { payments: true },
+                orderBy: { issueDate: "desc" }
             });
+            const existingFine = existingFines.find((fine) => !fine.isPaid);
+            const latestPaymentDate = existingFines
+                .flatMap((fine) => fine.payments || [])
+                .map((payment) => new Date(payment.paymentDate))
+                .sort((a, b) => b - a)[0];
 
             let fine = null;
             if (fineCreated) {
                 if (existingFine) {
-                    if (!existingFine.isPaid) {
-                        // Update existing unpaid fine with finalized return calculation
-                        fine = await tx.fine.update({
-                            where: { id: existingFine.id },
+                    const accruedDays = latestPaymentDate
+                        ? getCalendarDaysSince(latestPaymentDate, returnDate)
+                        : null;
+                    fine = await tx.fine.update({
+                        where: { id: existingFine.id },
+                        data: {
+                            amount: (accruedDays === null ? fineCreated.amount : accruedDays * Number(constants.overdueFinePerDay)),
+                            description: accruedDays === null
+                                ? fineCreated.description
+                                : `Overdue book loan by ${accruedDays} day(s) since last payment @ ₹${constants.overdueFinePerDay}/day.`
+                        }
+                    });
+                } else if (latestPaymentDate) {
+                    const accruedDays = getCalendarDaysSince(latestPaymentDate, returnDate);
+                    if (accruedDays > 0) {
+                        fine = await tx.fine.create({
                             data: {
-                                amount: fineCreated.amount,
-                                description: fineCreated.description
+                                ...fineCreated,
+                                amount: accruedDays * Number(constants.overdueFinePerDay),
+                                description: `Overdue return by ${accruedDays} day(s) since last payment @ ₹${constants.overdueFinePerDay}/day.`
                             }
                         });
                     } else {
-                        // Already paid previously
-                        fine = existingFine;
+                        fine = existingFines[0] || null;
                     }
                 } else {
                     fine = await tx.fine.create({ data: fineCreated });

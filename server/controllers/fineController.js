@@ -1,5 +1,15 @@
 import prisma from "../config/db.js";
 
+const MILLISECONDS_PER_DAY = 1000 * 60 * 60 * 24;
+
+export const getCalendarDaysSince = (startDate, endDate = new Date()) => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const startDay = Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate());
+    const endDay = Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate());
+    return Math.max(0, Math.floor((endDay - startDay) / MILLISECONDS_PER_DAY));
+};
+
 /**
  * Synchronizes overdue issued books with the Fine registry.
  * Automatically computes daily penalties for unreturned books past their dueDate.
@@ -27,47 +37,65 @@ export const syncOverdueFines = async () => {
             include: {
                 student: true,
                 book: true,
-                fines: true
+                fines: { include: { payments: true } }
             }
         });
 
         for (const issued of overdueIssuedBooks) {
             const dueDate = new Date(issued.dueDate);
             const diffTime = Math.abs(now - dueDate);
-            const diffDays = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
-            const fineAmount = diffDays * finePerDay;
-            const description = `Overdue book loan by ${diffDays} day(s) @ ₹${finePerDay}/day.`;
+            const totalOverdueDays = Math.max(1, Math.ceil(diffTime / MILLISECONDS_PER_DAY));
+            const allFines = issued.fines || [];
+            const unpaidFine = allFines.find((fine) => !fine.isPaid);
+            const latestPaymentDate = allFines
+                .flatMap((fine) => fine.payments || [])
+                .map((payment) => new Date(payment.paymentDate))
+                .sort((a, b) => b - a)[0];
 
-            // Check if a fine already exists for this issued book
-            const existingFine = (issued.fines && issued.fines.length > 0)
-                ? issued.fines[0]
-                : await prisma.fine.findFirst({ where: { issuedBookId: issued.id } });
+            if (unpaidFine) {
+                const accruedDays = latestPaymentDate
+                    ? getCalendarDaysSince(latestPaymentDate, now)
+                    : totalOverdueDays;
+                const fineAmount = accruedDays * finePerDay;
+                const description = latestPaymentDate
+                    ? `Overdue book loan by ${accruedDays} day(s) since last payment @ ₹${finePerDay}/day.`
+                    : `Overdue book loan by ${totalOverdueDays} day(s) @ ₹${finePerDay}/day.`;
 
-            if (!existingFine) {
-                // Create a new fine record for this overdue book
+                if (fineAmount > 0 && (Number(unpaidFine.amount) !== fineAmount || unpaidFine.description !== description)) {
+                    await prisma.fine.update({
+                        where: { id: unpaidFine.id },
+                        data: { amount: fineAmount, description }
+                    });
+                }
+            } else if (latestPaymentDate) {
+                // A paid fine is historical. Start a new unpaid fine for days accrued after payment.
+                const accruedDays = getCalendarDaysSince(latestPaymentDate, now);
+                if (accruedDays > 0) {
+                    await prisma.fine.create({
+                        data: {
+                            studentId: issued.studentId,
+                            issuedBookId: issued.id,
+                            fineTypeId: fineType.id,
+                            amount: accruedDays * finePerDay,
+                            issueDate: now,
+                            isPaid: false,
+                            description: `Overdue book loan by ${accruedDays} day(s) since last payment @ ₹${finePerDay}/day.`
+                        }
+                    });
+                }
+            } else {
+                // Create the initial fine record for this overdue book.
                 await prisma.fine.create({
                     data: {
                         studentId: issued.studentId,
                         issuedBookId: issued.id,
                         fineTypeId: fineType.id,
-                        amount: fineAmount,
+                        amount: totalOverdueDays * finePerDay,
                         issueDate: now,
                         isPaid: false,
-                        description
+                        description: `Overdue book loan by ${totalOverdueDays} day(s) @ ₹${finePerDay}/day.`
                     }
                 });
-            } else if (!existingFine.isPaid) {
-                // If unpaid, keep amount and description up to date with the latest accrued overdue days
-                const currentAmount = Number(existingFine.amount);
-                if (currentAmount !== fineAmount || existingFine.description !== description) {
-                    await prisma.fine.update({
-                        where: { id: existingFine.id },
-                        data: {
-                            amount: fineAmount,
-                            description
-                        }
-                    });
-                }
             }
         }
     } catch (error) {
