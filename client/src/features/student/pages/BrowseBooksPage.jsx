@@ -18,6 +18,7 @@ const normalizeBook = (book) => {
 };
 
 const BOOK_SLOTS = 12;
+const MAX_BROWSE_BOOKS = 12;
 
 const BrowseBooksPage = () => {
   const { requests, requestBook, requestingBookId, showToast, reservationQuota = { totalRemainingToday: 0 } } = useOutletContext();
@@ -83,7 +84,7 @@ const BrowseBooksPage = () => {
     return () => controller.abort();
   }, [categoryId, departmentId, searchTerm, showToast]);
 
-  const visibleBooks = books;
+  const visibleBooks = books.slice(0, MAX_BROWSE_BOOKS);
 
   const isRequested = (book) => (requests || []).some(
     (request) => request?.book?.id === book.id && ["Requested", "Booked", "Reserved"].includes(request.status),

@@ -1,6 +1,7 @@
 import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 const navItems = [
   { to: "/student-dashboard", label: "Home", mobileLabel: "Home", icon: "home", end: true },
@@ -9,6 +10,8 @@ const navItems = [
   { to: "/student-dashboard/payfine", label: "Pay Fine", mobileLabel: "Fine", icon: "fine" },
   { to: "/student-dashboard/history", label: "View History", mobileLabel: "History", icon: "history" },
 ];
+
+const MAX_SEARCH_RESULTS = 6;
 
 const NavIcon = ({ name }) => {
   const shared = { fill: "none", stroke: "currentColor", strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 1.8 };
@@ -114,7 +117,7 @@ const StudentNavbar = ({
           />
           <label></label>
           </label>
-          {isSearchOpen && (
+          {isSearchOpen && createPortal(
             <>
               <button className="student-search-backdrop" type="button" aria-label="Close search results" onClick={() => setIsSearchOpen(false)} />
               <div className="student-search-board">
@@ -125,7 +128,7 @@ const StudentNavbar = ({
                   </div>
                   <button type="button" aria-label="Close search results" onClick={() => setIsSearchOpen(false)}>×</button>
                 </div>
-                {searchResults.length ? searchResults.map((book) => {
+                {searchResults.slice(0, MAX_SEARCH_RESULTS).length ? searchResults.slice(0, MAX_SEARCH_RESULTS).map((book) => {
                   const isRequested = requestedBooks.some((request) => request.book?.id === book.id && ["Requested", "Booked", "Reserved"].includes(request.status));
                   return (
                     <article className="student-search-result" key={book.title}>
@@ -149,6 +152,9 @@ const StudentNavbar = ({
                     </article>
                   );
                 }) : <p className="student-search-empty">No books match your search.</p>}
+                {searchResults.length > MAX_SEARCH_RESULTS && (
+                  <p className="student-search-limit">Showing the first {MAX_SEARCH_RESULTS} results. Refine your search to see other titles.</p>
+                )}
               </div>
               {selectedBook && (
                 <div className="book-details-dialog" role="dialog" aria-modal="true" aria-label={`${selectedBook.title} details`}>
@@ -171,7 +177,7 @@ const StudentNavbar = ({
                 </div>
               )}
             </>
-          )}
+          , document.body)}
         </div>
         <NavLink className="student-notification-link" aria-label="Notifications" title="Notifications" to="/student-dashboard/alerts">
           <span aria-hidden="true">🔔</span>
