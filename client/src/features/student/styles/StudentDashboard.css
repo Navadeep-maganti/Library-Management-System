@@ -1089,7 +1089,13 @@
 }
 
 /* Browse books */
-.browse-books-page { display: grid; gap: 22px; }
+.browse-books-page {
+  align-self: stretch;
+  display: grid;
+  gap: 22px;
+  min-width: 0;
+  width: 100%;
+}
 .browse-books-search-panel {
   background: linear-gradient(118deg, #123f3d 0%, #0f766e 62%, #197b72 100%);
   border: 1px solid #0d625c;
@@ -1102,7 +1108,15 @@
 .browse-books-search-copy .student-kicker { color: #a7e5d5; }
 .browse-books-search-copy h1 { color: #fff; font-family: Georgia, serif; font-size: clamp(1.8rem, 3vw, 2.55rem); line-height: 1.04; margin: 6px 0 6px; }
 .browse-books-search-copy p:last-child { color: #d2eee7; font-size: 0.88rem; line-height: 1.4; margin: 0; }
-.browse-books-toolbar { align-items: stretch; display: flex; gap: 12px; margin-top: 18px; max-width: 1120px; }
+.browse-books-toolbar {
+  align-items: stretch;
+  display: flex;
+  gap: 12px;
+  margin-top: 18px;
+  max-width: 1120px;
+  min-width: 0;
+  width: 100%;
+}
 .browse-books-search-bar {
   align-items: center;
   background: #fff;
@@ -1114,6 +1128,7 @@
   flex: 1 1 480px;
   max-width: none;
   min-height: 64px;
+  min-width: 0;
   padding: 0 14px;
 }
 .browse-books-search-icon { color: #0f766e; font-size: 2rem; line-height: 1; transform: rotate(-20deg); }
@@ -1126,10 +1141,10 @@
 .browse-books-heading h2 { color: var(--ink); font-family: Georgia, serif; font-size: 1.8rem; line-height: 1.1; margin: 6px 0 5px; }
 .browse-books-section-note { color: var(--muted); font-size: 0.84rem; margin: 0; }
 .browse-books-result-count { background: #e7f5f0; border-radius: 999px; color: #0f766e; flex: 0 0 auto; font-size: 0.74rem; font-weight: 800; padding: 8px 12px; }
-.browse-books-filters { align-items: stretch; background: rgba(6, 64, 60, 0.36); border: 1px solid rgba(210, 238, 231, 0.24); border-radius: 12px; display: flex; gap: 8px; padding: 7px; }
-.browse-books-filter { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 8px; display: grid; gap: 3px; min-width: 145px; padding: 6px 9px 7px; }
+.browse-books-filters { align-items: stretch; background: rgba(6, 64, 60, 0.36); border: 1px solid rgba(210, 238, 231, 0.24); border-radius: 12px; display: flex; flex: 0 0 510px; gap: 8px; min-width: 0; padding: 7px; }
+.browse-books-filter { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 8px; display: grid; flex: 1 1 0; gap: 3px; min-width: 0; padding: 6px 9px 7px; }
 .browse-books-filter span { color: #b8e5db; font-size: 0.6rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
-.browse-books-filter select { background: transparent; border: 0; color: #fff; cursor: pointer; font-size: 0.78rem; font-weight: 700; min-width: 0; outline: 0; padding: 0; }
+.browse-books-filter select { background: transparent; border: 0; color: #fff; cursor: pointer; font-size: 0.78rem; font-weight: 700; min-width: 0; outline: 0; overflow: hidden; padding: 0; text-overflow: ellipsis; width: 100%; }
 .browse-books-filter select option { background: #123f3d; color: #fff; }
 .browse-books-reset { align-self: center; background: transparent; border: 1px solid rgba(210, 238, 231, 0.4); border-radius: 7px; color: #d2eee7; cursor: pointer; font-size: 0.7rem; font-weight: 800; min-height: 34px; padding: 0 9px; white-space: nowrap; }
 .browse-books-reset:hover { background: rgba(255, 255, 255, 0.12); border-color: #fff; color: #fff; }
@@ -1161,6 +1176,7 @@
 
 @media (max-width: 700px) {
   .browse-books-search-panel {
+    width: 100%;
     min-width: 0;
     padding: 22px 20px 20px;
   }
@@ -1182,7 +1198,7 @@
   .browse-books-search-icon svg { display: block; height: 20px; width: 20px; }
   .browse-books-search-bar input { flex: 1 1 auto; font-size: 16px; min-width: 0; }
   .browse-books-clear { flex: 0 0 auto; min-height: 36px; padding: 0 9px; }
-  .browse-books-filters { flex-wrap: wrap; }
+  .browse-books-filters { flex: 0 0 auto; flex-wrap: wrap; width: 100%; }
   .browse-books-filter { flex: 1 1 145px; }
   .browse-books-reset { padding: 0 14px; }
   .browse-books-recommendations { padding: 24px 18px; }
@@ -1868,6 +1884,199 @@
 .requests-section .requests-view-switcher {
   background: #ffffff;
   border-color: #cfe2df;
+}
+
+/* Student profile workspace. */
+.profile-page {
+  background: #ffffff;
+  border: 1px solid #cfe2df;
+  border-radius: 20px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+  padding: clamp(20px, 3vw, 34px);
+}
+
+.profile-page-heading {
+  align-items: center;
+  background: linear-gradient(135deg, #e6f7f3 0%, #e8f4fb 100%);
+  border: 1px solid #b9ded8;
+  border-radius: 16px;
+  margin-bottom: 24px;
+  min-height: 108px;
+  padding: 22px 24px;
+}
+
+.profile-page-heading h2 {
+  color: #173b4a;
+  font-family: var(--font-sans);
+  font-size: clamp(1.55rem, 3vw, 2.1rem);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+
+.profile-page-heading .text-button {
+  background: #ffffff;
+  border: 1px solid #9dcfc5;
+  border-radius: 999px;
+  color: #17635d;
+  padding: 10px 17px;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.profile-page-heading .text-button:hover {
+  background: #dff5ee;
+  border-color: #62b9aa;
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+
+.profile-page > .student-detail-grid {
+  gap: 16px;
+}
+
+.profile-page .student-detail-grid p {
+  background: #fbfefd;
+  border: 1px solid #dcebe8;
+  border-radius: 14px;
+  box-shadow: 0 5px 14px rgba(15, 118, 110, 0.035);
+  min-height: 96px;
+  padding: 18px;
+}
+
+.profile-page .student-detail-grid p strong {
+  color: #0f766e;
+  font-size: 0.74rem;
+  letter-spacing: 0.11em;
+}
+
+.profile-page .student-detail-grid p {
+  color: #324e5d;
+  font-size: 1rem;
+}
+
+.profile-page > .profile-form {
+  background: #f7fcfb;
+  border: 1px solid #dcebe8;
+  border-radius: 14px;
+  padding: 20px;
+}
+
+.profile-page .profile-form label span {
+  color: #526d78;
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.profile-page .profile-form input {
+  background: #ffffff;
+  border: 1px solid #bfded8;
+  border-radius: 10px;
+  color: #243746;
+  font: inherit;
+  min-height: 44px;
+  padding: 0 12px;
+}
+
+.profile-page .profile-form input[readonly] {
+  background: #eef5f4;
+  color: #607986;
+  cursor: not-allowed;
+}
+
+.profile-page .profile-form input:focus {
+  border-color: #0f766e;
+  outline: 3px solid rgba(15, 118, 110, 0.14);
+}
+
+.profile-page .profile-form .book-button {
+  align-self: end;
+  border-radius: 10px;
+  min-height: 44px;
+}
+
+.profile-page .account-settings {
+  border-top: 1px solid #dcebe8;
+  margin-top: 30px;
+  padding-top: 28px;
+}
+
+.profile-page .account-settings-heading {
+  align-items: end;
+  margin-bottom: 18px;
+}
+
+.profile-page .account-settings-heading h3 {
+  color: #243746;
+  font-family: var(--font-sans);
+  font-size: 1.45rem;
+  font-weight: 800;
+}
+
+.profile-page .account-settings-heading > p {
+  font-size: 0.9rem;
+}
+
+.profile-page .account-setting-card {
+  background: #fbfefd;
+  border: 1px solid #dcebe8;
+  border-radius: 14px;
+  box-shadow: 0 5px 14px rgba(15, 23, 42, 0.035);
+  padding: 22px;
+}
+
+.profile-page .account-setting-copy h4 {
+  color: #243746;
+  font-size: 1.12rem;
+  font-weight: 800;
+}
+
+.profile-page .account-setting-copy p {
+  font-size: 0.9rem;
+}
+
+.profile-page .account-setting-form input {
+  background: #ffffff;
+  border-color: #bfded8;
+  border-radius: 10px;
+  color: #243746;
+}
+
+.profile-page .account-setting-form label {
+  font-size: 0.8rem;
+}
+
+.profile-page .account-setting-form .book-button {
+  border-radius: 10px;
+}
+
+@media (max-width: 700px) {
+  .profile-page {
+    border-radius: 16px;
+    padding: 16px;
+  }
+
+  .profile-page-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 14px;
+    padding: 18px;
+  }
+
+  .profile-page-heading .text-button {
+    align-self: stretch;
+    text-align: center;
+  }
+
+  .profile-page > .student-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-page .account-settings-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 7px;
+  }
 }
 
 /* Keep recommendation cards bright, readable, and aligned despite varying title lengths. */

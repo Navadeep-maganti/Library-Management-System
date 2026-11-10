@@ -33,13 +33,11 @@ const requestProfileApi = async (path, method, body) => {
 
 const ProfilePage = () => {
   const { currentUser, onUserUpdated, showToast } = useOutletContext();
-  const [editing, setEditing] = useState(false);
-  const [profileBusy, setProfileBusy] = useState(false);
   const [draft, setDraft] = useState({
     username: currentUser.username || "Student",
     email: currentUser.email || "",
     department: currentUser.department || "General",
-    yearOfStudy: currentUser.yearOfStudy || currentUser.year_of_study || "",
+    yearOfStudy: currentUser.yearOfStudy ?? currentUser.year_of_study ?? "",
   });
   const [usernameDraft, setUsernameDraft] = useState(currentUser.username || "Student");
   const [usernameBusy, setUsernameBusy] = useState(false);
@@ -50,7 +48,6 @@ const ProfilePage = () => {
   });
   const [passwordBusy, setPasswordBusy] = useState(false);
 
-  const updateDraft = (field, value) => setDraft((current) => ({ ...current, [field]: value }));
   const storeUpdatedProfile = (profile, token) => {
     const updatedUser = { ...currentUser, ...profile };
     localStorage.setItem("libraryUser", JSON.stringify(updatedUser));
@@ -61,28 +58,9 @@ const ProfilePage = () => {
       username: updatedUser.username || current.username,
       email: updatedUser.email || current.email,
       department: updatedUser.department || current.department,
-      yearOfStudy: updatedUser.yearOfStudy || updatedUser.year_of_study || current.yearOfStudy,
+      yearOfStudy: updatedUser.yearOfStudy ?? updatedUser.year_of_study ?? current.yearOfStudy,
     }));
     setUsernameDraft(updatedUser.username || "");
-  };
-
-  const saveProfile = async (event) => {
-    event.preventDefault();
-    setProfileBusy(true);
-    try {
-      const result = await requestProfileApi("/api/profile", "PUT", {
-        username: draft.username,
-        department: draft.department,
-        yearOfStudy: draft.yearOfStudy,
-      });
-      storeUpdatedProfile(result.profile || result.user, result.token);
-      setEditing(false);
-      showToast("success", "Profile changes saved successfully.");
-    } catch (error) {
-      showToast("error", error.message);
-    } finally {
-      setProfileBusy(false);
-    }
   };
 
   const saveUsername = async (event) => {
@@ -97,7 +75,6 @@ const ProfilePage = () => {
     try {
       const result = await requestProfileApi("/api/profile/username", "PATCH", { username });
       storeUpdatedProfile(result.profile || result.user, result.token);
-      updateDraft("username", username);
       showToast("success", result.message || "Username updated successfully.");
     } catch (error) {
       showToast("error", error.message);
@@ -134,23 +111,14 @@ const ProfilePage = () => {
   };
 
   return (
-    <section className="student-info-panel">
-      <div className="catalog-heading">
+    <section className="student-info-panel profile-page">
+      <div className="catalog-heading profile-page-heading">
         <div>
           <p className="student-kicker">PROFILE</p>
           <h2>Student Profile</h2>
         </div>
-        <button className="text-button" type="button" onClick={() => setEditing((isEditing) => !isEditing)}>
-          {editing ? "Cancel" : "Edit profile"}
-        </button>
       </div>
-      {editing ? <form className="profile-form" onSubmit={saveProfile}>
-        <label><span>Username</span><input minLength={2} maxLength={255} value={draft.username} onChange={(event) => { updateDraft("username", event.target.value); setUsernameDraft(event.target.value); }} required /></label>
-        <label><span>Email</span><input type="email" value={draft.email} readOnly /></label>
-        <label><span>Department</span><input value={draft.department} onChange={(event) => updateDraft("department", event.target.value)} required /></label>
-        <label><span>Year of study</span><input type="number" min="1" max="6" value={draft.yearOfStudy} onChange={(event) => updateDraft("yearOfStudy", event.target.value)} required /></label>
-        <button className="book-button" type="submit" disabled={profileBusy}>{profileBusy ? "Saving..." : "Save changes"}</button>
-      </form> : <div className="student-detail-grid">
+      <div className="student-detail-grid">
         <p>
           <strong>Name</strong>
           {draft.username}
@@ -165,7 +133,7 @@ const ProfilePage = () => {
         </p>
         <p>
           <strong>Year of Study</strong>
-          {currentUser.yearOfStudy || currentUser.year_of_study || "Not available"}
+          {currentUser.yearOfStudy ?? currentUser.year_of_study ?? "Not available"}
         </p>
         <p>
           <strong>Roll Number</strong>
@@ -179,7 +147,7 @@ const ProfilePage = () => {
           <strong>Library Status</strong>
           Active
         </p>
-      </div>}
+      </div>
       <div className="account-settings">
         <div className="account-settings-heading">
           <div>

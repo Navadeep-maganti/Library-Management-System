@@ -87,6 +87,43 @@ const StudentDashboard = ({ user, onLogout }) => {
     ...profileUserUpdates,
   };
 
+  useEffect(() => {
+    const token = localStorage.getItem("libraryToken");
+    if (currentUser.role !== "student" || !token) return;
+
+    let active = true;
+    const loadCanonicalProfile = async () => {
+      try {
+        const response = await apiFetch("/api/profile", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await response.json();
+        if (!response.ok || data.success === false) {
+          throw new Error(data.message || "Could not synchronize student profile.");
+        }
+
+        const profile = data.profile || data.user;
+        if (!profile || !active) return;
+
+        const yearOfStudy = profile.yearOfStudy ?? profile.year_of_study ?? null;
+        const normalizedProfile = {
+          ...profile,
+          yearOfStudy,
+          year_of_study: yearOfStudy,
+        };
+        localStorage.setItem("libraryUser", JSON.stringify(normalizedProfile));
+        setProfileUserUpdates(normalizedProfile);
+      } catch (error) {
+        console.error("Failed to synchronize student profile:", error);
+      }
+    };
+
+    loadCanonicalProfile();
+    return () => {
+      active = false;
+    };
+  }, [currentUser.email, currentUser.role]);
+
   const loadReservationQuota = async (studentId) => {
     if (!studentId) return;
 
