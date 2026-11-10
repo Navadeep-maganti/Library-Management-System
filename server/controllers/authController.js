@@ -218,7 +218,10 @@ export const forgotPassword = async (req, res) => {
         const cleanEmail = email.trim().toLowerCase();
         const user = await prisma.user.findUnique({ where: { email: cleanEmail } });
         if (!user) {
-            return res.status(404).json({ success: false, message: "No account found with this email." });
+            return res.status(404).json({
+                success: false,
+                message: "No registered account was found with this email address."
+            });
         }
 
         const otp = generateOTP();
@@ -267,17 +270,20 @@ export const verifyResetOTP = async (req, res) => {
         const cleanOtp = String(otp).trim();
 
         const validOtp = await prisma.otp.findFirst({
-            where: { email: cleanEmail, otp: cleanOtp, expiresAt: { gt: new Date() } }
+            where: { email: cleanEmail, otp: cleanOtp, isVerified: false, expiresAt: { gt: new Date() } }
         });
 
         if (!validOtp) {
             return res.status(400).json({ success: false, message: "Invalid or expired OTP." });
         }
 
-        await prisma.otp.delete({ where: { id: validOtp.id } });
+        await prisma.otp.update({
+            where: { id: validOtp.id },
+            data: { isVerified: true }
+        });
 
         const resetToken = jwt.sign(
-            { email: cleanEmail, purpose: "password-reset" },
+            { email: cleanEmail, purpose: "password-reset", otpId: validOtp.id },
             process.env.JWT_SECRET,
             { expiresIn: "10m" }
         );
@@ -329,15 +335,31 @@ export const resetPassword = async (req, res) => {
             if (verification.purpose !== "password-reset" || verification.email !== cleanEmail) {
                 return res.status(403).json({ success: false, message: "Invalid reset token for this email." });
             }
+
+            const resetOtp = await prisma.otp.findFirst({
+                where: {
+                    id: Number(verification.otpId),
+                    email: cleanEmail,
+                    isVerified: true
+                }
+            });
+            if (!resetOtp) {
+                return res.status(401).json({ success: false, message: "Reset token has already been used or is invalid." });
+            }
         } catch {
             return res.status(401).json({ success: false, message: "Reset token has expired or is invalid." });
         }
 
         const passwordHash = await bcrypt.hash(newPassword, 10);
-        await prisma.user.update({
-            where: { email: cleanEmail },
-            data: { passwordHash }
-        });
+        await prisma.$transaction([
+            prisma.user.update({
+                where: { email: cleanEmail },
+                data: { passwordHash }
+            }),
+            prisma.otp.deleteMany({
+                where: { email: cleanEmail, isVerified: true }
+            })
+        ]);
 
         return res.status(200).json({
             success: true,

@@ -10,17 +10,31 @@ const LoginPage = ({ onAuthSuccess }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
+  const [toast, setToast] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isForgotOpen, setIsForgotOpen] = useState(false);
+  const [forgotStep, setForgotStep] = useState("request");
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotOtp, setForgotOtp] = useState("");
+  const [resetToken, setResetToken] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [forgotSubmitting, setForgotSubmitting] = useState(false);
+
+  React.useEffect(() => {
+    if (!toast) return undefined;
+    const timeoutId = window.setTimeout(() => setToast(null), 4000);
+    return () => window.clearTimeout(timeoutId);
+  }, [toast]);
+
+  const showToast = (type, text) => setToast({ type, text });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    setSuccessMessage("");
+    setToast(null);
 
     if (!email.trim() || !password.trim()) {
-      setError(role === "student"
+      showToast("error", role === "student"
         ? "Student roll number and password are required."
         : "Email address and password are required.");
       return;
@@ -32,12 +46,12 @@ const LoginPage = ({ onAuthSuccess }) => {
       : cleanIdentifier;
 
     if (role === "student" && !cleanIdentifier) {
-      setError("Enter your student roll number.");
+      showToast("error", "Enter your student roll number.");
       return;
     }
 
     if (role === "librarian" && cleanEmail.endsWith(STUDENT_EMAIL_SUFFIX)) {
-      setError("Librarian login requires official staff or personal email (e.g. Gmail)");
+      showToast("error", "Librarian login requires official staff or personal email (e.g. Gmail)");
       return;
     }
 
@@ -62,7 +76,7 @@ const LoginPage = ({ onAuthSuccess }) => {
         throw new Error(data.message || "Login failed. Please verify your credentials.");
       }
 
-      setSuccessMessage(data.message || "Login successful! Redirecting...");
+      showToast("success", data.message || "Login successful! Redirecting...");
 
       if (data.token) {
         localStorage.setItem("libraryToken", data.token);
@@ -80,7 +94,7 @@ const LoginPage = ({ onAuthSuccess }) => {
         navigate(targetPath);
       }, 1000);
     } catch (err) {
-      setError(err.message || "Something went wrong while logging in.");
+      showToast("error", err.message || "Something went wrong while logging in.");
     } finally {
       setIsSubmitting(false);
     }
@@ -96,17 +110,124 @@ const LoginPage = ({ onAuthSuccess }) => {
     return "Official email or Gmail";
   };
 
+  const getForgotEmail = () => {
+    const identifier = forgotEmail.trim().toLowerCase();
+    return role === "student" && !identifier.includes("@")
+      ? `${identifier}${STUDENT_EMAIL_SUFFIX}`
+      : identifier;
+  };
+
+  const openForgotPassword = () => {
+    setForgotEmail(email);
+    setForgotStep("request");
+    setForgotOtp("");
+    setResetToken("");
+    setNewPassword("");
+    setConfirmPassword("");
+    setToast(null);
+    setIsForgotOpen(true);
+  };
+
+  const handleForgotRequest = async (event) => {
+    event.preventDefault();
+    const cleanEmail = getForgotEmail();
+    if (!cleanEmail || (role === "student" && !/^\d+@student\.nitandhra\.ac\.in$/.test(cleanEmail)) || (role === "librarian" && !cleanEmail.includes("@"))) {
+      showToast("error", role === "student" ? "Enter your student roll number." : "Enter a valid account email address.");
+      return;
+    }
+
+    setForgotSubmitting(true);
+    setToast(null);
+    try {
+      const response = await apiFetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: cleanEmail }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Could not send the reset OTP.");
+      setForgotEmail(cleanEmail);
+      setForgotStep("verify");
+      showToast("success", "A 6-digit OTP was sent to your registered email. It expires in 10 minutes.");
+    } catch (requestError) {
+      showToast("error", requestError.message);
+    } finally {
+      setForgotSubmitting(false);
+    }
+  };
+
+  const handleForgotVerify = async (event) => {
+    event.preventDefault();
+    if (!/^\d{6}$/.test(forgotOtp.trim())) {
+      showToast("error", "Enter the 6-digit OTP from your email.");
+      return;
+    }
+
+    setForgotSubmitting(true);
+    setToast(null);
+    try {
+      const response = await apiFetch("/api/auth/verify-reset-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: forgotEmail, otp: forgotOtp.trim() }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Invalid or expired OTP.");
+      setResetToken(data.resetToken);
+      setForgotStep("reset");
+      showToast("success", "OTP verified. Choose a new password.");
+    } catch (verifyError) {
+      showToast("error", verifyError.message);
+    } finally {
+      setForgotSubmitting(false);
+    }
+  };
+
+  const handlePasswordReset = async (event) => {
+    event.preventDefault();
+    if (newPassword !== confirmPassword) {
+      showToast("error", "New password and confirmation do not match.");
+      return;
+    }
+    if (!/^(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,}$/.test(newPassword)) {
+      showToast("error", "Password must be at least 8 characters and include 1 uppercase letter and 1 special character.");
+      return;
+    }
+
+    setForgotSubmitting(true);
+    setToast(null);
+    try {
+      const response = await apiFetch("/api/auth/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: forgotEmail, resetToken, newPassword, confirmPassword }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Could not reset your password.");
+      setIsForgotOpen(false);
+      setPassword("");
+      showToast("success", "Password reset successfully. Sign in with your new password.");
+    } catch (resetError) {
+      showToast("error", resetError.message);
+    } finally {
+      setForgotSubmitting(false);
+    }
+  };
+
   return (
     <div className="login-page-shell">
+      {toast ? (
+        <div className={`login-toast ${toast.type}`} role="status" aria-live="polite">
+          {toast.text}
+        </div>
+      ) : null}
+
       <div className="login-card">
         <div className="login-card-header">
           <p className="login-card-tag">CENTRAL LIBRARY MANAGEMENT SYSTEM</p>
           <h2 className="login-title">Sign in to your account</h2>
           <p className="login-subtitle">Select your role and enter your official credentials.</p>
         </div>
-
-        {error && <div className="login-error-banner">{error}</div>}
-        {successMessage && <div className="login-success-banner">{successMessage}</div>}
 
         <form onSubmit={handleSubmit} className="login-form">
           <div className="login-input-group">
@@ -117,7 +238,7 @@ const LoginPage = ({ onAuthSuccess }) => {
                 onClick={() => {
                   setRole("student");
                   setEmail("");
-                  setError("");
+                  setToast(null);
                 }}
                 className={role === "student" ? "login-toggle-button active" : "login-toggle-button"}
               >
@@ -128,7 +249,7 @@ const LoginPage = ({ onAuthSuccess }) => {
                 onClick={() => {
                   setRole("librarian");
                   setEmail("");
-                  setError("");
+                  setToast(null);
                 }}
                 className={role === "librarian" ? "login-toggle-button active" : "login-toggle-button"}
               >
@@ -170,6 +291,9 @@ const LoginPage = ({ onAuthSuccess }) => {
           <div className="login-input-group">
             <div className="login-label-row">
               <label className="login-label">Password</label>
+              <button type="button" className="forgot-password-link" onClick={openForgotPassword}>
+                Forgot password?
+              </button>
             </div>
             <div className="password-input-wrapper">
               <input
@@ -218,6 +342,51 @@ const LoginPage = ({ onAuthSuccess }) => {
           </Link>
         </div>
       </div>
+
+      {isForgotOpen && (
+        <div className="forgot-password-backdrop" onClick={() => setIsForgotOpen(false)} role="presentation">
+          <section className="forgot-password-dialog" onClick={(event) => event.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="forgot-password-title">
+            <div className="forgot-password-heading">
+              <div>
+                <p className="login-card-tag">ACCOUNT RECOVERY</p>
+                <h2 id="forgot-password-title">Reset your password</h2>
+              </div>
+              <button type="button" className="forgot-password-close" onClick={() => setIsForgotOpen(false)} aria-label="Close password recovery">×</button>
+            </div>
+            <p className="forgot-password-progress">Step {forgotStep === "request" ? "1" : forgotStep === "verify" ? "2" : "3"} of 3</p>
+            {forgotStep === "request" && (
+              <form className="forgot-password-form" onSubmit={handleForgotRequest}>
+                <p>Enter the account identifier associated with your library account. We will email you a one-time verification code.</p>
+                <label className="login-label">{role === "student" ? "Student Roll Number" : "Account Email"}</label>
+                <input className="login-input" type={role === "student" ? "text" : "email"} inputMode={role === "student" ? "numeric" : "email"} value={forgotEmail} onChange={(event) => setForgotEmail(event.target.value.replace(/\s/g, ""))} placeholder={role === "student" ? "e.g., 424151" : "you@example.com"} autoFocus required />
+                <button className="login-submit-button" type="submit" disabled={forgotSubmitting}>{forgotSubmitting ? "Sending OTP..." : "Send Reset OTP"}</button>
+              </form>
+            )}
+
+            {forgotStep === "verify" && (
+              <form className="forgot-password-form" onSubmit={handleForgotVerify}>
+                <p>Enter the 6-digit code sent to <strong>{forgotEmail}</strong>.</p>
+                <label className="login-label" htmlFor="reset-otp">Verification OTP</label>
+                <input id="reset-otp" className="login-input forgot-otp-input" type="text" inputMode="numeric" maxLength={6} value={forgotOtp} onChange={(event) => setForgotOtp(event.target.value.replace(/\D/g, ""))} autoFocus required />
+                <button className="login-submit-button" type="submit" disabled={forgotSubmitting}>{forgotSubmitting ? "Verifying..." : "Verify OTP"}</button>
+                <button className="forgot-secondary-button" type="button" onClick={handleForgotRequest} disabled={forgotSubmitting}>Resend OTP</button>
+              </form>
+            )}
+
+            {forgotStep === "reset" && (
+              <form className="forgot-password-form" onSubmit={handlePasswordReset}>
+                <p>Set a new password for <strong>{forgotEmail}</strong>.</p>
+                <label className="login-label" htmlFor="new-password">New Password</label>
+                <input id="new-password" className="login-input" type="password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} autoFocus required />
+                <label className="login-label" htmlFor="confirm-new-password">Confirm New Password</label>
+                <input id="confirm-new-password" className="login-input" type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} required />
+                <small className="forgot-password-hint">At least 8 characters, including one uppercase letter and one special character.</small>
+                <button className="login-submit-button" type="submit" disabled={forgotSubmitting}>{forgotSubmitting ? "Updating Password..." : "Set New Password"}</button>
+              </form>
+            )}
+          </section>
+        </div>
+      )}
     </div>
   );
 };
