@@ -1,6 +1,6 @@
 import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 const navItems = [
@@ -40,6 +40,7 @@ const StudentNavbar = ({
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [selectedBook, setSelectedBook] = useState(null);
+  const profileMenuRef = useRef(null);
   const navigate = useNavigate();
   const displayName = user.username || user.email || "Student";
   const profileInitial = displayName.charAt(0).toUpperCase();
@@ -54,10 +55,15 @@ const StudentNavbar = ({
     const closeOnEscape = (event) => {
       if (event.key === "Escape") setIsProfileOpen(false);
     };
+    const closeOnOutsideClick = (event) => {
+      if (!profileMenuRef.current?.contains(event.target)) setIsProfileOpen(false);
+    };
     window.addEventListener("keydown", closeOnEscape);
+    document.addEventListener("pointerdown", closeOnOutsideClick);
 
     return () => {
       window.removeEventListener("keydown", closeOnEscape);
+      document.removeEventListener("pointerdown", closeOnOutsideClick);
       if (isMobile) document.body.style.overflow = previousOverflow;
     };
   }, [isProfileOpen]);
@@ -182,7 +188,7 @@ const StudentNavbar = ({
         <NavLink className="student-notification-link" aria-label="Notifications" title="Notifications" to="/student-dashboard/alerts">
           <span aria-hidden="true">🔔</span>
         </NavLink>
-        <div className="student-profile-menu-wrap">
+        <div className="student-profile-menu-wrap" ref={profileMenuRef}>
           <button
             className={`student-profile-link ${isProfileOpen ? "active" : ""}`}
             type="button"

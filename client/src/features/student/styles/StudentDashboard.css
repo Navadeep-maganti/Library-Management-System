@@ -2287,6 +2287,159 @@
   to { transform: rotate(360deg); }
 }
 
+/* Restrained glass treatment for the portal chrome and overlays. */
+.student-action-nav {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.86), rgba(235, 248, 246, 0.72));
+  border: 1px solid rgba(255, 255, 255, 0.92);
+  box-shadow: 0 16px 34px rgba(37, 99, 235, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  -webkit-backdrop-filter: blur(18px) saturate(135%);
+  backdrop-filter: blur(18px) saturate(135%);
+}
+
+.student-organization-brand,
+.student-action {
+  color: #243746;
+}
+
+.student-organization-brand:hover {
+  color: #243746;
+}
+
+.student-organization-copy strong {
+  color: #243746;
+}
+
+.student-organization-copy small {
+  color: #0f766e;
+}
+
+.student-action:hover,
+.student-action.active {
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
+  color: #0f766e;
+}
+
+.student-nav-search {
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(185, 222, 216, 0.7);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+.student-profile-link:hover,
+.student-profile-link.active {
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.student-profile-popover {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.88), rgba(235, 248, 246, 0.82));
+  border-color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 22px 48px rgba(24, 48, 57, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  -webkit-backdrop-filter: blur(18px) saturate(135%);
+  backdrop-filter: blur(18px) saturate(135%);
+}
+
+.student-search-backdrop {
+  background: rgba(24, 48, 57, 0.28);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+
+.student-search-board {
+  background: linear-gradient(145deg, rgba(248, 253, 251, 0.86), rgba(229, 246, 242, 0.78));
+  border-color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 30px 90px rgba(24, 48, 57, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  -webkit-backdrop-filter: blur(22px) saturate(135%);
+  backdrop-filter: blur(22px) saturate(135%);
+}
+
+.student-search-result {
+  background: rgba(255, 255, 255, 0.68);
+  border-color: rgba(207, 229, 223, 0.9);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.student-search-result:hover {
+  background: rgba(255, 255, 255, 0.84);
+}
+
+.book-details-dialog {
+  background: linear-gradient(145deg, rgba(248, 253, 251, 0.92), rgba(226, 246, 240, 0.86));
+  border-color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 30px 90px rgba(24, 48, 57, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  -webkit-backdrop-filter: blur(22px) saturate(135%);
+  backdrop-filter: blur(22px) saturate(135%);
+}
+
+.issuance-notice-backdrop {
+  background: rgba(24, 48, 57, 0.3);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+
+.issuance-notice {
+  align-items: center;
+  background: linear-gradient(135deg, rgba(255, 249, 221, 0.94), rgba(235, 250, 246, 0.92));
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  border-radius: 22px;
+  box-shadow: 0 28px 80px rgba(24, 48, 57, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  gap: 20px;
+  height: auto;
+  left: 50%;
+  max-height: calc(100dvh - 48px);
+  max-width: 1080px;
+  min-height: 0;
+  padding: 26px 30px;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(86vw, 1080px);
+  -webkit-backdrop-filter: blur(20px) saturate(130%);
+  backdrop-filter: blur(20px) saturate(130%);
+}
+
+.issuance-notice-icon {
+  background: #0f9b88;
+  border: 5px solid #bcecdf;
+  box-shadow: 0 5px 14px rgba(15, 118, 110, 0.18);
+}
+
+.issuance-notice-copy h2 {
+  color: #173b38;
+  font-family: var(--font-sans);
+  font-size: clamp(1.05rem, 2vw, 1.5rem);
+  font-weight: 850;
+  letter-spacing: -0.02em;
+}
+
+.issuance-notice-copy p {
+  color: #607066;
+  font-size: 0.84rem;
+}
+
+.issuance-notice-close {
+  background: #0f766e;
+  border-radius: 10px;
+  box-shadow: 0 5px 12px rgba(15, 118, 110, 0.16);
+  min-height: 42px;
+  padding: 0 19px;
+}
+
+.issuance-notice-close:hover {
+  background: #0b625c;
+}
+
+@media (max-width: 700px) {
+  .issuance-notice {
+    gap: 14px;
+    grid-template-columns: 42px minmax(0, 1fr);
+    padding: 20px;
+    width: calc(100vw - 32px);
+  }
+}
+
 .browse-books-reset {
   border-color: #9dcfc5;
   color: #17635d;
