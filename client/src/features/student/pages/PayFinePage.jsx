@@ -12,6 +12,7 @@ const PayFinePage = () => {
   const [activeTab, setActiveTab] = useState("pending");
   const [payingId, setPayingId] = useState(null);
   const [payingAll, setPayingAll] = useState(false);
+  const [receiptFine, setReceiptFine] = useState(null);
 
   const fetchFines = useCallback(async () => {
     if (!rollNo) return;
@@ -39,6 +40,9 @@ const PayFinePage = () => {
 
   const totalPending = pendingFines.reduce((sum, f) => sum + Number(f.amount || 0), 0);
   const totalPaid = paidFines.reduce((sum, f) => sum + Number(f.amount || 0), 0);
+  const receiptPayment = receiptFine?.payments
+    ?.slice()
+    .sort((a, b) => new Date(b.paymentDate) - new Date(a.paymentDate))[0];
 
   // Helper to ensure Razorpay checkout script is loaded
   const ensureRazorpayLoaded = () => {
@@ -415,7 +419,9 @@ const PayFinePage = () => {
                 </thead>
                 <tbody>
                   {paidFines.map((item) => {
-                    const payment = item.payments?.[0];
+                    const payment = item.payments
+                      ?.slice()
+                      .sort((a, b) => new Date(b.paymentDate) - new Date(a.paymentDate))[0];
                     return (
                       <tr key={item.id}>
                         <td>
@@ -457,6 +463,13 @@ const PayFinePage = () => {
                         </td>
                         <td>
                           <span className="payfine-status-pill clear"> Settled</span>
+                          <button
+                            type="button"
+                            className="payfine-receipt-btn"
+                            onClick={() => setReceiptFine(item)}
+                          >
+                            Receipt
+                          </button>
                         </td>
                       </tr>
                     );
@@ -465,6 +478,57 @@ const PayFinePage = () => {
               </table>
             </div>
           )}
+        </div>
+      )}
+
+      {receiptFine && (
+        <div
+          className="payfine-receipt-backdrop"
+          onClick={() => setReceiptFine(null)}
+          role="presentation"
+        >
+          <div
+            className="payfine-receipt-card"
+            onClick={(event) => event.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="student-receipt-title"
+          >
+            <div className="payfine-receipt-printable">
+              <div className="payfine-receipt-header">
+                <strong>National Institute of Technology Andhra Pradesh</strong>
+                <h2 id="student-receipt-title">Central Library Payment Receipt</h2>
+                <p>Official Acknowledgement of Fine Settlement</p>
+              </div>
+
+              <dl className="payfine-receipt-grid">
+                <div><dt>Receipt / Fine ID</dt><dd>FINE-{String(receiptFine.id).padStart(4, "0")}</dd></div>
+                <div><dt>Payment Date</dt><dd>{receiptPayment?.paymentDate ? new Date(receiptPayment.paymentDate).toLocaleString() : "—"}</dd></div>
+                <div><dt>Student Name</dt><dd>{currentUser.username || "Student Member"}</dd></div>
+                <div><dt>Roll Number</dt><dd>{rollNo || "—"}</dd></div>
+                <div><dt>Fine Reason</dt><dd>{receiptFine.fineType?.type || "Circulation Penalty"}</dd></div>
+                <div><dt>Book / Item</dt><dd>{receiptFine.issuedBook?.book?.title || "—"}</dd></div>
+                <div><dt>Payment Mode</dt><dd>{receiptPayment?.paymentMethod || "CASH"}</dd></div>
+                <div><dt>Reference ID</dt><dd className="payfine-font-mono">{receiptPayment?.transactionId || `REC-CASH-${receiptFine.id}`}</dd></div>
+              </dl>
+
+              <div className="payfine-receipt-amount">
+                <span>Total Amount Paid</span>
+                <strong>₹{Number(receiptPayment?.amountPaid || receiptFine.amount).toFixed(2)}</strong>
+              </div>
+              <div className="payfine-receipt-stamp">SETTLED &amp; CLEARED</div>
+              <p className="payfine-receipt-note">This is a computer-generated receipt issued by Central Library Management System.</p>
+            </div>
+
+            <div className="payfine-receipt-actions">
+              <button type="button" className="payfine-receipt-close" onClick={() => setReceiptFine(null)}>
+                Close
+              </button>
+              <button type="button" className="payfine-receipt-print" onClick={() => window.print()}>
+                Download / Print Receipt
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

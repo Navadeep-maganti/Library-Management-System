@@ -339,6 +339,186 @@
   cursor: not-allowed;
 }
 
+.payfine-receipt-btn {
+  display: block;
+  margin-top: 8px;
+  padding: 5px 9px;
+  border: 1px solid #99f6e4;
+  border-radius: 6px;
+  background: #f0fdfa;
+  color: #0f766e;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.payfine-receipt-btn:hover {
+  background: #ccfbf1;
+}
+
+.payfine-receipt-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  padding: 24px;
+  background: rgba(15, 23, 42, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+}
+
+.payfine-receipt-card {
+  width: min(680px, 100%);
+  max-height: 95vh;
+  overflow-y: auto;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.25);
+}
+
+.payfine-receipt-printable {
+  padding: 32px;
+}
+
+.payfine-receipt-header {
+  text-align: center;
+  color: #0f172a;
+}
+
+.payfine-receipt-header strong {
+  color: #0f766e;
+  font-size: 0.85rem;
+}
+
+.payfine-receipt-header h2 {
+  margin: 8px 0 4px;
+  font-family: Georgia, serif;
+  font-size: 1.55rem;
+}
+
+.payfine-receipt-header p,
+.payfine-receipt-note {
+  color: #64748b;
+  font-size: 0.78rem;
+}
+
+.payfine-receipt-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+  margin: 28px 0;
+}
+
+.payfine-receipt-grid dt {
+  color: #64748b;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.payfine-receipt-grid dd {
+  margin: 3px 0 0;
+  color: #0f172a;
+  font-size: 0.9rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.payfine-receipt-amount {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: #334155;
+  font-weight: 700;
+}
+
+.payfine-receipt-amount strong {
+  color: #0f766e;
+  font-size: 1.35rem;
+}
+
+.payfine-receipt-stamp {
+  width: fit-content;
+  margin: 24px auto;
+  padding: 6px 16px;
+  border: 2px solid #059669;
+  border-radius: 8px;
+  color: #059669;
+  font-size: 0.85rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  transform: rotate(-2deg);
+}
+
+.payfine-receipt-note {
+  margin: 0;
+  padding-top: 12px;
+  border-top: 1px solid #f1f5f9;
+  text-align: center;
+}
+
+.payfine-receipt-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 24px;
+  border-top: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.payfine-receipt-close,
+.payfine-receipt-print {
+  padding: 9px 16px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.payfine-receipt-close {
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #475569;
+}
+
+.payfine-receipt-print {
+  border: none;
+  background: #0f766e;
+  color: #ffffff;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .payfine-receipt-backdrop,
+  .payfine-receipt-printable,
+  .payfine-receipt-printable * {
+    visibility: visible;
+  }
+
+  .payfine-receipt-backdrop {
+    position: absolute;
+    padding: 0;
+    background: #ffffff;
+  }
+
+  .payfine-receipt-card {
+    width: 100%;
+    max-height: none;
+    box-shadow: none;
+  }
+
+  .payfine-receipt-actions {
+    display: none;
+  }
+}
+
 /* Empty State */
 .payfine-empty-state {
   padding: 48px 24px;
