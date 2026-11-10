@@ -29,6 +29,7 @@ model Student {
   borrowHistories BorrowHistory[]
   reservations    BookReservation[]
   fines           Fine[]
+  alerts          StudentAlert[]
 
   @@map("students")
 }
@@ -132,6 +133,7 @@ model IssuedBook {
   book         Book?     @relation(fields: [bookId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   student      Student   @relation(fields: [studentId], references: [rollNo], onDelete: Cascade, onUpdate: Cascade)
   fines        Fine[]
+  alerts       StudentAlert[]
 
   @@map("issued_books")
 }
@@ -199,6 +201,24 @@ model FinePayment {
   fine          Fine     @relation(fields: [fineId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@map("fine_payments")
+}
+
+model StudentAlert {
+  id            Int        @id @default(autoincrement())
+  studentId     String     @map("student_id") @db.VarChar(20)
+  issuedBookId  Int        @map("issued_book_id")
+  reminderDays  Int        @map("reminder_days")
+  title         String     @db.VarChar(255)
+  content       String     @db.Text
+  createdAt     DateTime   @default(now()) @map("created_at")
+  readAt        DateTime?  @map("read_at")
+  emailSent     Boolean    @default(false) @map("email_sent")
+  student       Student    @relation(fields: [studentId], references: [rollNo], onDelete: Cascade, onUpdate: Cascade)
+  issuedBook    IssuedBook @relation(fields: [issuedBookId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([issuedBookId, reminderDays])
+  @@index([studentId, createdAt])
+  @@map("student_alerts")
 }
 
 // 6. System Constants & Announcements

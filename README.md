@@ -34,7 +34,8 @@ A modern, full-stack academic **Library Management System** built with **React**
 
 ### 🔐 Domain-Restricted Auth & Verification
 - **Institutional Email Validation**: Restricts student registrations to authorized institutional domains (e.g. `@student.nitandhra.ac.in`).
-- **Nodemailer OTP System**: 6-digit numeric email verification codes with expiration handling prior to account creation.
+- **Nodemailer Email Notifications**: 6-digit numeric email verification codes plus due-date reminders sent 5, 3, and 1 day before a loan is due and on the due date.
+- **Student Due-Date Alerts**: The same reminders are persisted in the student's Alerts page and can be marked as read.
 - **Role-Based Access Control (RBAC)**: Distinct permissions and views for **Students** and **Librarians** secured via JWT tokens and bcrypt password hashing.
 
 ### 📖 Catalog & Physical Shelf Tracking

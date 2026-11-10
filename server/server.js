@@ -11,10 +11,12 @@ import circulationRoutes from "./routes/circulationRoutes.js";
 import reservationRoutes from "./routes/reservationRoutes.js";
 import fineRoutes from "./routes/fineRoutes.js";
 import announcementRoutes from "./routes/announcementRoutes.js";
+import alertRoutes from "./routes/alertRoutes.js";
 import constantRoutes from "./routes/constantRoutes.js";
 import profileRoutes from "./routes/profileRoutes.js";
 import { processExpiredReservations } from "./controllers/reservationController.js";
 import { syncOverdueFines } from "./controllers/fineController.js";
+import { processDueDateReminders } from "./services/dueDateReminderService.js";
 
 const app = express();
 
@@ -36,6 +38,7 @@ app.use("/api/issued-books", circulationRoutes);
 app.use("/api/reservations", reservationRoutes);
 app.use("/api/fines", fineRoutes);
 app.use("/api/announcements", announcementRoutes);
+app.use("/api/alerts", alertRoutes);
 app.use("/api/constants", constantRoutes);
 app.use("/api/profile", profileRoutes);
 
@@ -60,6 +63,7 @@ async function startServer() {
             try {
                 await processExpiredReservations();
                 await syncOverdueFines();
+                await processDueDateReminders();
             } catch (initErr) {
                 console.error("Initial maintenance task error:", initErr.message);
             }
@@ -69,6 +73,7 @@ async function startServer() {
                 try {
                     await processExpiredReservations();
                     await syncOverdueFines();
+                    await processDueDateReminders();
                 } catch (err) {
                     console.error("Auto-sync background timer error:", err.message);
                 }

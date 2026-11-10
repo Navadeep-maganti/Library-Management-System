@@ -45,3 +45,25 @@ export const sendPasswordChangeOTPEmail = async (toEmail, otp) => {
     };
     return await transporter.sendMail(mailOptions);
 };
+
+export const sendDueDateReminderEmail = async (toEmail, studentName, bookTitle, dueDate, daysRemaining) => {
+    const dueDateText = new Date(dueDate).toLocaleDateString();
+    const timing = daysRemaining === 0
+        ? "is due today"
+        : `is due in ${daysRemaining} day${daysRemaining === 1 ? "" : "s"}`;
+    const mailOptions = {
+        from: `"Library management system" <${process.env.EMAIL_USER}>`,
+        to: toEmail,
+        subject: `Book due date reminder: ${bookTitle}`,
+        html: `
+            <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+                <h2>Library Due Date Reminder</h2>
+                <p>Hello ${studentName || "Student"},</p>
+                <p>Your borrowed book <strong>${bookTitle}</strong> ${timing}.</p>
+                <p><strong>Due date:</strong> ${dueDateText}</p>
+                <p>Please return or renew the book before the due date to avoid overdue fines.</p>
+            </div>
+        `,
+    };
+    return await transporter.sendMail(mailOptions);
+};

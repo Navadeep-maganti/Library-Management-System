@@ -10,15 +10,34 @@ const formatReceivedAt = (value) => new Date(value).toLocaleString([], {
 const AlertsPage = () => {
   const [alerts, setAlerts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { showToast } = useOutletContext();
+  const { currentUser, showToast } = useOutletContext();
+  const authHeaders = { Authorization: `Bearer ${localStorage.getItem("libraryToken") || ""}` };
 
   useEffect(() => {
     const loadAnnouncements = async () => {
       try {
-        const response = await apiFetch("/api/announcements");
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.message || "Could not load library updates.");
-        setAlerts((data.announcements || []).map((announcement) => ({
+        const rollNo = currentUser.roll_no || currentUser.rollNo || currentUser.studentId;
+        const [announcementResponse, alertResponse] = await Promise.all([
+          apiFetch("/api/announcements"),
+          apiFetch(`/api/alerts?studentId=${encodeURIComponent(rollNo)}`, { headers: authHeaders })
+        ]);
+        const announcementData = await announcementResponse.json();
+        const alertData = await alertResponse.json();
+        if (!announcementResponse.ok) throw new Error(announcementData.message || "Could not load library updates.");
+        if (!alertResponse.ok) throw new Error(alertData.message || "Could not load due-date alerts.");
+        setAlerts([
+          ...(alertData.alerts || []).map((alert) => ({
+            id: `due-${alert.id}`,
+            alertId: alert.id,
+            type: "due",
+            icon: "!",
+            label: "DUE DATE REMINDER",
+            title: alert.title,
+            detail: alert.content,
+            receivedAt: alert.createdAt,
+            unread: !alert.readAt,
+          })),
+          ...(announcementData.announcements || []).map((announcement) => ({
           id: announcement.id,
           type: "announcement",
           icon: "i",
@@ -27,7 +46,8 @@ const AlertsPage = () => {
           detail: announcement.content,
           receivedAt: announcement.createdAt,
           unread: true,
-        })));
+          }))]
+        );
       } catch (loadError) {
         showToast("error", loadError.message);
       } finally {
@@ -36,10 +56,18 @@ const AlertsPage = () => {
     };
 
     loadAnnouncements();
-  }, [showToast]);
+  }, [currentUser, showToast]);
   const unreadCount = alerts.filter((alert) => alert.unread).length;
 
-  const markAllRead = () => setAlerts((current) => current.map((alert) => ({ ...alert, unread: false })));
+  const markAllRead = async () => {
+    const unreadAlerts = alerts.filter((alert) => alert.unread && alert.alertId);
+    try {
+      await Promise.all(unreadAlerts.map((alert) => apiFetch(`/api/alerts/${alert.alertId}/read`, { method: "POST", headers: authHeaders })));
+      setAlerts((current) => current.map((alert) => ({ ...alert, unread: false })));
+    } catch (error) {
+      showToast("error", error.message || "Could not mark alerts as read.");
+    }
+  };
 
   return (
     <section className="student-info-panel">
@@ -55,7 +83,10 @@ const AlertsPage = () => {
           <article className={`library-alert alert-${alert.type} ${alert.unread ? "alert-unread" : ""}`} key={alert.id}>
             <div className="library-alert-icon" aria-hidden="true">{alert.icon}</div>
             <div className="library-alert-copy"><span className="library-alert-label">{alert.label}</span><strong>{alert.title}</strong><span>{alert.detail}</span><time dateTime={alert.receivedAt}>Received {formatReceivedAt(alert.receivedAt)}</time></div>
-            <button className="icon-text-button" type="button" onClick={() => setAlerts((current) => current.filter((item) => item.id !== alert.id))}>Dismiss</button>
+            <button className="icon-text-button" type="button" onClick={async () => {
+              if (alert.alertId && alert.unread) await apiFetch(`/api/alerts/${alert.alertId}/read`, { method: "POST", headers: authHeaders });
+              setAlerts((current) => current.filter((item) => item.id !== alert.id));
+            }}>Dismiss</button>
           </article>
         )) : <p className="empty-search">You are all caught up.</p>}
       </div>
