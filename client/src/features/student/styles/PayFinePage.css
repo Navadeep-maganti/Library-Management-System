@@ -1,10 +1,19 @@
 /* PayFinePage.css - Modern Razorpay Fine Settlement Styling */
 
 .payfine-container {
+  color: #243746;
   display: flex;
   flex-direction: column;
   gap: 24px;
   width: 100%;
+}
+
+.payfine-header {
+  background: linear-gradient(135deg, #e6f7f3 0%, #e8f4fb 100%);
+  border: 1px solid #b9ded8;
+  border-radius: 16px;
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.07);
+  padding: 24px 26px;
 }
 
 .payfine-header {
@@ -20,12 +29,12 @@
   font-family: var(--font-sans);
   font-size: 2.25rem;
   font-weight: 700;
-  color: #0f172a;
+  color: #173b4a;
   margin: 4px 0 6px 0;
 }
 
 .payfine-subtitle {
-  color: #64748b;
+  color: #476878;
   font-size: 0.95rem;
   margin: 0;
 }
@@ -34,13 +43,13 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #f1f5f9;
+  background: #ffffff;
   color: #0f766e;
   padding: 6px 14px;
   border-radius: 9999px;
   font-size: 0.8rem;
   font-weight: 700;
-  border: 1px solid #cbd5e1;
+  border: 1px solid #b9ded8;
 }
 
 /* Metric Cards */
@@ -52,13 +61,13 @@
 
 .payfine-stat-card {
   background: #ffffff;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #d5e7e4;
   border-radius: 16px;
   padding: 20px 24px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.03);
+  box-shadow: 0 7px 18px rgba(15, 23, 42, 0.05);
   position: relative;
   overflow: hidden;
 }
@@ -78,7 +87,7 @@
 .payfine-stat-label {
   font-size: 0.85rem;
   font-weight: 600;
-  color: #64748b;
+  color: #526d78;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -86,7 +95,7 @@
 .payfine-stat-value {
   font-size: 2.1rem;
   font-weight: 800;
-  color: #0f172a;
+  color: #173b4a;
   line-height: 1.1;
   display: flex;
   align-items: baseline;
@@ -169,7 +178,7 @@
   padding: 12px 4px;
   font-size: 1rem;
   font-weight: 600;
-  color: #64748b;
+  color: #526d78;
   cursor: pointer;
   position: relative;
   display: flex;
@@ -179,7 +188,7 @@
 }
 
 .payfine-tab-btn:hover {
-  color: #0f172a;
+  color: #17635d;
 }
 
 .payfine-tab-btn.active {
@@ -198,8 +207,8 @@
 }
 
 .payfine-tab-count {
-  background: #e2e8f0;
-  color: #334155;
+  background: #e7f5f0;
+  color: #17635d;
   font-size: 0.75rem;
   font-weight: 700;
   padding: 2px 7px;
@@ -214,7 +223,7 @@
 /* Table Card */
 .payfine-table-card {
   background: #ffffff;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #cfe2df;
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
@@ -227,14 +236,14 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 12px;
-  background: #f8fafc;
-  border-bottom: 1px solid #e2e8f0;
+  background: #edf7f5;
+  border-bottom: 1px solid #dcebe8;
 }
 
 .payfine-table-title {
   font-size: 1.05rem;
   font-weight: 700;
-  color: #0f172a;
+  color: #243746;
 }
 
 .payfine-pay-all-btn {

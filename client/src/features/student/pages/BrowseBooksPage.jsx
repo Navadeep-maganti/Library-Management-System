@@ -160,7 +160,6 @@ const BrowseBooksPage = () => {
           <div className="book-grid browse-books-grid">
           {(isLoading ? Array.from({ length: BOOK_SLOTS }, () => null) : visibleBooks).map((book, index) => book ? (
             <article className="book-card" key={book.id}>
-              <div className="book-cover">{book.title.charAt(0)}</div>
               <div className="book-card-content">
                 <span className="book-category">{book.categoryName}</span>
                 <h3>{book.title}</h3>

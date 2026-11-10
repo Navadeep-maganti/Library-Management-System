@@ -86,7 +86,7 @@ const ViewHistoryPage = () => {
   ), [historyItems, query, status]);
 
   return (
-    <section className="student-info-panel">
+    <section className="student-info-panel history-page-panel">
       <div className="catalog-heading">
         <div>
           <p className="student-kicker">BORROWING RECORD</p>
