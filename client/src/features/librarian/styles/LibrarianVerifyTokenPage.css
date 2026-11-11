@@ -2,13 +2,13 @@
 
 .verify-page-container {
   width: 100%;
-  max-width: none;
+  max-width: 1180px;
   margin: 0 auto;
   padding: 40px 24px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 24px;
   min-height: 100%;
 }
 
@@ -18,7 +18,7 @@
   border: 1px solid rgba(203, 213, 225, 0.7);
   border-left: 6px solid #0f766e;
   border-radius: 18px;
-  padding: 26px 28px;
+  padding: 28px 32px;
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
 }
 
@@ -123,18 +123,22 @@
   background: #ffffff;
   border-radius: 20px;
   border: 1px solid #e2e8f0;
-  padding: 28px;
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 32px 36px;
   box-shadow: 0 12px 32px rgba(15, 23, 42, 0.06);
   width: 100%;
   box-sizing: border-box;
 }
 
 .verify-card-title-box {
-  margin-bottom: 20px;
+  margin-bottom: 26px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .verify-card-title {
-  font-size: 1.25rem;
+  font-size: 1.35rem;
   font-weight: 800;
   color: #0f172a;
   margin: 0 0 4px 0;
@@ -143,7 +147,7 @@
 .verify-card-subtitle {
   color: #64748b;
   font-size: 0.88rem;
-  margin: 0;
+  margin: 6px 0 0;
 }
 
 .verify-form {
@@ -161,6 +165,7 @@
 .verify-input-group {
   display: flex;
   gap: 10px;
+  align-items: stretch;
 }
 
 .verify-input {
@@ -177,6 +182,7 @@
   font-family: monospace;
   transition: all 0.2s ease;
   box-sizing: border-box;
+  min-width: 0;
 }
 
 .verify-input:focus {
@@ -225,7 +231,7 @@
   background: rgba(240, 253, 250, 0.8);
   border: 1px solid #99f6e4;
   border-radius: 16px;
-  padding: 24px;
+  padding: 26px;
 }
 
 .verify-success-header {
@@ -236,8 +242,25 @@
 }
 
 .verify-success-header .icon {
-  font-size: 1.6rem;
-  line-height: 1;
+  width: 28px;
+  height: 28px;
+  border: 2px solid #0f766e;
+  border-radius: 50%;
+  position: relative;
+  flex: 0 0 28px;
+  font-size: 0;
+}
+
+.verify-success-header .icon::after {
+  content: "";
+  width: 8px;
+  height: 4px;
+  border-left: 2px solid #0f766e;
+  border-bottom: 2px solid #0f766e;
+  transform: rotate(-45deg);
+  position: absolute;
+  left: 8px;
+  top: 8px;
 }
 
 .verify-success-header h4 {
@@ -344,7 +367,7 @@
     gap: 10px;
   }
 
-  .verify-input-field {
+  .verify-input {
     font-size: 1.25rem;
     letter-spacing: 0.2em;
     padding: 12px 14px;

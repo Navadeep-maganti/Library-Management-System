@@ -742,3 +742,89 @@
 
   .librarian-mobile-sidebar { padding: 16px 12px 18px; }
 }
+
+/* Final mobile alignment and overflow guard for all librarian routes. */
+@media (max-width: 768px) {
+  html,
+  body,
+  #root {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .librarian-app-header {
+    width: 100%;
+  }
+
+  .librarian-navbar-container {
+    box-sizing: border-box;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .librarian-brand-logo,
+  .librarian-brand-text,
+  .librarian-brand-title {
+    min-width: 0;
+  }
+
+  .librarian-brand-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .librarian-mobile-sidebar {
+    max-width: calc(100vw - 32px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    width: min(340px, calc(100vw - 32px));
+  }
+
+  .librarian-sidebar-nav {
+    min-width: 0;
+  }
+
+  .librarian-sidebar-link {
+    min-width: 0;
+  }
+
+  .librarian-sidebar-link:not(.active):hover {
+    background: #f8fafc;
+  }
+
+  .librarian-sidebar-logout {
+    flex: 0 0 auto;
+  }
+
+  .librarian-dashboard-shell,
+  .reservations-page-container,
+  .fines-page-container,
+  .stock-page-container,
+  .issue-page-container,
+  .verify-token-page-container,
+  .librarian-profile-page,
+  .librarian-alerts-page {
+    box-sizing: border-box;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: clip;
+    padding-left: 16px;
+    padding-right: 16px;
+    width: 100%;
+  }
+
+  .librarian-table-wrapper,
+  .reservations-table-responsive,
+  .fines-table-responsive,
+  .stock-table-responsive {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .librarian-table-card,
+  .reservations-card,
+  .fines-policy-section,
+  .stock-main-card {
+    min-width: 0;
+  }
+}

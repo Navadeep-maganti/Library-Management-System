@@ -243,19 +243,19 @@ const StudentNavbar = ({
           )}
           {isProfileOpen && (
             <div className="student-profile-popover">
-              <div className="student-profile-popover-heading">
-                <span className="student-profile-popover-label">ACCOUNT</span>
-                <span className="student-profile-name">{displayName}</span>
-              </div>
-              <div className="student-profile-popover-rows">
-                <div><span>Name</span><strong>{displayName}</strong></div>
-                <div><span>Roll</span><strong>{user.roll_no || user.rollNo || "Not available"}</strong></div>
-                <div><span>Role</span><strong>Student</strong></div>
-                <NavLink className="student-change-password" to="/student-dashboard/profile" onClick={() => setIsProfileOpen(false)}>
-                  <span>edit profile</span><strong>→</strong>
-                </NavLink>
-              </div>
-              <button className="student-logout-btn" type="button" onClick={handleLogout}>
+              <button className="student-profile-popover-close" type="button" onClick={() => setIsProfileOpen(false)} aria-label="Close profile menu">×</button>
+              <div className="student-profile-popover-avatar" aria-hidden="true">{profileInitial}</div>
+              <strong className="student-profile-popover-name">{displayName}</strong>
+              {user.email && <span className="student-profile-popover-email">{user.email}</span>}
+              <small className="student-profile-popover-meta">
+                {user.department?.name || user.department || "Student"}
+                {(user.roll_no || user.rollNo) && ` · ${user.roll_no || user.rollNo}`}
+              </small>
+              <nav className="student-profile-popover-links" aria-label="Student account navigation">
+                <NavLink to="/student-dashboard/profile" onClick={() => setIsProfileOpen(false)}>Profile &amp; Settings</NavLink>
+                <NavLink to="/student-dashboard/alerts" onClick={() => setIsProfileOpen(false)}>Alerts</NavLink>
+              </nav>
+              <button className="student-profile-popover-logout" type="button" onClick={handleLogout}>
                 Logout
               </button>
             </div>

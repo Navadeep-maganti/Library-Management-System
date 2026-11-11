@@ -363,7 +363,7 @@ const LibrarianFinesPage = () => {
 
         <div className="fines-policy-grid">
           <div className="fines-policy-card">
-            <div className="fines-policy-card-icon">⏱</div>
+            <div className="fines-policy-card-icon" aria-hidden="true">01</div>
             <div className="fines-policy-card-body">
               <strong>Overdue Daily Rate</strong>
               <div className="fines-policy-card-highlight">
@@ -374,7 +374,7 @@ const LibrarianFinesPage = () => {
           </div>
 
           <div className="fines-policy-card">
-            <div className="fines-policy-card-icon"></div>
+            <div className="fines-policy-card-icon" aria-hidden="true">02</div>
             <div className="fines-policy-card-body">
               <strong>Standard Loan Duration</strong>
               <div className="fines-policy-card-highlight">
@@ -385,7 +385,7 @@ const LibrarianFinesPage = () => {
           </div>
 
           <div className="fines-policy-card">
-            <div className="fines-policy-card-icon"></div>
+            <div className="fines-policy-card-icon" aria-hidden="true">03</div>
             <div className="fines-policy-card-body">
               <strong>Renewals & Extension</strong>
               <div className="fines-policy-card-highlight">
@@ -396,7 +396,7 @@ const LibrarianFinesPage = () => {
           </div>
 
           <div className="fines-policy-card formula">
-            <div className="fines-policy-card-icon"></div>
+            <div className="fines-policy-card-icon" aria-hidden="true">04</div>
             <div className="fines-policy-card-body">
               <strong>Penalty Formula</strong>
               <div className="fines-policy-formula-box">

@@ -121,17 +121,17 @@ const LibrarianVerifyTokenPage = () => {
     <div className="verify-page-container">
       {/* Header Banner */}
       <header className="verify-header">
-        <span className="verify-badge">Step 2 · Verification</span>
+        <span className="verify-badge">Reservation verification</span>
         <h2>Verify student reservation token</h2>
-        <p>Enter the student's 6-digit reservation OTP token, review the reservation, and confirm book issuance.</p>
+        <p>Validate the reservation token, review the details, and confirm book issuance.</p>
       </header>
 
 
       {/* Centered Main Verification Card */}
       <div className="verify-card">
         <div className="verify-card-title-box">
-          <h3 className="verify-card-title"><span aria-hidden="true">🔐</span> Enter Reservation Code</h3>
-          <p className="verify-card-subtitle">Type or paste student's OTP code (e.g. 907254 or TOK-907254) to retrieve book reservation.</p>
+          <h3 className="verify-card-title">Enter reservation code</h3>
+          <p className="verify-card-subtitle">Use the six-digit token provided by the student.</p>
         </div>
 
         <form onSubmit={handleVerify} className="verify-form">
@@ -208,7 +208,7 @@ const LibrarianVerifyTokenPage = () => {
                 <div className="verify-detail-item">
                   <span className="label">OTP Valid Until</span>
                   <span className="value" style={{ color: "#0f766e" }}>
-                    ⏱ {details.expiresAt ? formatRemaining(details.expiresAt, now) : "Active"}
+                    {details.expiresAt ? formatRemaining(details.expiresAt, now) : "Active"}
                   </span>
                 </div>
               )}

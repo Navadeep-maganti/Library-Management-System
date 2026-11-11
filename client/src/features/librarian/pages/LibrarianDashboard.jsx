@@ -232,7 +232,6 @@ const LibrarianDashboard = ({ user }) => {
         <div className="librarian-flow-grid">
           <Link to="/librarian/reservations" className="librarian-flow-card">
             <span className="librarian-flow-step-tag">Step 1</span>
-            <div className="librarian-flow-icon"></div>
             <h3 className="librarian-flow-title">View Requests</h3>
             <p className="librarian-flow-desc">Review pending book bookings requested by students.</p>
             <span className="librarian-flow-btn">Open Requests &rarr;</span>
@@ -240,7 +239,6 @@ const LibrarianDashboard = ({ user }) => {
 
           <Link to="/librarian/verify-token" className="librarian-flow-card">
             <span className="librarian-flow-step-tag">Step 2</span>
-            <div className="librarian-flow-icon"></div>
             <h3 className="librarian-flow-title">Verify Token</h3>
             <p className="librarian-flow-desc">Scan or manually enter student reservation OTP code.</p>
             <span className="librarian-flow-btn">Validate OTP &rarr;</span>
@@ -248,7 +246,6 @@ const LibrarianDashboard = ({ user }) => {
 
           <Link to="/librarian/issue-book" className="librarian-flow-card">
             <span className="librarian-flow-step-tag">Step 3</span>
-            <div className="librarian-flow-icon"></div>
             <h3 className="librarian-flow-title">Issued Books</h3>
             <p className="librarian-flow-desc">View every book issued in the library up to now.</p>
             <span className="librarian-flow-btn">View Issued Books &rarr;</span>
@@ -256,7 +253,6 @@ const LibrarianDashboard = ({ user }) => {
 
           <Link to="/librarian/update-stock" className="librarian-flow-card">
             <span className="librarian-flow-step-tag">Step 4</span>
-            <div className="librarian-flow-icon"></div>
             <h3 className="librarian-flow-title">Update Stock</h3>
             <p className="librarian-flow-desc">Synchronize physical catalog inventory & stock levels.</p>
             <span className="librarian-flow-btn">Catalog Stock &rarr;</span>
@@ -272,16 +268,16 @@ const LibrarianDashboard = ({ user }) => {
         </div>
         <div className="librarian-actions-row">
           <button type="button" className="librarian-btn-primary" onClick={() => navigate("/librarian/issue-book")}>
-            <span></span> View Issued Books
+            View Issued Books
           </button>
           <button type="button" className="librarian-btn-secondary" onClick={() => navigate("/librarian/verify-token")}>
-            <span></span> Verify Student OTP
+            Verify Student OTP
           </button>
           <button type="button" className="librarian-btn-secondary" onClick={() => navigate("/librarian/reservations")}>
-            <span></span> View Pending Requests
+            View Pending Requests
           </button>
           <button type="button" className="librarian-btn-secondary" onClick={() => navigate("/librarian/update-stock")}>
-            <span></span> Update Inventory
+            Update Inventory
           </button>
         </div>
       </section>
@@ -319,7 +315,6 @@ const LibrarianDashboard = ({ user }) => {
         {/* Notice Message */}
         {notice && (
           <div className={`issued-notice-banner ${notice.type}`} role="alert">
-            <span>{notice.type === "success" ? "" : ""}</span>
             <span>{notice.text}</span>
             <button type="button" className="issued-notice-close" onClick={() => setNotice(null)}></button>
           </div>
@@ -331,7 +326,6 @@ const LibrarianDashboard = ({ user }) => {
             className={`issued-metric-chip ${statusFilter === "all" ? "active" : ""}`}
             onClick={() => setStatusFilter("all")}
           >
-            <div className="metric-chip-icon all"></div>
             <div className="metric-chip-content">
               <span className="metric-chip-label">Total Issued (Up to Now)</span>
               <span className="metric-chip-count">{totalIssuedAllTime}</span>
@@ -342,7 +336,6 @@ const LibrarianDashboard = ({ user }) => {
             className={`issued-metric-chip ${statusFilter === "active" ? "active" : ""}`}
             onClick={() => setStatusFilter("active")}
           >
-            <div className="metric-chip-icon active"></div>
             <div className="metric-chip-content">
               <span className="metric-chip-label">Currently Issued</span>
               <span className="metric-chip-count">{activeLoansCount}</span>
@@ -353,7 +346,6 @@ const LibrarianDashboard = ({ user }) => {
             className={`issued-metric-chip ${statusFilter === "overdue" ? "active" : ""}`}
             onClick={() => setStatusFilter("overdue")}
           >
-            <div className="metric-chip-icon overdue"></div>
             <div className="metric-chip-content">
               <span className="metric-chip-label">Overdue Loans</span>
               <span className="metric-chip-count">{overdueCount}</span>
@@ -364,7 +356,6 @@ const LibrarianDashboard = ({ user }) => {
             className={`issued-metric-chip ${statusFilter === "returned" ? "active" : ""}`}
             onClick={() => setStatusFilter("returned")}
           >
-            <div className="metric-chip-icon returned"></div>
             <div className="metric-chip-content">
               <span className="metric-chip-label">Returned Books</span>
               <span className="metric-chip-count">{returnedCount}</span>

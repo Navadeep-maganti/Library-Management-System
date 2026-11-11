@@ -40,7 +40,7 @@ const LibrarianNavbar = ({ user, onLogout }) => {
   return (
     <header className="librarian-app-header">
       <div className="librarian-navbar-container">
-        <button type="button" className="librarian-menu-toggle" onClick={() => setSidebarOpen(true)} aria-label="Open librarian navigation" aria-expanded={sidebarOpen}></button>
+        <button type="button" className="librarian-menu-toggle" onClick={() => setSidebarOpen(true)} aria-label="Open librarian navigation" aria-expanded={sidebarOpen}>☰</button>
         <Link to="/librarian-dashboard" className="librarian-brand-logo"><div className="librarian-brand-icon-box" aria-hidden="true">📚</div><div className="librarian-brand-text"><span className="librarian-brand-title">Central Library</span><span className="librarian-brand-subtitle">Librarian Operations Portal</span></div></Link>
         <nav className="librarian-nav-links">
           {navigationLinks.slice(1, 6).map(({ to, label }) => <NavLink key={to} to={to} className={({ isActive }) => `librarian-nav-link ${isActive ? "active" : ""}`}>{label}</NavLink>)}
@@ -55,8 +55,22 @@ const LibrarianNavbar = ({ user, onLogout }) => {
       </div>
       <div className={`librarian-sidebar-backdrop ${sidebarOpen ? "is-open" : ""}`} onClick={() => setSidebarOpen(false)} />
       <aside className={`librarian-mobile-sidebar ${sidebarOpen ? "is-open" : ""}`} aria-label="Librarian navigation">
-        <div className="librarian-sidebar-top"><strong>{displayName}</strong><button type="button" onClick={() => setSidebarOpen(false)} aria-label="Close navigation">×</button></div>
-        <nav className="librarian-sidebar-nav">{navigationLinks.map(({ to, label, icon }) => <Link key={to} to={to} className={location.pathname === to ? "active" : ""}><span>{icon}</span>{label}</Link>)}<Link to="/librarian/alerts"><span aria-hidden="true">🔔</span>Alerts</Link><Link to="/librarian/profile"><span>◉</span>Profile &amp; Settings</Link></nav>
+        <div className="librarian-sidebar-top">
+          <div className="librarian-sidebar-profile">
+            <span className="librarian-sidebar-avatar">{profileInitial}</span>
+            <div>
+              <strong>{displayName}</strong>
+              <span>Librarian Staff</span>
+            </div>
+          </div>
+          <button className="librarian-sidebar-close" type="button" onClick={() => setSidebarOpen(false)} aria-label="Close navigation">×</button>
+        </div>
+        <nav className="librarian-sidebar-nav">
+          <span className="librarian-sidebar-label">OPERATIONS</span>
+          {navigationLinks.map(({ to, label, icon }) => <Link key={to} to={to} className={`librarian-sidebar-link ${location.pathname === to ? "active" : ""}`}><span className="librarian-sidebar-link-icon">{icon || "•"}</span>{label}</Link>)}
+          <Link className={`librarian-sidebar-link ${location.pathname === "/librarian/alerts" ? "active" : ""}`} to="/librarian/alerts"><span className="librarian-sidebar-link-icon" aria-hidden="true">🔔</span>Alerts</Link>
+          <Link className={`librarian-sidebar-link ${location.pathname === "/librarian/profile" ? "active" : ""}`} to="/librarian/profile"><span className="librarian-sidebar-link-icon">◉</span>Profile &amp; Settings</Link>
+        </nav>
         <button type="button" className="librarian-sidebar-logout" onClick={handleLogoutClick}>Log out</button>
       </aside>
     </header>
