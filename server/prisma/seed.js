@@ -51,13 +51,16 @@ async function main() {
 
     // 3. Departments
     const departmentsData = [
-        { name: "Computer Science & Engineering" },
-        { name: "Information Technology" },
-        { name: "Mechanical Engineering" },
-        { name: "Electrical & Electronics Engineering" },
+        { name: "Biotechnology" },
+        { name: "Chemical Engineering" },
         { name: "Civil Engineering" },
-        { name: "Management Studies" },
-        { name: "Applied Sciences" }
+        { name: "Computer Science & Engg." },
+        { name: "Electrical Engineering" },
+        { name: "Electronics & Communication Engineering" },
+        { name: "Mechanical Engineering" },
+        { name: "Metallurgical & Materials Engineering" },
+        { name: "School Of Sciences" },
+        { name: "School Of Humanities & Management" }
     ];
 
     const departments = [];

@@ -206,6 +206,9 @@ const BrowseBooksPage = () => {
                   <span>{book.departmentName}</span>
                   <strong>{book.availableCopies} available</strong>
                 </div>
+                <span className={`browse-digital-status ${book.digitalUrl ? "has-copy" : "no-copy"}`}>
+                  {book.digitalUrl ? "Digital copy available" : "No digital copy"}
+                </span>
                 <div className="browse-book-actions">
                   <button className="browse-book-details" type="button" onClick={() => setSelectedBook(book)}>
                     View details
@@ -244,18 +247,25 @@ const BrowseBooksPage = () => {
             <div><span>Shelf</span><strong>{selectedBook.availabilities?.[0]?.shelf?.section || "Not assigned"}</strong></div>
             <div><span>Rack</span><strong>{selectedBook.availabilities?.[0]?.shelf?.rackNumber || "Not assigned"}</strong></div>
           </div>
-          {!selectedBook.availableCopies && (
-            <button
-              type="button"
-              className="book-button"
-              disabled={updatingAlertBookId === selectedBook.id}
-              onClick={() => toggleAvailabilityAlert(selectedBook)}
-            >
-              {updatingAlertBookId === selectedBook.id
-                ? "Updating..."
-                : availabilitySubscriptions[selectedBook.id] ? "Remove availability alert" : "Notify me when available"}
-            </button>
-          )}
+          <div className="book-details-actions">
+            {!selectedBook.availableCopies && (
+              <button
+                type="button"
+                className="book-button"
+                disabled={updatingAlertBookId === selectedBook.id}
+                onClick={() => toggleAvailabilityAlert(selectedBook)}
+              >
+                {updatingAlertBookId === selectedBook.id
+                  ? "Updating..."
+                  : availabilitySubscriptions[selectedBook.id] ? "Remove availability alert" : "Notify me when available"}
+              </button>
+            )}
+            {selectedBook.digitalUrl && (
+              <a className="book-button" href={selectedBook.digitalUrl} target="_blank" rel="noreferrer">
+                Read free digital copy
+              </a>
+            )}
+          </div>
         </div>
       )}
     </main>

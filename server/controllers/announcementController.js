@@ -1,4 +1,5 @@
 import prisma from "../config/db.js";
+import { getDepartmentVariants, normalizeDepartment, STUDENT_DEPARTMENTS } from "../constants/academicOptions.js";
 
 const parseExpiresAt = (value) => {
     if (!value) return null;
@@ -30,7 +31,7 @@ export const getAnnouncements = async (req, res) => {
             }
 
             audienceFilters.push(
-                { audienceType: "department", targetDepartment: student.department },
+                { audienceType: "department", targetDepartment: { in: getDepartmentVariants(student.department) } },
                 { audienceType: "year", targetYear: student.yearOfStudy },
                 ...(student.issuedBooks.length ? [{ audienceType: "overdue" }] : []),
                 ...(student.reservations.length ? [{ audienceType: "reserved" }] : [])
@@ -70,8 +71,8 @@ export const createAnnouncement = async (req, res) => {
         if (!validAudienceTypes.includes(audienceType)) {
             return res.status(400).json({ success: false, message: "Invalid announcement audience." });
         }
-        if (audienceType === "department" && !String(targetDepartment || "").trim()) {
-            return res.status(400).json({ success: false, message: "A department is required for this audience." });
+        if (audienceType === "department" && !STUDENT_DEPARTMENTS.includes(normalizeDepartment(targetDepartment))) {
+            return res.status(400).json({ success: false, message: "Please select a valid department." });
         }
         const parsedYear = targetYear === undefined || targetYear === "" ? null : Number(targetYear);
         if (audienceType === "year" && (!Number.isInteger(parsedYear) || parsedYear < 1)) {
@@ -96,7 +97,7 @@ export const createAnnouncement = async (req, res) => {
                 content: String(content).trim(),
                 librarianId: librarian.staffId,
                 audienceType,
-                targetDepartment: audienceType === "department" ? String(targetDepartment).trim() : null,
+                targetDepartment: audienceType === "department" ? normalizeDepartment(targetDepartment) : null,
                 targetYear: audienceType === "year" ? parsedYear : null,
                 imageUrl: imageUrl || null,
                 expiresAt: parsedExpiresAt
@@ -121,8 +122,8 @@ export const updateAnnouncement = async (req, res) => {
         if (!title || !content || !validAudienceTypes.includes(audienceType)) {
             return res.status(400).json({ success: false, message: "Title, content, and a valid audience are required." });
         }
-        if (audienceType === "department" && !String(targetDepartment || "").trim()) {
-            return res.status(400).json({ success: false, message: "A department is required for this audience." });
+        if (audienceType === "department" && !STUDENT_DEPARTMENTS.includes(normalizeDepartment(targetDepartment))) {
+            return res.status(400).json({ success: false, message: "Please select a valid department." });
         }
         const parsedYear = targetYear === undefined || targetYear === "" ? null : Number(targetYear);
         if (audienceType === "year" && (!Number.isInteger(parsedYear) || parsedYear < 1)) {
@@ -139,7 +140,7 @@ export const updateAnnouncement = async (req, res) => {
                 title: String(title).trim(),
                 content: String(content).trim(),
                 audienceType,
-                targetDepartment: audienceType === "department" ? String(targetDepartment).trim() : null,
+                targetDepartment: audienceType === "department" ? normalizeDepartment(targetDepartment) : null,
                 targetYear: audienceType === "year" ? parsedYear : null,
                 imageUrl: imageUrl || null,
                 expiresAt: parsedExpiresAt

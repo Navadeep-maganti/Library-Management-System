@@ -30,16 +30,16 @@ const LandingPage = () => {
         {/* Quick Stats Grid */}
         <div className="stats-grid">
           <div className="stat-card">
-            <h3 className="stat-value">15,000+</h3>
-            <p className="stat-label">Academic Volumes & Journals</p>
+            <h3 className="stat-value">Live Catalog</h3>
+            <p className="stat-label">Books, availability & inventory</p>
           </div>
           <div className="stat-card">
-            <h3 className="stat-value">100% Secure</h3>
-            <p className="stat-label">Domain OTP Verification</p>
+            <h3 className="stat-value">OTP + JWT</h3>
+            <p className="stat-label">Email verification and sessions</p>
           </div>
           <div className="stat-card">
-            <h3 className="stat-value">2 Roles</h3>
-            <p className="stat-label">Student & Librarian Portals</p>
+            <h3 className="stat-value">Targeted Alerts</h3>
+            <p className="stat-label">Department, year and demand updates</p>
           </div>
         </div>
       </section>
@@ -56,7 +56,6 @@ const LandingPage = () => {
         <div className="cards-grid">
           {/* Student Card */}
           <div className="role-card">
-            <div className="card-icon student"></div>
             <h3 className="card-title">Student Portal</h3>
             <p className="card-text">
               Requires your student academic email (e.g. <code>rollno@student.nitandhra.ac.in</code>) and verified OTP. Access borrowing history and catalog reservation.
@@ -69,7 +68,6 @@ const LandingPage = () => {
 
           {/* Librarian Card */}
           <div className="role-card">
-            <div className="card-icon librarian"></div>
             <h3 className="card-title">Librarian Portal</h3>
             <p className="card-text">
               Requires official staff email or personal email (e.g. <code>staff@nitandhra.ac.in</code> or Gmail), staff ID, and OTP verification. Manage library records and book checkout logs.
@@ -88,21 +86,21 @@ const LandingPage = () => {
       <section className="features-section">
         <div className="feature-box">
           <div className="feature-item">
-            <span className="feature-icon"></span>
+            <span className="feature-icon" aria-hidden="true">✓</span>
             <div>
               <h4 className="feature-title">Email Domain Security</h4>
               <p className="feature-desc">Only authorized domain emails can complete registration.</p>
             </div>
           </div>
           <div className="feature-item">
-            <span className="feature-icon"></span>
+            <span className="feature-icon" aria-hidden="true">✦</span>
             <div>
               <h4 className="feature-title">Instant OTP Dispatch</h4>
               <p className="feature-desc">Receive 6-digit verification codes valid for 10 minutes directly in your inbox.</p>
             </div>
           </div>
           <div className="feature-item">
-            <span className="feature-icon"></span>
+            <span className="feature-icon" aria-hidden="true">◈</span>
             <div>
               <h4 className="feature-title">JWT Authenticated Sessions</h4>
               <p className="feature-desc">Secure 24-hour token based authentication for smooth operations.</p>

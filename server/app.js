@@ -13,6 +13,7 @@ import announcementRoutes from "./routes/announcementRoutes.js";
 import constantRoutes from "./routes/constantRoutes.js";
 import profileRoutes from "./routes/profileRoutes.js";
 import alertRoutes from "./routes/alertRoutes.js";
+import analyticsRoutes from "./routes/analyticsRoutes.js";
 
 const app = express();
 
@@ -37,5 +38,6 @@ app.use("/api/announcements", announcementRoutes);
 app.use("/api/constants", constantRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/alerts", alertRoutes);
+app.use("/api/analytics", analyticsRoutes);
 
 export default app;

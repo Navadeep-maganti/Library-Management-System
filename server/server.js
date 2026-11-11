@@ -12,6 +12,7 @@ import reservationRoutes from "./routes/reservationRoutes.js";
 import fineRoutes from "./routes/fineRoutes.js";
 import announcementRoutes from "./routes/announcementRoutes.js";
 import alertRoutes from "./routes/alertRoutes.js";
+import analyticsRoutes from "./routes/analyticsRoutes.js";
 import constantRoutes from "./routes/constantRoutes.js";
 import profileRoutes from "./routes/profileRoutes.js";
 import { processExpiredReservations } from "./controllers/reservationController.js";
@@ -41,6 +42,7 @@ app.use("/api/reservations", reservationRoutes);
 app.use("/api/fines", fineRoutes);
 app.use("/api/announcements", announcementRoutes);
 app.use("/api/alerts", alertRoutes);
+app.use("/api/analytics", analyticsRoutes);
 app.use("/api/constants", constantRoutes);
 app.use("/api/profile", profileRoutes);
 
@@ -58,7 +60,7 @@ const PORT = process.env.PORT || 5000;
 
 async function startServer() {
     try {
-        app.listen(PORT, async () => {
+        const server = app.listen(PORT, async () => {
             console.log(`🚀 Server running on port ${PORT}`);
 
             // Perform initial maintenance tasks on startup
@@ -92,9 +94,18 @@ async function startServer() {
                 }
             }, 24 * 60 * 60 * 1000);
         });
+        server.on("error", (err) => {
+            if (err.code === "EADDRINUSE") {
+                console.error(`❌ Port ${PORT} is already in use. Stop the existing backend process or choose another PORT.`);
+            } else {
+                console.error("❌ Server failed to listen:", err);
+            }
+            process.exitCode = 1;
+        });
     } catch (err) {
         console.error("❌ Server failed to start");
         console.error(err);
+        process.exitCode = 1;
     }
 }
 

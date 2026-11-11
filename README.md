@@ -320,6 +320,8 @@ All backend API endpoints are prefixed with `/api`.
 | `GET` | `/api/announcements` | Retrieve active announcements targeted to the authenticated student (or all for librarians) |
 | `POST` | `/api/announcements` | Librarian-only announcement publishing with `audienceType`: `all`, `department`, `year`, `overdue`, or `reserved` |
 | `DELETE`| `/api/announcements/:id` | Delete announcement |
+| `GET` | `/api/analytics` | Librarian-only cached occupancy and demand analytics |
+| `PUT` | `/api/books/:id` | Supports trusted free digital reading links from Archive.org, Project Gutenberg, OpenStax, and MIT OpenCourseWare |
 | `GET` | `/api/constants` | Fetch global library borrow & fine rules |
 | `PUT` | `/api/constants` | Update global library borrow & fine limits |
 

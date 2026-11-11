@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { apiFetch } from "../../../api";
+import { DEPARTMENTS, STUDY_YEARS } from "../../../constants/academicOptions";
 import "../styles/LibrarianProfilePage.css";
 
 const audienceOptions = [
@@ -10,7 +11,6 @@ const audienceOptions = [
   { value: "reserved", label: "Students waiting for a reserved book" },
 ];
 const emptyForm = { title: "", content: "", audienceType: "all", targetDepartment: "", targetYear: "", expiresAt: "" };
-const studyYears = [1, 2, 3, 4];
 
 const toDateTimeInput = (value) => {
   if (!value) return "";
@@ -52,17 +52,7 @@ const LibrarianAlertsPage = () => {
 
   useEffect(() => {
     loadAlerts();
-    const loadDepartments = async () => {
-      try {
-        const response = await apiFetch("/api/departments");
-        const data = await response.json().catch(() => ({}));
-        if (!response.ok || !data.success) throw new Error(data.message || "Could not load departments.");
-        setDepartments(Array.isArray(data.departments) ? data.departments : []);
-      } catch (requestError) {
-        setError(requestError.message || "Could not load departments.");
-      }
-    };
-    loadDepartments();
+    setDepartments(DEPARTMENTS.map((name, id) => ({ id, name })));
   }, []);
 
   const saveAnnouncement = async (event) => {
@@ -148,7 +138,7 @@ const LibrarianAlertsPage = () => {
         <div className="librarian-announcement-form-row">
           <label><span>Audience</span><select value={form.audienceType} onChange={(event) => setForm({ ...form, audienceType: event.target.value })}>{audienceOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
           {form.audienceType === "department" && <label><span>Department</span><select value={form.targetDepartment} onChange={(event) => setForm({ ...form, targetDepartment: event.target.value })} required><option value="">Select a department</option>{departments.map((department) => <option key={department.id} value={department.name}>{department.name}</option>)}</select></label>}
-          {form.audienceType === "year" && <label><span>Year</span><select value={form.targetYear} onChange={(event) => setForm({ ...form, targetYear: event.target.value })} required><option value="">Select a year</option>{studyYears.map((year) => <option key={year} value={year}>Year {year}</option>)}</select></label>}
+          {form.audienceType === "year" && <label><span>Year</span><select value={form.targetYear} onChange={(event) => setForm({ ...form, targetYear: event.target.value })} required><option value="">Select a year</option>{STUDY_YEARS.map((year) => <option key={year} value={year}>Year {year}</option>)}</select></label>}
           <label><span>Expires (optional)</span><input type="datetime-local" value={form.expiresAt} onChange={(event) => setForm({ ...form, expiresAt: event.target.value })} /></label>
         </div>
         <div className="librarian-announcement-form-actions"><button className="librarian-profile-edit-button" type="submit" disabled={publishing}>{publishing ? "Saving..." : editingId ? "Save changes" : "Publish announcement"}</button>{editingId && <button className="librarian-profile-edit-button librarian-announcement-cancel" type="button" onClick={cancelEdit} disabled={publishing}>Cancel</button>}</div>

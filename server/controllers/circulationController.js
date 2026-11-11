@@ -2,6 +2,7 @@ import prisma from "../config/db.js";
 import { notifyBookAvailability } from "../services/availabilityAlertService.js";
 import { getCalendarDaysSince, syncOverdueFines } from "./fineController.js";
 import { refreshStudentRecommendations } from "../services/recommendationService.js";
+import { refreshAnalytics } from "../services/analyticsService.js";
 
 /**
  * @desc Get all issued books (active or returned)
@@ -153,6 +154,11 @@ export const issueBook = async (req, res) => {
             await refreshStudentRecommendations(studentId);
         } catch (recommendationError) {
             console.error("Failed to refresh student recommendations after issue:", recommendationError);
+        }
+        try {
+            await refreshAnalytics({ issue: true, demand: true });
+        } catch (analyticsError) {
+            console.error("Failed to refresh library analytics after issue:", analyticsError);
         }
 
         return res.status(201).json({
