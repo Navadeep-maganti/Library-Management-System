@@ -2576,6 +2576,149 @@
   background: #0b625c;
 }
 
+.student-recommendations-section {
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(207, 229, 223, 0.9);
+  border-radius: 18px;
+  box-shadow: 0 12px 30px rgba(24, 48, 57, 0.08);
+  padding: 24px;
+}
+
+.student-recommendations-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.student-recommendation-group + .student-recommendation-group {
+  border-top: 1px solid #dcebe6;
+  margin-top: 24px;
+  padding-top: 24px;
+}
+
+.student-recommendation-group-heading {
+  margin-bottom: 12px;
+}
+
+.student-recommendation-group-heading h3 {
+  color: #173b38;
+  font-size: 1rem;
+  margin: 0;
+}
+
+.student-recommendation-group-heading p {
+  color: #64717c;
+  font-size: 0.78rem;
+  margin: 4px 0 0;
+}
+
+.student-recommendation-card {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid #dcebe6;
+  border-radius: 14px;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 48px minmax(0, 1fr);
+  padding: 14px;
+}
+
+.student-recommendation-cover {
+  align-items: center;
+  background: linear-gradient(145deg, #0f766e, #2563eb);
+  border-radius: 10px;
+  color: #fff;
+  display: flex;
+  font-size: 1.15rem;
+  font-weight: 800;
+  height: 48px;
+  justify-content: center;
+  width: 48px;
+}
+
+.student-recommendation-content {
+  min-width: 0;
+}
+
+.student-recommendation-content h3 {
+  color: #17212b;
+  font-size: 0.92rem;
+  line-height: 1.25;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.student-recommendation-content p,
+.student-recommendation-content span {
+  color: #64717c;
+  display: block;
+  font-size: 0.74rem;
+  margin: 4px 0 0;
+  overflow-wrap: anywhere;
+}
+
+.student-recommendation-card > button,
+.student-recommendations-empty button {
+  background: #eef5f4;
+  border: 0;
+  border-radius: 8px;
+  color: #0f766e;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 800;
+  grid-column: 1 / -1;
+  min-height: 34px;
+  padding: 0 12px;
+}
+
+.student-recommendation-card > button:hover,
+.student-recommendations-empty button:hover {
+  background: #d9eeea;
+}
+
+.student-recommendations-empty {
+  background: #f7fbfa;
+  border: 1px dashed #b9d8d0;
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+}
+
+.student-recommendations-empty h3 {
+  color: #173b38;
+  font-size: 1rem;
+  margin: 0;
+}
+
+.student-recommendations-empty p {
+  color: #64717c;
+  font-size: 0.82rem;
+  margin: 6px auto 14px;
+  max-width: 520px;
+}
+
+.student-recommendations-empty button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 900px) {
+  .student-recommendations-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .student-recommendations-section {
+    padding: 18px 14px;
+  }
+
+  .student-recommendations-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 700px) {
   .issuance-notice {
     gap: 14px;

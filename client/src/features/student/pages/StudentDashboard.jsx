@@ -57,6 +57,10 @@ const StudentDashboard = ({ user, onLogout }) => {
   const [catalogBooks, setCatalogBooks] = useState([]);
   const [catalogLoading, setCatalogLoading] = useState(true);
   const [borrowedBooks, setBorrowedBooks] = useState([]);
+  const [personalRecommendations, setPersonalRecommendations] = useState([]);
+  const [peerRecommendations, setPeerRecommendations] = useState([]);
+  const [recommendationsContext, setRecommendationsContext] = useState(null);
+  const [recommendationsLoading, setRecommendationsLoading] = useState(true);
   const [summaryLoading, setSummaryLoading] = useState(true);
   const [dashboardStats, setDashboardStats] = useState({ borrowed: 0, overdue: 0, pendingFine: 0, finePaid: 0 });
   const [reservationQuota, setReservationQuota] = useState({ totalUsedToday: 0, totalDailyLimit: 5, totalRemainingToday: 0 });
@@ -181,6 +185,33 @@ const StudentDashboard = ({ user, onLogout }) => {
     const refreshTimer = window.setInterval(loadReservations, 30000);
     return () => window.clearInterval(refreshTimer);
   }, [currentUser.rollNo, currentUser.roll_no, showToast]);
+
+  useEffect(() => {
+    const token = localStorage.getItem("libraryToken");
+    if (currentUser.role !== "student" || !token) {
+      setRecommendationsLoading(false);
+      return;
+    }
+
+    const loadRecommendations = async () => {
+      try {
+        const response = await apiFetch("/api/students/recommendations/me", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || "Could not load recommendations.");
+        setPersonalRecommendations(data.personalRecommendations || []);
+        setPeerRecommendations(data.peerRecommendations || []);
+        setRecommendationsContext(data.context || null);
+      } catch (loadError) {
+        showToast("error", loadError.message);
+      } finally {
+        setRecommendationsLoading(false);
+      }
+    };
+
+    loadRecommendations();
+  }, [currentUser.email, currentUser.role, showToast]);
 
   useEffect(() => {
     const rollNo = currentUser.roll_no || currentUser.rollNo;
@@ -404,7 +435,7 @@ const StudentDashboard = ({ user, onLogout }) => {
       {isDashboardHome ? (
         <main className="student-dashboard-content student-loading-surface" aria-busy={summaryLoading || catalogLoading || requestsLoading}>
           <StudentLoadingOverlay
-            active={summaryLoading || catalogLoading || requestsLoading}
+            active={summaryLoading || catalogLoading || requestsLoading || recommendationsLoading}
             label="Loading your library dashboard"
           />
 
@@ -576,6 +607,81 @@ const StudentDashboard = ({ user, onLogout }) => {
 
             </article>
 
+          </section>
+
+          <section className="student-recommendations-section">
+            <div className="section-heading">
+              <div>
+                <p className="student-kicker">PERSONALIZED FOR YOU</p>
+                <h2>Book Recommendations</h2>
+                <p className="section-description">
+                  Discover titles selected from your reading activity and your academic peer group.
+                </p>
+              </div>
+              <button type="button" className="view-all-button" onClick={() => navigate("/student-dashboard/books")}>
+                Browse all →
+              </button>
+            </div>
+
+            <div className="student-recommendation-group">
+              <div className="student-recommendation-group-heading">
+                <div>
+                  <h3>Based on your previous activity</h3>
+                  <p>Available titles related to books you have borrowed before.</p>
+                </div>
+              </div>
+              {personalRecommendations.length > 0 ? (
+                <div className="student-recommendations-grid">
+                  {personalRecommendations.map((book) => (
+                  <article className="student-recommendation-card" key={book.id}>
+                    <div className="student-recommendation-cover" aria-hidden="true">
+                      {book.title.charAt(0)}
+                    </div>
+                    <div className="student-recommendation-content">
+                      <h3>{book.title}</h3>
+                      <p>{book.author}</p>
+                      <span>{book.matchReason}</span>
+                    </div>
+                    <button type="button" onClick={() => navigate("/student-dashboard/books")}>
+                      View book
+                    </button>
+                  </article>
+                  ))}
+                </div>
+              ) : (
+                <div className="student-recommendations-empty">
+                  <p>Borrow more books to build recommendations from your reading activity.</p>
+                </div>
+              )}
+            </div>
+
+            <div className="student-recommendation-group">
+              <div className="student-recommendation-group-heading">
+                <div>
+                  <h3>Popular in your department and year</h3>
+                  <p>Frequently issued by {recommendationsContext?.department || "your department"} students in year {recommendationsContext?.yearOfStudy || "your year"}.</p>
+                </div>
+              </div>
+              {peerRecommendations.length > 0 ? (
+                <div className="student-recommendations-grid">
+                  {peerRecommendations.map((book) => (
+                    <article className="student-recommendation-card" key={book.id}>
+                      <div className="student-recommendation-cover" aria-hidden="true">{book.title.charAt(0)}</div>
+                      <div className="student-recommendation-content">
+                        <h3>{book.title}</h3>
+                        <p>{book.author}</p>
+                        <span>Issued by {book.peerStudentCount} peer{book.peerStudentCount === 1 ? "" : "s"}</span>
+                      </div>
+                      <button type="button" onClick={() => navigate("/student-dashboard/books")}>View book</button>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <div className="student-recommendations-empty">
+                  <p>Peer recommendations will appear as borrowing activity grows in your department and year.</p>
+                </div>
+              )}
+            </div>
           </section>
 
 
