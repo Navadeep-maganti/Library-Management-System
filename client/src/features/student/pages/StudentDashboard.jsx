@@ -136,7 +136,10 @@ const StudentDashboard = ({ user, onLogout }) => {
     if (!studentId) return;
 
     try {
-      const quotaResponse = await apiFetch(`/api/reservations/quota/${encodeURIComponent(studentId)}`);
+      const token = localStorage.getItem("libraryToken");
+      const quotaResponse = await apiFetch(`/api/reservations/quota/${encodeURIComponent(studentId)}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const quotaData = await quotaResponse.json();
 
       if (!quotaResponse.ok) {
@@ -331,8 +334,11 @@ const StudentDashboard = ({ user, onLogout }) => {
     setRequestingBookId(book.id);
     try {
       const response = await apiFetch("/api/reservations", {
-        body: JSON.stringify({ studentId: rollNo, bookId: book.id }),
-        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bookId: book.id }),
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("libraryToken")}`,
+          "Content-Type": "application/json",
+        },
         method: "POST",
       });
       const data = await response.json();

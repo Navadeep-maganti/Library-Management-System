@@ -220,13 +220,26 @@ export const createReservation = async (req, res) => {
         // Synchronize expired reservations first
         await processExpiredReservations();
 
-        const { studentId, bookId } = req.body;
-        if (!studentId || !bookId) {
+        const { bookId } = req.body;
+        if (!bookId) {
             return res.status(400).json({
                 success: false,
-                message: "studentId (Roll No) and bookId are required."
+                message: "bookId is required."
             });
         }
+
+        if (req.auth?.role !== "student" || !req.auth?.email) {
+            return res.status(403).json({ success: false, message: "Student access is required." });
+        }
+
+        const authenticatedStudent = await prisma.student.findUnique({
+            where: { email: req.auth.email },
+            select: { rollNo: true }
+        });
+        if (!authenticatedStudent) {
+            return res.status(404).json({ success: false, message: "Student profile not found." });
+        }
+        const studentId = authenticatedStudent.rollNo;
 
         const parsedBookId = parseInt(bookId, 10);
         if (isNaN(parsedBookId)) {
@@ -741,7 +754,19 @@ export const triggerExpiredCheck = async (req, res) => {
  */
 export const getStudentReservationQuota = async (req, res) => {
     try {
-        const { studentId } = req.params;
+        if (req.auth?.role !== "student" || !req.auth?.email) {
+            return res.status(403).json({ success: false, message: "Student access is required." });
+        }
+
+        const student = await prisma.student.findUnique({
+            where: { email: req.auth.email },
+            select: { rollNo: true }
+        });
+        if (!student) {
+            return res.status(404).json({ success: false, message: "Student profile not found." });
+        }
+
+        const studentId = student.rollNo;
         const { bookId } = req.query;
 
         const startOfDay = new Date();
