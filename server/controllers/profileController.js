@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import prisma from "../config/db.js";
 import { generateOTP } from "../utils/authHelpers.js";
 import { sendPasswordChangeOTPEmail } from "../services/emailService.js";
+import { STUDENT_DEPARTMENTS, STUDY_YEARS } from "../constants/academicOptions.js";
 
 const PASSWORD_RULE = /^(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,}$/;
 const OTP_LIFETIME_MS = 10 * 60 * 1000; // 10 minutes
@@ -149,18 +150,18 @@ export const updateProfile = async (req, res) => {
         if (user.role === "student" && user.student) {
             if (department !== undefined) {
                 const trimmedDept = typeof department === "string" ? department.trim() : "";
-                if (!trimmedDept) {
-                    return res.status(400).json({ success: false, message: "Department cannot be empty." });
+                if (!STUDENT_DEPARTMENTS.includes(trimmedDept)) {
+                    return res.status(400).json({ success: false, message: "Please select a valid department." });
                 }
                 studentUpdateData.department = trimmedDept;
             }
 
             if (yearOfStudy !== undefined) {
                 const parsedYear = Number(yearOfStudy);
-                if (isNaN(parsedYear) || parsedYear < 1 || parsedYear > 6) {
+                if (!STUDY_YEARS.includes(parsedYear)) {
                     return res.status(400).json({
                         success: false,
-                        message: "Year of study must be a number between 1 and 6."
+                        message: "Year of study must be between 1 and 4."
                     });
                 }
                 studentUpdateData.yearOfStudy = parsedYear;

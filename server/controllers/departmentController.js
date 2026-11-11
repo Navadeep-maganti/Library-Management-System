@@ -1,4 +1,5 @@
 import prisma from "../config/db.js";
+import { normalizeDepartment } from "../constants/academicOptions.js";
 
 export const getDepartments = async (req, res) => {
     try {
@@ -8,7 +9,14 @@ export const getDepartments = async (req, res) => {
             },
             orderBy: { name: "asc" }
         });
-        return res.status(200).json({ success: true, count: departments.length, departments });
+        const normalizedDepartments = departments.reduce((result, department) => {
+            const name = normalizeDepartment(department.name);
+            if (!result.some((item) => item.name === name)) {
+                result.push({ ...department, name });
+            }
+            return result;
+        }, []);
+        return res.status(200).json({ success: true, count: normalizedDepartments.length, departments: normalizedDepartments });
     } catch (error) {
         return res.status(500).json({ success: false, message: "Failed to fetch departments.", error: error.message });
     }

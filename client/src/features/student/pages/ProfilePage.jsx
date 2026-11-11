@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useOutletContext } from "react-router-dom";
 import { apiFetch } from "../../../api";
+import { DEPARTMENTS, STUDY_YEARS } from "../../../constants/academicOptions";
 const PASSWORD_RULE = /^(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,}$/;
 
 const requestProfileApi = async (path, method, body) => {
@@ -41,6 +42,7 @@ const ProfilePage = () => {
   });
   const [usernameDraft, setUsernameDraft] = useState(currentUser.username || "Student");
   const [usernameBusy, setUsernameBusy] = useState(false);
+  const [academicBusy, setAcademicBusy] = useState(false);
   const [passwordDraft, setPasswordDraft] = useState({
     currentPassword: "",
     newPassword: "",
@@ -110,6 +112,23 @@ const ProfilePage = () => {
     }
   };
 
+  const saveAcademicDetails = async (event) => {
+    event.preventDefault();
+    setAcademicBusy(true);
+    try {
+      const result = await requestProfileApi("/api/profile", "PUT", {
+        department: draft.department,
+        yearOfStudy: Number(draft.yearOfStudy),
+      });
+      storeUpdatedProfile(result.profile || result.user, result.token);
+      showToast("success", result.message || "Academic details updated successfully.");
+    } catch (error) {
+      showToast("error", error.message);
+    } finally {
+      setAcademicBusy(false);
+    }
+  };
+
   return (
     <section className="student-info-panel profile-page">
       <div className="catalog-heading profile-page-heading">
@@ -133,7 +152,7 @@ const ProfilePage = () => {
         </p>
         <p>
           <strong>Year of Study</strong>
-          {currentUser.yearOfStudy ?? currentUser.year_of_study ?? "Not available"}
+          {draft.yearOfStudy || "Not available"}
         </p>
         <p>
           <strong>Roll Number</strong>
@@ -157,6 +176,25 @@ const ProfilePage = () => {
           <p>Update your username and password for your library account.</p>
         </div>
         <div className="account-settings-grid">
+          <section className="account-setting-card" aria-labelledby="academic-settings-title">
+            <div className="account-setting-copy">
+              <h4 id="academic-settings-title">Academic details</h4>
+              <p>Keep your department and year updated for relevant library announcements and recommendations.</p>
+            </div>
+            <form className="account-setting-form" onSubmit={saveAcademicDetails}>
+              <label htmlFor="student-department">Department</label>
+              <select id="student-department" onChange={(event) => setDraft((current) => ({ ...current, department: event.target.value }))} required value={draft.department}>
+                <option value="">Select department</option>
+                {DEPARTMENTS.map((department) => <option key={department} value={department}>{department}</option>)}
+              </select>
+              <label htmlFor="student-year">Year of study</label>
+              <select id="student-year" onChange={(event) => setDraft((current) => ({ ...current, yearOfStudy: event.target.value }))} required value={draft.yearOfStudy}>
+                <option value="">Select year</option>
+                {STUDY_YEARS.map((year) => <option key={year} value={year}>Year {year}</option>)}
+              </select>
+              <button className="book-button" type="submit" disabled={academicBusy}>{academicBusy ? "Updating..." : "Update academic details"}</button>
+            </form>
+          </section>
           <section className="account-setting-card" aria-labelledby="username-settings-title">
             <div className="account-setting-copy">
               <h4 id="username-settings-title">Change username</h4>

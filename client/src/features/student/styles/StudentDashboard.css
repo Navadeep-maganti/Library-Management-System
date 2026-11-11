@@ -452,7 +452,7 @@
   font-weight: 800;
 }
 
-.account-setting-form input {
+.account-setting-form input, .account-setting-form select {
   background: #fff;
   border: 1px solid #cbd5e1;
   border-radius: 7px;
@@ -464,7 +464,7 @@
   width: 100%;
 }
 
-.account-setting-form input:focus {
+.account-setting-form input:focus, .account-setting-form select:focus {
   border-color: #0f766e;
   outline: 3px solid rgba(15, 118, 110, 0.16);
 }
@@ -2100,7 +2100,7 @@
   font-size: 0.9rem;
 }
 
-.profile-page .account-setting-form input {
+.profile-page .account-setting-form input, .profile-page .account-setting-form select {
   background: #ffffff;
   border-color: #bfded8;
   border-radius: 10px;
