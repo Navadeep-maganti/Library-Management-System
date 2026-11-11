@@ -1,6 +1,26 @@
 import crypto from "crypto";
 import prisma from "../config/db.js";
 
+const LIBRARY_TIME_ZONE = "Asia/Kolkata";
+
+const getLibraryDayStart = (date = new Date()) => {
+    const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: LIBRARY_TIME_ZONE,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+    }).formatToParts(date);
+    const values = Object.fromEntries(parts.map(({ type, value }) => [type, value]));
+
+    // The library operates in India Standard Time (UTC+05:30), independent
+    // of the timezone configured on the local or deployed server.
+    return new Date(Date.UTC(
+        Number(values.year),
+        Number(values.month) - 1,
+        Number(values.day)
+    ) - (5 * 60 + 30) * 60 * 1000);
+};
+
 /**
  * Generates a unique, non-sequential cryptographically secure 6-digit random token (100000 - 999999)
  */
@@ -300,8 +320,7 @@ export const createReservation = async (req, res) => {
         }
 
         // 5. Anti-Spam / Rate-Limiting Constraints per Day
-        const startOfDay = new Date();
-        startOfDay.setHours(0, 0, 0, 0);
+        const startOfDay = getLibraryDayStart();
 
         const totalReservationsToday = await prisma.bookReservation.count({
             where: {
@@ -769,8 +788,7 @@ export const getStudentReservationQuota = async (req, res) => {
         const studentId = student.rollNo;
         const { bookId } = req.query;
 
-        const startOfDay = new Date();
-        startOfDay.setHours(0, 0, 0, 0);
+        const startOfDay = getLibraryDayStart();
 
         const totalUsedToday = await prisma.bookReservation.count({
             where: {
