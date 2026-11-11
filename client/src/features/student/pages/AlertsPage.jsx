@@ -19,14 +19,14 @@ const AlertsPage = () => {
       try {
         const rollNo = currentUser.roll_no || currentUser.rollNo || currentUser.studentId;
         const [announcementResponse, alertResponse] = await Promise.all([
-          apiFetch("/api/announcements"),
+          apiFetch("/api/announcements", { headers: authHeaders }),
           apiFetch(`/api/alerts?studentId=${encodeURIComponent(rollNo)}`, { headers: authHeaders })
         ]);
         const announcementData = await announcementResponse.json();
         const alertData = await alertResponse.json();
         if (!announcementResponse.ok) throw new Error(announcementData.message || "Could not load library updates.");
         if (!alertResponse.ok) throw new Error(alertData.message || "Could not load due-date alerts.");
-        setAlerts([
+        const latestAlerts = [
           ...(alertData.alerts || []).map((alert) => ({
             id: `${alert.type === "availability" ? "availability" : "due"}-${alert.id}`,
             alertId: alert.id,
@@ -48,8 +48,9 @@ const AlertsPage = () => {
           detail: announcement.content,
           receivedAt: announcement.createdAt,
           unread: true,
-          }))]
-        );
+          }))
+        ].sort((first, second) => new Date(second.receivedAt) - new Date(first.receivedAt)).slice(0, 20);
+        setAlerts(latestAlerts);
       } catch (loadError) {
         showToast("error", loadError.message);
       } finally {
@@ -61,16 +62,6 @@ const AlertsPage = () => {
   }, [currentUser, showToast]);
   const unreadCount = alerts.filter((alert) => alert.unread).length;
 
-  const markAllRead = async () => {
-    const unreadAlerts = alerts.filter((alert) => alert.unread && alert.alertId);
-    try {
-      await Promise.all(unreadAlerts.map((alert) => apiFetch(`/api/alerts/${alert.alertId}/read?type=${alert.alertType}`, { method: "POST", headers: authHeaders })));
-      setAlerts((current) => current.map((alert) => ({ ...alert, unread: false })));
-    } catch (error) {
-      showToast("error", error.message || "Could not mark alerts as read.");
-    }
-  };
-
   return (
     <section className="student-info-panel student-loading-surface" aria-busy={isLoading}>
       <StudentLoadingOverlay active={isLoading} label="Loading your library alerts" />
@@ -79,17 +70,12 @@ const AlertsPage = () => {
           <p className="student-kicker">LIBRARY UPDATES</p>
           <h2>Alerts <span className="heading-count">{unreadCount}</span></h2>
         </div>
-        <button className="text-button" type="button" onClick={markAllRead} disabled={!unreadCount}>Mark all as read</button>
       </div>
       <div className="alert-list">
         {isLoading ? <p className="empty-search">Loading library updates...</p> : alerts.length ? alerts.map((alert) => (
           <article className={`library-alert alert-${alert.type} ${alert.unread ? "alert-unread" : ""}`} key={alert.id}>
             <div className="library-alert-icon" aria-hidden="true">{alert.icon}</div>
             <div className="library-alert-copy"><span className="library-alert-label">{alert.label}</span><strong>{alert.title}</strong><span>{alert.detail}</span><time dateTime={alert.receivedAt}>Received {formatReceivedAt(alert.receivedAt)}</time></div>
-            <button className="icon-text-button" type="button" onClick={async () => {
-              if (alert.alertId && alert.unread) await apiFetch(`/api/alerts/${alert.alertId}/read?type=${alert.alertType}`, { method: "POST", headers: authHeaders });
-              setAlerts((current) => current.filter((item) => item.id !== alert.id));
-            }}>Dismiss</button>
           </article>
         )) : <p className="empty-search">You are all caught up.</p>}
       </div>

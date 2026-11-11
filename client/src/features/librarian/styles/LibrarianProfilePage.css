@@ -30,4 +30,16 @@
 .librarian-alert-card p, .librarian-alert-card time { color: #64748b; font-size: .82rem; margin: 0; }
 .librarian-alert-card time { display: block; margin-top: 5px; }
 .librarian-alert-card button { background: transparent; border: 0; color: #0f766e; cursor: pointer; font-weight: 700; }
+.librarian-announcement-form { background: #f0fdfa; border: 1px solid #99f6e4; border-radius: 12px; display: grid; gap: 14px; margin-bottom: 30px; padding: 20px; }
+.librarian-announcement-form h2 { color: #0f172a; font-size: 1.2rem; margin: 0; }
+.librarian-announcement-form label { display: grid; gap: 6px; }
+.librarian-announcement-form label span { color: #334155; font-size: .82rem; font-weight: 750; }
+.librarian-announcement-form input, .librarian-announcement-form textarea, .librarian-announcement-form select { border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; font: inherit; padding: 10px; width: 100%; }
+.librarian-announcement-form textarea { resize: vertical; }
+.librarian-announcement-form-row { display: grid; gap: 12px; grid-template-columns: repeat(3, 1fr); }
+.librarian-announcement-form-actions, .librarian-alert-card-actions { display: flex; gap: 8px; }
+.librarian-announcement-cancel { background: #64748b; }
+.librarian-alert-card-actions { align-items: center; }
+.librarian-alert-card-actions button { background: transparent; border: 0; color: #0f766e; cursor: pointer; font-weight: 700; }
 @media (max-width: 700px) { .librarian-profile-page { margin: 16px; padding: 20px; } .librarian-profile-form, .librarian-profile-details { grid-template-columns: 1fr; } .librarian-profile-heading, .librarian-account-settings-heading { align-items: flex-start; flex-direction: column; } .librarian-alert-card { align-items: start; grid-template-columns: 32px minmax(0, 1fr); } .librarian-alert-card button { grid-column: 2; justify-self: start; } }
+@media (max-width: 700px) { .librarian-announcement-form-row { grid-template-columns: 1fr; } }

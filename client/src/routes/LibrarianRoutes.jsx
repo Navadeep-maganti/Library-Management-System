@@ -79,7 +79,7 @@ export const getLibrarianRoutes = (user, onUserUpdated) => [
     path="/librarian/alerts"
     element={
       <ProtectedRoute user={user} allowedRole="librarian">
-        <LibrarianAlertsPage />
+        <LibrarianAlertsPage user={user} />
       </ProtectedRoute>
     }
   />,
