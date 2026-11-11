@@ -6,6 +6,7 @@ import { getStudentRoutes } from "./StudentRoutes";
 import { getLibrarianRoutes } from "./LibrarianRoutes";
 
 const AppRoutes = ({ user, onAuthSuccess, onLogout, onUserUpdated }) => {
+  const isAuthenticated = Boolean(user && localStorage.getItem("libraryToken"));
   const dashboardPath =
     user?.role === "librarian" ? "/librarian-dashboard" : "/student-dashboard";
 
@@ -14,7 +15,7 @@ const AppRoutes = ({ user, onAuthSuccess, onLogout, onUserUpdated }) => {
       <Route
         path="/"
         element={
-          user ? <Navigate to={dashboardPath} replace /> : <LandingPage />
+          isAuthenticated ? <Navigate to={dashboardPath} replace /> : <LandingPage />
         }
       />
       {getAuthRoutes(onAuthSuccess, user)}
@@ -22,7 +23,7 @@ const AppRoutes = ({ user, onAuthSuccess, onLogout, onUserUpdated }) => {
       {getLibrarianRoutes(user, onUserUpdated)}
       <Route
         path="*"
-        element={<Navigate to={user ? dashboardPath : "/"} replace />}
+        element={<Navigate to={isAuthenticated ? dashboardPath : "/"} replace />}
       />
     </Routes>
   );

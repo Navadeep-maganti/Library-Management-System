@@ -8,40 +8,81 @@ import LibrarianUpdateStockPage from "../features/librarian/pages/LibrarianUpdat
 import LibrarianFinesPage from "../features/librarian/pages/LibrarianFinesPage";
 import LibrarianProfilePage from "../features/librarian/pages/LibrarianProfilePage";
 import LibrarianAlertsPage from "../features/librarian/pages/LibrarianAlertsPage";
+import ProtectedRoute from "./ProtectedRoute";
 
 export const getLibrarianRoutes = (user, onUserUpdated) => [
   <Route
     key="librarian-dashboard"
     path="/librarian-dashboard"
-    element={<LibrarianDashboard user={user} />}
+    element={
+      <ProtectedRoute user={user} allowedRole="librarian">
+        <LibrarianDashboard user={user} />
+      </ProtectedRoute>
+    }
   />,
   <Route
     key="librarian-reservations"
     path="/librarian/reservations"
-    element={<LibrarianReservationsPage />}
+    element={
+      <ProtectedRoute user={user} allowedRole="librarian">
+        <LibrarianReservationsPage />
+      </ProtectedRoute>
+    }
   />,
   <Route
     key="librarian-verify-token"
     path="/librarian/verify-token"
-    element={<LibrarianVerifyTokenPage />}
+    element={
+      <ProtectedRoute user={user} allowedRole="librarian">
+        <LibrarianVerifyTokenPage />
+      </ProtectedRoute>
+    }
   />,
   <Route
     key="librarian-issue-book"
     path="/librarian/issue-book"
-    element={<LibrarianIssueBookPage />}
+    element={
+      <ProtectedRoute user={user} allowedRole="librarian">
+        <LibrarianIssueBookPage />
+      </ProtectedRoute>
+    }
   />,
   <Route
     key="librarian-update-stock"
     path="/librarian/update-stock"
-    element={<LibrarianUpdateStockPage />}
+    element={
+      <ProtectedRoute user={user} allowedRole="librarian">
+        <LibrarianUpdateStockPage />
+      </ProtectedRoute>
+    }
   />,
   <Route
     key="librarian-fines"
     path="/librarian/fines"
-    element={<LibrarianFinesPage />}
+    element={
+      <ProtectedRoute user={user} allowedRole="librarian">
+        <LibrarianFinesPage />
+      </ProtectedRoute>
+    }
   />,
-  <Route key="librarian-profile" path="/librarian/profile" element={<LibrarianProfilePage user={user} onUserUpdated={onUserUpdated} />} />,
-  <Route key="librarian-alerts" path="/librarian/alerts" element={<LibrarianAlertsPage />} />,
+  <Route
+    key="librarian-profile"
+    path="/librarian/profile"
+    element={
+      <ProtectedRoute user={user} allowedRole="librarian">
+        <LibrarianProfilePage user={user} onUserUpdated={onUserUpdated} />
+      </ProtectedRoute>
+    }
+  />,
+  <Route
+    key="librarian-alerts"
+    path="/librarian/alerts"
+    element={
+      <ProtectedRoute user={user} allowedRole="librarian">
+        <LibrarianAlertsPage />
+      </ProtectedRoute>
+    }
+  />,
 ];
 
 export default getLibrarianRoutes;

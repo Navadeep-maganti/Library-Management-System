@@ -5,29 +5,34 @@ import LibrarianNavbar from "./features/librarian/components/LibrarianNavbar";
 import AppRoutes from "./routes/AppRoutes";
 import "./App.css";
 
-function AppContent() {
-  const [user, setUser] = useState(() => {
-    const storedUser = localStorage.getItem("libraryUser");
-    if (storedUser) {
-      try {
-        return JSON.parse(storedUser);
-      } catch {
-        localStorage.removeItem("libraryUser");
-      }
-    }
+const readStoredUser = () => {
+  const storedUser = localStorage.getItem("libraryUser");
+  const token = localStorage.getItem("libraryToken");
+
+  if (!storedUser || !token) return null;
+
+  try {
+    return JSON.parse(storedUser);
+  } catch {
+    localStorage.removeItem("libraryUser");
     return null;
-  });
+  }
+};
+
+function AppContent() {
+  const [user, setUser] = useState(readStoredUser);
   const location = useLocation();
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("libraryUser");
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch {
-        localStorage.removeItem("libraryUser");
-      }
-    }
+    const syncAuthState = () => setUser(readStoredUser());
+
+    window.addEventListener("storage", syncAuthState);
+    window.addEventListener("focus", syncAuthState);
+
+    return () => {
+      window.removeEventListener("storage", syncAuthState);
+      window.removeEventListener("focus", syncAuthState);
+    };
   }, []);
 
   const handleAuthSuccess = (userData) => {

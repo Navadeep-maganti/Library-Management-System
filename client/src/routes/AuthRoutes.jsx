@@ -4,6 +4,7 @@ import LoginPage from "../features/auth/pages/LoginPage";
 import RegistrationPage from "../features/auth/pages/RegistrationPage";
 
 export const getAuthRoutes = (onAuthSuccess, user) => {
+  const isAuthenticated = Boolean(user && localStorage.getItem("libraryToken"));
   const dashboardPath =
     user?.role === "librarian" ? "/librarian-dashboard" : "/student-dashboard";
 
@@ -12,7 +13,7 @@ export const getAuthRoutes = (onAuthSuccess, user) => {
       key="register"
       path="/register"
       element={
-        user ? (
+        isAuthenticated ? (
           <Navigate to={dashboardPath} replace />
         ) : (
           <RegistrationPage onAuthSuccess={onAuthSuccess} />
@@ -23,7 +24,7 @@ export const getAuthRoutes = (onAuthSuccess, user) => {
       key="login"
       path="/login"
       element={
-        user ? (
+        isAuthenticated ? (
           <Navigate to={dashboardPath} replace />
         ) : (
           <LoginPage onAuthSuccess={onAuthSuccess} />

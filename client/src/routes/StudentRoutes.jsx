@@ -7,12 +7,17 @@ import RequestsPage from "../features/student/pages/RequestsPage";
 import AlertsPage from "../features/student/pages/AlertsPage";
 import ProfilePage from "../features/student/pages/ProfilePage";
 import BrowseBooksPage from "../features/student/pages/BrowseBooksPage";
+import ProtectedRoute from "./ProtectedRoute";
 
 export const getStudentRoutes = (user, onLogout) => [
   <Route
     key="student-dashboard"
     path="/student-dashboard"
-    element={<StudentDashboard user={user} onLogout={onLogout} />}
+    element={
+      <ProtectedRoute user={user} allowedRole="student">
+        <StudentDashboard user={user} onLogout={onLogout} />
+      </ProtectedRoute>
+    }
   >
     <Route path="payfine" element={<PayFinePage />} />
     <Route path="history" element={<ViewHistoryPage />} />
