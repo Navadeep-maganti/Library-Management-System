@@ -30,6 +30,7 @@ model Student {
   reservations    BookReservation[]
   fines           Fine[]
   alerts          StudentAlert[]
+  recommendationCache StudentRecommendationCache?
 
   @@map("students")
 }
@@ -219,6 +220,27 @@ model StudentAlert {
   @@unique([issuedBookId, reminderDays])
   @@index([studentId, createdAt])
   @@map("student_alerts")
+}
+
+model StudentRecommendationCache {
+  id                     Int      @id @default(autoincrement())
+  studentId              String   @unique @map("student_id") @db.VarChar(20)
+  personalRecommendations Json     @map("personal_recommendations")
+  updatedAt              DateTime @updatedAt @map("updated_at")
+  student                Student  @relation(fields: [studentId], references: [rollNo], onDelete: Cascade, onUpdate: Cascade)
+
+  @@map("student_recommendation_cache")
+}
+
+model CohortRecommendationCache {
+  id                    Int      @id @default(autoincrement())
+  department            String   @db.VarChar(100)
+  yearOfStudy           Int      @map("year_of_study")
+  peerRecommendations   Json     @map("peer_recommendations")
+  generatedAt           DateTime @default(now()) @map("generated_at")
+
+  @@unique([department, yearOfStudy])
+  @@map("cohort_recommendation_cache")
 }
 
 // 6. System Constants & Announcements

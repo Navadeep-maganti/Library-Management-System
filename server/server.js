@@ -17,6 +17,7 @@ import profileRoutes from "./routes/profileRoutes.js";
 import { processExpiredReservations } from "./controllers/reservationController.js";
 import { syncOverdueFines } from "./controllers/fineController.js";
 import { processDueDateReminders } from "./services/dueDateReminderService.js";
+import { refreshAllCohortRecommendations } from "./services/recommendationService.js";
 
 const app = express();
 
@@ -64,6 +65,7 @@ async function startServer() {
                 await processExpiredReservations();
                 await syncOverdueFines();
                 await processDueDateReminders();
+                await refreshAllCohortRecommendations();
             } catch (initErr) {
                 console.error("Initial maintenance task error:", initErr.message);
             }
@@ -78,6 +80,14 @@ async function startServer() {
                     console.error("Auto-sync background timer error:", err.message);
                 }
             }, 60 * 1000);
+
+            setInterval(async () => {
+                try {
+                    await refreshAllCohortRecommendations();
+                } catch (err) {
+                    console.error("Daily recommendation refresh error:", err.message);
+                }
+            }, 24 * 60 * 60 * 1000);
         });
     } catch (err) {
         console.error("❌ Server failed to start");

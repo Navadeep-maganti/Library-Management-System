@@ -1,5 +1,6 @@
 import prisma from "../config/db.js";
 import { getCalendarDaysSince, syncOverdueFines } from "./fineController.js";
+import { refreshStudentRecommendations } from "../services/recommendationService.js";
 
 /**
  * @desc Get all issued books (active or returned)
@@ -146,6 +147,12 @@ export const issueBook = async (req, res) => {
 
             return issued;
         });
+
+        try {
+            await refreshStudentRecommendations(studentId);
+        } catch (recommendationError) {
+            console.error("Failed to refresh student recommendations after issue:", recommendationError);
+        }
 
         return res.status(201).json({
             success: true,
