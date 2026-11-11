@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import prisma from "../config/db.js";
+import { notifyBookAvailability } from "../services/availabilityAlertService.js";
 
 const LIBRARY_TIME_ZONE = "Asia/Kolkata";
 
@@ -103,6 +104,7 @@ export const processExpiredReservations = async () => {
         }
 
         let restoredCount = 0;
+        const restoredBookIds = new Set();
         for (const resv of expiredReservations) {
             await prisma.$transaction(async (tx) => {
                 // 1. Update reservation status to Expired
@@ -126,12 +128,14 @@ export const processExpiredReservations = async () => {
                             where: { id: availability.id },
                             data: { availableCopies: newAvailable }
                         });
+                        if (availability.availableCopies <= 0 && newAvailable > 0) restoredBookIds.add(resv.bookId);
                         restoredCount++;
                     }
                 }
             });
         }
 
+        restoredBookIds.forEach((bookId) => notifyBookAvailability(bookId));
         if (restoredCount > 0) {
             console.log(`⏱️ [Auto-Expiry] Processed ${expiredReservations.length} expired reservation(s) and restored ${restoredCount} book copy/copies back into available stock.`);
         }
@@ -502,6 +506,9 @@ export const cancelReservation = async (req, res) => {
             return { updated, updatedAvailability };
         }, { maxWait: 10000, timeout: 15000 });
 
+        if (wasActive && reservation.bookId && result.updatedAvailability?.availableCopies === 1) {
+            notifyBookAvailability(reservation.bookId);
+        }
         return res.status(200).json({
             success: true,
             message: "Reservation cancelled successfully and book copy returned to stock.",

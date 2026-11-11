@@ -1,4 +1,5 @@
 import prisma from "../config/db.js";
+import { notifyBookAvailability } from "../services/availabilityAlertService.js";
 import { getCalendarDaysSince, syncOverdueFines } from "./fineController.js";
 import { refreshStudentRecommendations } from "../services/recommendationService.js";
 
@@ -190,6 +191,9 @@ export const returnBook = async (req, res) => {
 
         const returnDate = new Date();
         const dueDate = new Date(issuedRecord.dueDate);
+        const availabilityBefore = issuedRecord.bookId
+            ? await prisma.bookAvailability.findFirst({ where: { bookId: issuedRecord.bookId } })
+            : null;
         const constants = await prisma.libraryConstants.findFirst() || { overdueFinePerDay: 5.00 };
 
         let fineCreated = null;
@@ -294,6 +298,9 @@ export const returnBook = async (req, res) => {
             return { updated, fine };
         });
 
+        if (issuedRecord.bookId && availabilityBefore?.availableCopies <= 0) {
+            notifyBookAvailability(issuedRecord.bookId);
+        }
         return res.status(200).json({
             success: true,
             message: "Book returned successfully.",

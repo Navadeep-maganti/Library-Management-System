@@ -28,11 +28,12 @@ const AlertsPage = () => {
         if (!alertResponse.ok) throw new Error(alertData.message || "Could not load due-date alerts.");
         setAlerts([
           ...(alertData.alerts || []).map((alert) => ({
-            id: `due-${alert.id}`,
+            id: `${alert.type === "availability" ? "availability" : "due"}-${alert.id}`,
             alertId: alert.id,
-            type: "due",
+            alertType: alert.type || "due",
+            type: alert.type || "due",
             icon: "!",
-            label: "DUE DATE REMINDER",
+            label: alert.type === "availability" ? "Availability alert" : "Due date reminder",
             title: alert.title,
             detail: alert.content,
             receivedAt: alert.createdAt,
@@ -63,7 +64,7 @@ const AlertsPage = () => {
   const markAllRead = async () => {
     const unreadAlerts = alerts.filter((alert) => alert.unread && alert.alertId);
     try {
-      await Promise.all(unreadAlerts.map((alert) => apiFetch(`/api/alerts/${alert.alertId}/read`, { method: "POST", headers: authHeaders })));
+      await Promise.all(unreadAlerts.map((alert) => apiFetch(`/api/alerts/${alert.alertId}/read?type=${alert.alertType}`, { method: "POST", headers: authHeaders })));
       setAlerts((current) => current.map((alert) => ({ ...alert, unread: false })));
     } catch (error) {
       showToast("error", error.message || "Could not mark alerts as read.");
@@ -86,7 +87,7 @@ const AlertsPage = () => {
             <div className="library-alert-icon" aria-hidden="true">{alert.icon}</div>
             <div className="library-alert-copy"><span className="library-alert-label">{alert.label}</span><strong>{alert.title}</strong><span>{alert.detail}</span><time dateTime={alert.receivedAt}>Received {formatReceivedAt(alert.receivedAt)}</time></div>
             <button className="icon-text-button" type="button" onClick={async () => {
-              if (alert.alertId && alert.unread) await apiFetch(`/api/alerts/${alert.alertId}/read`, { method: "POST", headers: authHeaders });
+              if (alert.alertId && alert.unread) await apiFetch(`/api/alerts/${alert.alertId}/read?type=${alert.alertType}`, { method: "POST", headers: authHeaders });
               setAlerts((current) => current.filter((item) => item.id !== alert.id));
             }}>Dismiss</button>
           </article>

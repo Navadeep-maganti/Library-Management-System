@@ -31,6 +31,12 @@ const BrowseBooksPage = () => {
   const [departments, setDepartments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedBook, setSelectedBook] = useState(null);
+  const [availabilitySubscriptions, setAvailabilitySubscriptions] = useState({});
+  const [updatingAlertBookId, setUpdatingAlertBookId] = useState(null);
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem("libraryToken");
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
 
   useEffect(() => {
     const loadFilters = async () => {
@@ -72,7 +78,17 @@ const BrowseBooksPage = () => {
         const response = await apiFetch(`/api/books?${query.toString()}`, { signal: controller.signal });
         const data = await response.json();
         if (!response.ok) throw new Error(data.message || "The library catalog could not be loaded.");
-        setBooks((data.books || []).map(normalizeBook));
+        const normalizedBooks = (data.books || []).map(normalizeBook);
+        setBooks(normalizedBooks);
+        const unavailableBooks = normalizedBooks.filter((book) => !book.availableCopies);
+        const statuses = await Promise.all(unavailableBooks.map(async (book) => {
+          const statusResponse = await apiFetch(`/api/alerts/availability/${book.id}`, {
+            headers: getAuthHeaders(),
+          });
+          const statusData = await statusResponse.json();
+          return [book.id, statusResponse.ok && statusData.subscribed];
+        }));
+        setAvailabilitySubscriptions(Object.fromEntries(statuses));
       } catch (loadError) {
         if (loadError.name !== "AbortError") showToast("error", loadError.message);
       } finally {
@@ -89,6 +105,25 @@ const BrowseBooksPage = () => {
   const isRequested = (book) => (requests || []).some(
     (request) => request?.book?.id === book.id && ["Requested", "Booked", "Reserved"].includes(request.status),
   );
+
+  const toggleAvailabilityAlert = async (book) => {
+    setUpdatingAlertBookId(book.id);
+    try {
+      const subscribed = Boolean(availabilitySubscriptions[book.id]);
+      const response = await apiFetch(`/api/alerts/availability/${book.id}`, {
+        method: subscribed ? "DELETE" : "POST",
+        headers: getAuthHeaders(),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Could not update the availability alert.");
+      setAvailabilitySubscriptions((current) => ({ ...current, [book.id]: data.subscribed }));
+      showToast("success", data.subscribed ? "You will be notified when this book is available." : "Availability alert removed.");
+    } catch (error) {
+      showToast("error", error.message);
+    } finally {
+      setUpdatingAlertBookId(null);
+    }
+  };
 
   return (
     <main className="browse-books-page student-loading-surface" aria-busy={isLoading}>
@@ -175,8 +210,10 @@ const BrowseBooksPage = () => {
                   <button className="browse-book-details" type="button" onClick={() => setSelectedBook(book)}>
                     View details
                   </button>
-                  <button className="book-button" type="button" disabled={dailyQuotaReached || !book.availableCopies || isRequested(book) || requestingBookId === book.id} onClick={() => requestBook(book)}>
-                    {requestingBookId === book.id ? "Requesting..." : isRequested(book) ? "Requested" : dailyQuotaReached ? "Daily limit reached" : book.availableCopies ? "Request book" : "Unavailable"}
+                  <button className="book-button" type="button" disabled={book.availableCopies ? dailyQuotaReached || isRequested(book) || requestingBookId === book.id : updatingAlertBookId === book.id} onClick={() => book.availableCopies ? requestBook(book) : toggleAvailabilityAlert(book)}>
+                    {book.availableCopies
+                      ? (requestingBookId === book.id ? "Requesting..." : isRequested(book) ? "Requested" : dailyQuotaReached ? "Daily limit reached" : "Request book")
+                      : (updatingAlertBookId === book.id ? "Updating..." : availabilitySubscriptions[book.id] ? "Alert enabled" : "Notify me when available")}
                   </button>
                 </div>
               </div>
@@ -207,6 +244,18 @@ const BrowseBooksPage = () => {
             <div><span>Shelf</span><strong>{selectedBook.availabilities?.[0]?.shelf?.section || "Not assigned"}</strong></div>
             <div><span>Rack</span><strong>{selectedBook.availabilities?.[0]?.shelf?.rackNumber || "Not assigned"}</strong></div>
           </div>
+          {!selectedBook.availableCopies && (
+            <button
+              type="button"
+              className="book-button"
+              disabled={updatingAlertBookId === selectedBook.id}
+              onClick={() => toggleAvailabilityAlert(selectedBook)}
+            >
+              {updatingAlertBookId === selectedBook.id
+                ? "Updating..."
+                : availabilitySubscriptions[selectedBook.id] ? "Remove availability alert" : "Notify me when available"}
+            </button>
+          )}
         </div>
       )}
     </main>

@@ -1,4 +1,5 @@
 import prisma from "../config/db.js";
+import { notifyBookAvailability } from "../services/availabilityAlertService.js";
 
 /**
  * @desc Get all books with optional search, category/department filter, and pagination
@@ -630,6 +631,9 @@ export const updateTotalCopies = async (req, res) => {
             };
         });
 
+        if (result.previousAvailable <= 0 && result.availability.availableCopies > 0) {
+            notifyBookAvailability(result.bookId);
+        }
         return res.status(200).json({
             success: true,
             message: `Total copies for "${result.bookTitle}" updated successfully from ${result.previousTotal} to ${result.availability.totalCopies}.`,
@@ -765,6 +769,9 @@ export const updateAvailableCopies = async (req, res) => {
             };
         });
 
+        if (result.previousAvailable <= 0 && result.availability.availableCopies > 0) {
+            notifyBookAvailability(result.bookId);
+        }
         return res.status(200).json({
             success: true,
             message: `Available shelf copies for "${result.bookTitle}" updated successfully from ${result.previousAvailable} to ${result.availability.availableCopies}.`,
@@ -886,13 +893,20 @@ export const updateBookStock = async (req, res) => {
                 });
             }
 
-            return updatedAvailability;
+            return {
+                bookId: book.id,
+                previousAvailable: currentAvailable,
+                availability: updatedAvailability
+            };
         });
 
+        if (result.previousAvailable <= 0 && result.availability.availableCopies > 0) {
+            notifyBookAvailability(result.bookId);
+        }
         return res.status(200).json({
             success: true,
             message: "Book stock updated successfully.",
-            availability: result
+            availability: result.availability
         });
     } catch (error) {
         console.error("Error updating book stock:", error);
@@ -903,4 +917,3 @@ export const updateBookStock = async (req, res) => {
         });
     }
 };
-

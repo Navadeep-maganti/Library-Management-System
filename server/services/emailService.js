@@ -65,5 +65,22 @@ export const sendDueDateReminderEmail = async (toEmail, studentName, bookTitle, 
             </div>
         `,
     };
+
     return await transporter.sendMail(mailOptions);
+};
+
+export const sendBookAvailabilityEmail = async (toEmail, studentName, bookTitle) => {
+    return await transporter.sendMail({
+        from: `"Library management system" <${process.env.EMAIL_USER}>`,
+        to: toEmail,
+        subject: `Book available now: ${bookTitle}`,
+        html: `
+            <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+                <h2>Book Availability Alert</h2>
+                <p>Hello ${studentName || "Student"},</p>
+                <p>The book <strong>${bookTitle}</strong> is available to reserve now.</p>
+                <p>Sign in to the Library Management System to place your request.</p>
+            </div>
+        `
+    });
 };

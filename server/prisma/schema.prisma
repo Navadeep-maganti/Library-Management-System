@@ -31,6 +31,8 @@ model Student {
   fines           Fine[]
   alerts          StudentAlert[]
   recommendationCache StudentRecommendationCache?
+  availabilityAlerts BookAvailabilityAlert[]
+  availabilitySubscriptions BookAvailabilitySubscription[]
 
   @@map("students")
 }
@@ -96,6 +98,8 @@ model Book {
   issuedBooks     IssuedBook[]
   borrowHistories BorrowHistory[]
   reservations    BookReservation[]
+  availabilityAlerts BookAvailabilityAlert[]
+  availabilitySubscriptions BookAvailabilitySubscription[]
 
   @@map("books")
 }
@@ -220,6 +224,35 @@ model StudentAlert {
   @@unique([issuedBookId, reminderDays])
   @@index([studentId, createdAt])
   @@map("student_alerts")
+}
+
+model BookAvailabilitySubscription {
+  id         Int      @id @default(autoincrement())
+  studentId  String   @map("student_id") @db.VarChar(20)
+  bookId     Int      @map("book_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  student    Student  @relation(fields: [studentId], references: [rollNo], onDelete: Cascade, onUpdate: Cascade)
+  book       Book     @relation(fields: [bookId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([studentId, bookId])
+  @@index([bookId])
+  @@map("book_availability_subscriptions")
+}
+
+model BookAvailabilityAlert {
+  id         Int      @id @default(autoincrement())
+  studentId  String   @map("student_id") @db.VarChar(20)
+  bookId     Int      @map("book_id")
+  title      String   @db.VarChar(255)
+  content    String   @db.Text
+  createdAt  DateTime @default(now()) @map("created_at")
+  readAt     DateTime? @map("read_at")
+  emailSent  Boolean  @default(false) @map("email_sent")
+  student    Student  @relation(fields: [studentId], references: [rollNo], onDelete: Cascade, onUpdate: Cascade)
+  book       Book     @relation(fields: [bookId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([studentId, createdAt])
+  @@map("book_availability_alerts")
 }
 
 model StudentRecommendationCache {

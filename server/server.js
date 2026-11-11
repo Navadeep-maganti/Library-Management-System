@@ -18,6 +18,7 @@ import { processExpiredReservations } from "./controllers/reservationController.
 import { syncOverdueFines } from "./controllers/fineController.js";
 import { processDueDateReminders } from "./services/dueDateReminderService.js";
 import { refreshAllCohortRecommendations } from "./services/recommendationService.js";
+import { retryUnsentAvailabilityEmails } from "./services/availabilityAlertService.js";
 
 const app = express();
 
@@ -65,6 +66,7 @@ async function startServer() {
                 await processExpiredReservations();
                 await syncOverdueFines();
                 await processDueDateReminders();
+                await retryUnsentAvailabilityEmails();
                 await refreshAllCohortRecommendations();
             } catch (initErr) {
                 console.error("Initial maintenance task error:", initErr.message);
@@ -76,6 +78,7 @@ async function startServer() {
                     await processExpiredReservations();
                     await syncOverdueFines();
                     await processDueDateReminders();
+                    await retryUnsentAvailabilityEmails();
                 } catch (err) {
                     console.error("Auto-sync background timer error:", err.message);
                 }
