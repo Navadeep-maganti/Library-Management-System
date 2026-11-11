@@ -86,6 +86,7 @@ export const getStudentByRollNo = async (req, res) => {
             include: {
                 user: { select: { username: true, email: true } },
                 issuedBooks: {
+                    where: { isReturned: false },
                     include: {
                         book: {
                             select: {

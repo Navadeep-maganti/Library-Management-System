@@ -18,12 +18,13 @@ const formatToken = (reservation) => {
 
 const normalizeHistory = (student) => {
   const issuedBooks = student.issuedBooks || [];
+  const borrowHistories = student.borrowHistories || [];
   const reservations = student.reservations || [];
   const fines = student.fines || [];
   const now = Date.now();
   const dayMs = 24 * 60 * 60 * 1000;
 
-  return issuedBooks.map((issuedBook) => {
+  const activeItems = issuedBooks.map((issuedBook) => {
     const reservation = reservations
       .filter((item) => item.bookId === issuedBook.bookId)
       .sort((first, second) => new Date(second.reservedDate) - new Date(first.reservedDate))[0];
@@ -48,6 +49,43 @@ const normalizeHistory = (student) => {
       status: issuedBook.isReturned ? "Returned" : "Issued",
     };
   });
+
+  const activeIssueDates = new Set(
+    issuedBooks.map((issuedBook) => `${issuedBook.bookId}-${new Date(issuedBook.issueDate).getTime()}`),
+  );
+  const returnedItems = borrowHistories
+    .filter((history) => !activeIssueDates.has(`${history.bookId}-${new Date(history.issueDate).getTime()}`))
+    .map((history) => {
+      const reservation = reservations
+        .filter((item) => item.bookId === history.bookId)
+        .sort((first, second) => new Date(second.reservedDate) - new Date(first.reservedDate))[0];
+      const issueDate = new Date(history.issueDate).getTime();
+      const returnDate = history.returnDate ? new Date(history.returnDate).getTime() : issueDate;
+      const fineAmount = fines
+        .filter((fine) => fine.issueDate >= history.issueDate && fine.issueDate <= (history.returnDate || new Date()))
+        .reduce((total, fine) => total + Number(fine.amount || 0), 0);
+
+      return {
+        id: `history-${history.id}`,
+        token: formatToken(reservation),
+        title: history.book?.title || "Book unavailable",
+        author: history.book?.author || "Unknown author",
+        bookId: history.bookId,
+        requestedOn: reservation?.reservedDate,
+        issuedOn: history.issueDate,
+        dueDate: history.returnDate || history.issueDate,
+        overdueDays: 0,
+        fineAmount,
+        returnedOn: history.returnDate,
+        status: "Returned",
+        issueDate,
+        returnDate,
+      };
+    });
+
+  return [...activeItems, ...returnedItems].sort(
+    (first, second) => new Date(second.issuedOn) - new Date(first.issuedOn),
+  );
 };
 
 const ViewHistoryPage = () => {

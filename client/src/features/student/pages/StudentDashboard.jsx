@@ -718,7 +718,7 @@ const StudentDashboard = ({ user, onLogout }) => {
                 type="button"
                 className="view-all-button"
                 onClick={() =>
-                  navigate("/student-dashboard/loans")
+                  navigate("/student-dashboard/history")
                 }
               >
                 View All →
@@ -836,8 +836,8 @@ const StudentDashboard = ({ user, onLogout }) => {
                 <div className="borrowed-books-footer">
 
                   <span>
-                    Showing {borrowedBooks.length} of 9
-                    borrowed books
+                    Showing {borrowedBooks.length} current holding
+                    {borrowedBooks.length === 1 ? "" : "s"}
                   </span>
 
 
