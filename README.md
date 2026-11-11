@@ -187,7 +187,7 @@ EMAIL_PASS=your_app_specific_password
 ```
 
 > [!TIP]
-> If using Gmail for Nodemailer, generate a 16-character **App Password** from your Google Account security settings.
+> If using Gmail for Nodemailer, generate a 16-character **App Password** from your Google Account security settings. The server uses Gmail STARTTLS on port 587 over IPv4, which is compatible with deployments that do not provide outbound IPv6.
 
 #### 2. Client Environment (`client/.env`)
 

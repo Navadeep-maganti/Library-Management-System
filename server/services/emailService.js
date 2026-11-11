@@ -3,17 +3,35 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+const emailUser = process.env.EMAIL_USER?.trim();
+const emailPass = process.env.EMAIL_PASS?.trim();
+
 const transporter = nodemailer.createTransport({
-    service: "gmail",
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false,
+    requireTLS: true,
+    family: 4,
     auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+        user: emailUser,
+        pass: emailPass,
     },
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 15000,
 });
+
+const sendEmail = (mailOptions) => {
+    if (!emailUser || !emailPass) {
+        throw new Error("Email service is not configured: set EMAIL_USER and EMAIL_PASS.");
+    }
+
+    return transporter.sendMail(mailOptions);
+};
 
 export const sendOTPEmail = async (toEmail, otp) => {
     const mailOptions = {
-        from: `"Library management system" <${process.env.EMAIL_USER}>`,
+        from: `"Library management system" <${emailUser}>`,
         to: toEmail,
         subject: "Your Email Verification OTP - Library management system",
         html: `
@@ -25,12 +43,12 @@ export const sendOTPEmail = async (toEmail, otp) => {
             </div>
         `,
     };
-    return await transporter.sendMail(mailOptions);
+    return await sendEmail(mailOptions);
 };
 
 export const sendPasswordChangeOTPEmail = async (toEmail, otp) => {
     const mailOptions = {
-        from: `"Library management system" <${process.env.EMAIL_USER}>`,
+        from: `"Library management system" <${emailUser}>`,
         to: toEmail,
         subject: "Password Change OTP - Library Management System",
         html: `
@@ -43,7 +61,7 @@ export const sendPasswordChangeOTPEmail = async (toEmail, otp) => {
             </div>
         `,
     };
-    return await transporter.sendMail(mailOptions);
+    return await sendEmail(mailOptions);
 };
 
 export const sendDueDateReminderEmail = async (toEmail, studentName, bookTitle, dueDate, daysRemaining) => {
@@ -52,7 +70,7 @@ export const sendDueDateReminderEmail = async (toEmail, studentName, bookTitle, 
         ? "is due today"
         : `is due in ${daysRemaining} day${daysRemaining === 1 ? "" : "s"}`;
     const mailOptions = {
-        from: `"Library management system" <${process.env.EMAIL_USER}>`,
+        from: `"Library management system" <${emailUser}>`,
         to: toEmail,
         subject: `Book due date reminder: ${bookTitle}`,
         html: `
@@ -66,12 +84,12 @@ export const sendDueDateReminderEmail = async (toEmail, studentName, bookTitle, 
         `,
     };
 
-    return await transporter.sendMail(mailOptions);
+    return await sendEmail(mailOptions);
 };
 
 export const sendBookAvailabilityEmail = async (toEmail, studentName, bookTitle) => {
-    return await transporter.sendMail({
-        from: `"Library management system" <${process.env.EMAIL_USER}>`,
+    return await sendEmail({
+        from: `"Library management system" <${emailUser}>`,
         to: toEmail,
         subject: `Book available now: ${bookTitle}`,
         html: `
