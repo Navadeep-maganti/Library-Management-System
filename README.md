@@ -185,13 +185,10 @@ JWT_SECRET=your_super_secret_jwt_key_here
 EMAIL_USER=your_email@gmail.com
 EMAIL_PASS=your_app_specific_password
 
-# Optional HTTPS email delivery for Render free services (recommended)
-RESEND_API_KEY=your_resend_api_key
-EMAIL_FROM="Library management system <noreply@your-verified-domain.com>"
 ```
 
 > [!TIP]
-> Render free web services block outbound SMTP ports. Set `RESEND_API_KEY` and a sender address verified in Resend to send through HTTPS. If using Gmail Nodemailer locally or on a paid Render service, generate a 16-character **App Password**; the server uses Gmail STARTTLS on port 587 over IPv4.
+> If using Gmail for Nodemailer, generate a 16-character **App Password** from your Google Account security settings. The server uses Gmail STARTTLS on port 587 over IPv4.
 
 #### 2. Client Environment (`client/.env`)
 
