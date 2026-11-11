@@ -1027,6 +1027,8 @@
 .book-details-grid div { background: #fff; border: 1px solid #e0ebe6; border-radius: 7px; display: grid; gap: 4px; padding: 10px; }
 .book-details-grid span { color: var(--muted); font-size: 0.65rem; font-weight: 800; letter-spacing: 0.07em; text-transform: uppercase; }
 .book-details-grid strong { color: var(--ink); font-size: 0.8rem; overflow-wrap: anywhere; }
+.book-details-actions { align-items: flex-start; display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; padding-top: 4px; }
+.book-details-actions .book-button { align-items: center; display: inline-flex; justify-content: center; margin: 0; min-height: 42px; }
 
 @media (max-width: 700px) {
   .student-search-wrap { min-width: 0; width: 100%; }
@@ -1163,6 +1165,12 @@
 .browse-books-grid .book-card p { margin-bottom: 18px; }
 .browse-book-meta { align-items: center; border-bottom: 1px solid #e8eeeb; color: var(--muted); display: flex; font-size: 0.72rem; gap: 8px; justify-content: space-between; margin-bottom: 16px; padding-bottom: 14px; }
 .browse-book-meta strong { color: #0f766e; font-size: 0.68rem; white-space: nowrap; }
+.browse-digital-status { align-items: center; border-radius: 999px; display: inline-flex; font-size: 0.68rem; font-weight: 800; gap: 5px; margin-bottom: 12px; padding: 6px 9px; width: fit-content; }
+.browse-digital-status::before { border-radius: 50%; content: ""; height: 7px; width: 7px; }
+.browse-digital-status.has-copy { background: #ecfdf5; color: #047857; }
+.browse-digital-status.has-copy::before { background: #10b981; }
+.browse-digital-status.no-copy { background: #f8fafc; color: #64748b; }
+.browse-digital-status.no-copy::before { background: #94a3b8; }
 .browse-book-actions { display: grid; gap: 8px; margin-top: auto; }
 .browse-book-details { background: #f4faf8; border: 1px solid #afd8d1; border-radius: 6px; color: var(--teal-dark); cursor: pointer; font-size: 0.78rem; font-weight: 800; min-height: 36px; padding: 8px 12px; }
 .browse-book-details:hover { background: var(--teal-soft); border-color: #82c2b5; }

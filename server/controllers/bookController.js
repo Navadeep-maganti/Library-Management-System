@@ -1,5 +1,6 @@
 import prisma from "../config/db.js";
 import { notifyBookAvailability } from "../services/availabilityAlertService.js";
+import { validateDigitalUrl } from "../utils/digitalBookLinks.js";
 
 /**
  * @desc Get all books with optional search, category/department filter, and pagination
@@ -169,7 +170,7 @@ export const getBookById = async (req, res) => {
  */
 export const createBook = async (req, res) => {
     try {
-        const { title, author, isbn, categoryId, departmentId, publishedYear, description, totalCopies = 1, shelfId } = req.body;
+        const { title, author, isbn, categoryId, departmentId, publishedYear, description, digitalUrl, totalCopies = 1, shelfId } = req.body;
 
         if (!title || !author || !isbn) {
             return res.status(400).json({
@@ -192,6 +193,10 @@ export const createBook = async (req, res) => {
         const parsedCategoryId = categoryId ? parseInt(categoryId, 10) : null;
         const parsedDepartmentId = departmentId ? parseInt(departmentId, 10) : null;
         const parsedYear = publishedYear ? parseInt(publishedYear, 10) : null;
+        const cleanDigitalUrl = validateDigitalUrl(digitalUrl);
+        if (digitalUrl && !cleanDigitalUrl) {
+            return res.status(400).json({ success: false, message: "Digital links must be HTTPS links from Archive.org, Project Gutenberg, OpenStax, or MIT OpenCourseWare." });
+        }
 
         const newBook = await prisma.book.create({
             data: {
@@ -202,6 +207,7 @@ export const createBook = async (req, res) => {
                 departmentId: parsedDepartmentId && !isNaN(parsedDepartmentId) ? parsedDepartmentId : null,
                 publishedYear: parsedYear && !isNaN(parsedYear) ? parsedYear : null,
                 description: description ? description.trim() : null,
+                digitalUrl: cleanDigitalUrl,
                 availabilities: {
                     create: {
                         totalCopies: numCopies,
@@ -268,6 +274,7 @@ export const updateBook = async (req, res) => {
             departmentId,
             publishedYear,
             description,
+            digitalUrl,
             totalCopies,
             availableCopies,
             shelfId
@@ -302,6 +309,13 @@ export const updateBook = async (req, res) => {
             }
             if (description !== undefined) {
                 bookUpdateData.description = description ? description.trim() : null;
+            }
+            if (digitalUrl !== undefined) {
+                const cleanDigitalUrl = validateDigitalUrl(digitalUrl);
+                if (digitalUrl && !cleanDigitalUrl) {
+                    return res.status(400).json({ success: false, message: "Digital links must be HTTPS links from Archive.org, Project Gutenberg, OpenStax, or MIT OpenCourseWare." });
+                }
+                bookUpdateData.digitalUrl = cleanDigitalUrl;
             }
 
             // Update main book record

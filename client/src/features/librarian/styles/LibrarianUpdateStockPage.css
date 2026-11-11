@@ -271,14 +271,14 @@
 
 /* Table Responsive & Fixed Layout - Prevents Layout Shifts */
 .stock-table-responsive {
-  overflow-x: auto;
+  overflow-x: hidden;
   min-height: 480px;
   width: 100%;
 }
 
 .stock-table {
   width: 100%;
-  min-width: 920px;
+  min-width: 0;
   table-layout: fixed;
   border-collapse: collapse;
   font-size: 0.9rem;
@@ -322,12 +322,13 @@
   white-space: nowrap;
 }
 
-.stock-table th:first-child { width: 31%; }
-.stock-table th:nth-child(2) { width: 19%; }
+.stock-table th:first-child { width: 29%; }
+.stock-table th:nth-child(2) { width: 20%; }
 .stock-table th:nth-child(3),
-.stock-table th:nth-child(4),
-.stock-table th:nth-child(5) { width: 10%; }
-.stock-table th:last-child { width: 20%; }
+.stock-table th:nth-child(4) { width: 9%; }
+.stock-table th:nth-child(5) { width: 8%; }
+.stock-table th:nth-child(6) { width: 13%; }
+.stock-table th:nth-child(7) { width: 12%; }
 
 .stock-table td {
   padding: 14px 16px;
@@ -336,6 +337,23 @@
   vertical-align: middle;
   word-wrap: break-word;
   overflow-wrap: break-word;
+}
+
+.stock-table-value {
+  display: inline-block;
+  font-weight: 800;
+  min-width: 48px;
+  text-align: center;
+}
+
+.stock-link-status {
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.stock-link-status.has-link {
+  color: #0f766e;
 }
 
 .stock-table td:first-child strong,
@@ -492,6 +510,68 @@
   border-radius: 7px;
   border: 1px solid #e2e8f0;
   flex-shrink: 0;
+}
+
+.stock-digital-button {
+  box-sizing: border-box;
+  border: 1px solid #99f6e4;
+  border-radius: 8px;
+  background: #f0fdfa;
+  color: #0f766e;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 750;
+  min-width: 0;
+  padding: 7px 8px;
+  width: 100%;
+}
+
+.stock-digital-button:hover {
+  background: #ccfbf1;
+}
+
+.stock-digital-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.stock-digital-dialog {
+  max-width: 520px;
+}
+
+.stock-digital-dialog form {
+  margin-top: 18px;
+}
+
+.stock-digital-url-input {
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  box-sizing: border-box;
+  font: inherit;
+  padding: 12px 13px;
+  width: 100%;
+}
+
+.stock-digital-url-input:focus {
+  border-color: #0f766e;
+  outline: 2px solid rgba(15, 118, 110, 0.15);
+}
+
+.stock-popup-field {
+  color: #334155;
+  display: grid;
+  font-size: 0.82rem;
+  font-weight: 750;
+  gap: 7px;
+  margin-bottom: 14px;
+}
+
+.stock-popup-help {
+  color: #64748b;
+  display: block;
+  font-size: 0.78rem;
+  margin: -6px 0 16px;
 }
 
 .stock-add-input {

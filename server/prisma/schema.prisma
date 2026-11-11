@@ -90,6 +90,7 @@ model Book {
   isbn            String             @unique @db.VarChar(13)
   categoryId      Int?               @map("category_id")
   description     String?            @db.Text
+  digitalUrl      String?            @map("digital_url") @db.VarChar(500)
   departmentId    Int?               @map("department_id")
   publishedYear   Int?               @map("published_year")
   category        Category?          @relation(fields: [categoryId], references: [id], onDelete: SetNull, onUpdate: Cascade)
