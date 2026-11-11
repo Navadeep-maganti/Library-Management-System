@@ -5,6 +5,8 @@ dotenv.config();
 
 const emailUser = process.env.EMAIL_USER?.trim();
 const emailPass = process.env.EMAIL_PASS?.trim();
+const resendApiKey = process.env.RESEND_API_KEY?.trim();
+const emailFrom = process.env.EMAIL_FROM?.trim() || emailUser;
 
 const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
@@ -22,7 +24,33 @@ const transporter = nodemailer.createTransport({
 });
 
 const sendEmail = (mailOptions) => {
-    if (!emailUser || !emailPass) {
+    if (resendApiKey) {
+        if (!emailFrom) {
+            throw new Error("Email service is not configured: set EMAIL_FROM for Resend.");
+        }
+
+        return fetch("https://api.resend.com/emails", {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${resendApiKey}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                from: mailOptions.from,
+                to: [mailOptions.to],
+                subject: mailOptions.subject,
+                html: mailOptions.html,
+            }),
+        }).then(async (response) => {
+            if (!response.ok) {
+                const details = await response.text();
+                throw new Error(`Resend email request failed (${response.status}): ${details}`);
+            }
+            return response.json();
+        });
+    }
+
+    if (!emailUser || !emailPass || !emailFrom) {
         throw new Error("Email service is not configured: set EMAIL_USER and EMAIL_PASS.");
     }
 
@@ -31,7 +59,7 @@ const sendEmail = (mailOptions) => {
 
 export const sendOTPEmail = async (toEmail, otp) => {
     const mailOptions = {
-        from: `"Library management system" <${emailUser}>`,
+        from: emailFrom,
         to: toEmail,
         subject: "Your Email Verification OTP - Library management system",
         html: `
@@ -48,7 +76,7 @@ export const sendOTPEmail = async (toEmail, otp) => {
 
 export const sendPasswordChangeOTPEmail = async (toEmail, otp) => {
     const mailOptions = {
-        from: `"Library management system" <${emailUser}>`,
+        from: emailFrom,
         to: toEmail,
         subject: "Password Change OTP - Library Management System",
         html: `
@@ -70,7 +98,7 @@ export const sendDueDateReminderEmail = async (toEmail, studentName, bookTitle, 
         ? "is due today"
         : `is due in ${daysRemaining} day${daysRemaining === 1 ? "" : "s"}`;
     const mailOptions = {
-        from: `"Library management system" <${emailUser}>`,
+        from: emailFrom,
         to: toEmail,
         subject: `Book due date reminder: ${bookTitle}`,
         html: `
@@ -89,7 +117,7 @@ export const sendDueDateReminderEmail = async (toEmail, studentName, bookTitle, 
 
 export const sendBookAvailabilityEmail = async (toEmail, studentName, bookTitle) => {
     return await sendEmail({
-        from: `"Library management system" <${emailUser}>`,
+        from: emailFrom,
         to: toEmail,
         subject: `Book available now: ${bookTitle}`,
         html: `
