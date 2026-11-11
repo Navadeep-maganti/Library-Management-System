@@ -12,6 +12,7 @@ import reservationRoutes from "./routes/reservationRoutes.js";
 import fineRoutes from "./routes/fineRoutes.js";
 import announcementRoutes from "./routes/announcementRoutes.js";
 import alertRoutes from "./routes/alertRoutes.js";
+import analyticsRoutes from "./routes/analyticsRoutes.js";
 import constantRoutes from "./routes/constantRoutes.js";
 import profileRoutes from "./routes/profileRoutes.js";
 import { processExpiredReservations } from "./controllers/reservationController.js";
@@ -41,6 +42,7 @@ app.use("/api/reservations", reservationRoutes);
 app.use("/api/fines", fineRoutes);
 app.use("/api/announcements", announcementRoutes);
 app.use("/api/alerts", alertRoutes);
+app.use("/api/analytics", analyticsRoutes);
 app.use("/api/constants", constantRoutes);
 app.use("/api/profile", profileRoutes);
 

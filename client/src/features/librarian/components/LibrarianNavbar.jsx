@@ -35,6 +35,7 @@ const LibrarianNavbar = ({ user, onLogout }) => {
     { to: "/librarian/issue-book", label: "Issued Books", icon: "▣" },
     { to: "/librarian/update-stock", label: "Update Stock", icon: "↻" },
     { to: "/librarian/fines", label: "Fines", icon: "₹" },
+    { to: "/librarian/analytics", label: "Analytics", icon: "▥" },
   ];
 
   return (
@@ -43,7 +44,7 @@ const LibrarianNavbar = ({ user, onLogout }) => {
         <button type="button" className="librarian-menu-toggle" onClick={() => setSidebarOpen(true)} aria-label="Open librarian navigation" aria-expanded={sidebarOpen}>☰</button>
         <Link to="/librarian-dashboard" className="librarian-brand-logo"><div className="librarian-brand-icon-box" aria-hidden="true">📚</div><div className="librarian-brand-text"><span className="librarian-brand-title">Central Library</span><span className="librarian-brand-subtitle">Librarian Operations Portal</span></div></Link>
         <nav className="librarian-nav-links">
-          {navigationLinks.slice(1, 6).map(({ to, label }) => <NavLink key={to} to={to} className={({ isActive }) => `librarian-nav-link ${isActive ? "active" : ""}`}>{label}</NavLink>)}
+          {navigationLinks.slice(1).map(({ to, label }) => <NavLink key={to} to={to} className={({ isActive }) => `librarian-nav-link ${isActive ? "active" : ""}`}>{label}</NavLink>)}
         </nav>
         <div className="librarian-navbar-actions">
           <NavLink to="/librarian/alerts" className={({ isActive }) => `librarian-alert-link ${isActive ? "active" : ""}`} aria-label="Alerts" title="Alerts"><span aria-hidden="true">🔔</span></NavLink>

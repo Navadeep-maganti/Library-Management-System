@@ -8,6 +8,7 @@ import LibrarianUpdateStockPage from "../features/librarian/pages/LibrarianUpdat
 import LibrarianFinesPage from "../features/librarian/pages/LibrarianFinesPage";
 import LibrarianProfilePage from "../features/librarian/pages/LibrarianProfilePage";
 import LibrarianAlertsPage from "../features/librarian/pages/LibrarianAlertsPage";
+import LibrarianAnalyticsPage from "../features/librarian/pages/LibrarianAnalyticsPage";
 import ProtectedRoute from "./ProtectedRoute";
 
 export const getLibrarianRoutes = (user, onUserUpdated) => [
@@ -71,6 +72,15 @@ export const getLibrarianRoutes = (user, onUserUpdated) => [
     element={
       <ProtectedRoute user={user} allowedRole="librarian">
         <LibrarianProfilePage user={user} onUserUpdated={onUserUpdated} />
+      </ProtectedRoute>
+    }
+  />,
+  <Route
+    key="librarian-analytics"
+    path="/librarian/analytics"
+    element={
+      <ProtectedRoute user={user} allowedRole="librarian">
+        <LibrarianAnalyticsPage />
       </ProtectedRoute>
     }
   />,

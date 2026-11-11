@@ -1,4 +1,5 @@
 import prisma from "../config/db.js";
+import { refreshAnalytics } from "../services/analyticsService.js";
 
 const getStudent = async (email) =>
     prisma.student.findUnique({
@@ -32,6 +33,11 @@ export const subscribeToBookAvailability = async (req, res) => {
             create: { studentId: student.rollNo, bookId },
             update: {}
         });
+        try {
+            await refreshAnalytics({ demand: true });
+        } catch (analyticsError) {
+            console.error("Failed to refresh demand analytics after availability alert:", analyticsError);
+        }
         return res.status(201).json({ success: true, subscribed: true, subscription });
     } catch (error) {
         return res.status(500).json({ success: false, message: "Could not enable availability alerts." });
@@ -46,6 +52,11 @@ export const unsubscribeFromBookAvailability = async (req, res) => {
             return res.status(403).json({ success: false, message: "Student access is required." });
         }
         await prisma.bookAvailabilitySubscription.deleteMany({ where: { studentId: student.rollNo, bookId } });
+        try {
+            await refreshAnalytics({ demand: true });
+        } catch (analyticsError) {
+            console.error("Failed to refresh demand analytics after availability alert removal:", analyticsError);
+        }
         return res.status(200).json({ success: true, subscribed: false });
     } catch (error) {
         return res.status(500).json({ success: false, message: "Could not disable availability alerts." });

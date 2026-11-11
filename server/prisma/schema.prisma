@@ -304,3 +304,18 @@ model Announcement {
 
   @@map("announcements")
 }
+
+model LibraryAnalyticsSnapshot {
+  id                    Int      @id @default(1)
+  mostBorrowed          Json     @map("most_borrowed")
+  activeDepartments     Json     @map("active_departments")
+  unavailableBooks      Json     @map("unavailable_books")
+  monthlyTrends         Json     @map("monthly_trends")
+  predictedHighDemand   Json     @map("predicted_high_demand")
+  lastIssueRefreshAt    DateTime? @map("last_issue_refresh_at")
+  lastDemandRefreshAt   DateTime? @map("last_demand_refresh_at")
+  lastMonthlyRefreshAt  DateTime? @map("last_monthly_refresh_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  @@map("library_analytics_snapshots")
+}
