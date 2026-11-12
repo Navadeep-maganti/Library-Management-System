@@ -13,7 +13,9 @@ const getData = async (response) => {
 };
 
 const request = async (url, options) => {
-  try { return await apiFetch(url, options); }
+  const token = localStorage.getItem("libraryToken");
+  const headers = { ...(options?.headers || {}), ...(token ? { Authorization: `Bearer ${token}` } : {}) };
+  try { return await apiFetch(url, { ...options, headers }); }
   catch { throw new Error("Cannot reach the server. Start the backend and try again."); }
 };
 
@@ -28,6 +30,8 @@ export default function LibrarianUpdateStockPage() {
   const [pendingUpdate, setPendingUpdate] = useState(null);
   const [selectedBook, setSelectedBook] = useState(null);
   const [digitalEditBook, setDigitalEditBook] = useState(null);
+  const [showAddBook, setShowAddBook] = useState(false);
+  const [bookToRemove, setBookToRemove] = useState(null);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
   const [status, setStatus] = useState("all");
@@ -172,6 +176,54 @@ export default function LibrarianUpdateStockPage() {
     }
   };
 
+  const addBook = async (event) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const normalizedIsbn = form.isbn.value.replace(/[-\s]/g, "");
+    if (!/^\d{10}(\d{3})?$/.test(normalizedIsbn)) {
+      setNotice({ type: "error", text: "ISBN must contain exactly 10 or 13 digits." });
+      return;
+    }
+    const payload = {
+      title: form.title.value.trim(),
+      author: form.author.value.trim(),
+      isbn: normalizedIsbn,
+      totalCopies: Number(form.totalCopies.value),
+      description: form.description.value.trim() || undefined,
+    };
+    try {
+      setLoading(true);
+      await getData(await request("/api/books", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }));
+      setShowAddBook(false);
+      await refresh(true);
+    } catch (err) {
+      setNotice({ type: "error", text: err.message || "Unable to add the book." });
+      setLoading(false);
+    }
+  };
+
+  const removeBook = async (book) => {
+    try {
+      setSaving((current) => new Set(current).add(book.id));
+      await getData(await request(BOOK_ENDPOINT(book.id), { method: "DELETE" }));
+      setBooks((current) => current.filter((item) => item.id !== book.id));
+      setNotice({ type: "success", text: `"${book.title}" was removed from the catalog.` });
+      setBookToRemove(null);
+    } catch (err) {
+      setNotice({ type: "error", text: err.message || "Unable to remove the book." });
+    } finally {
+      setSaving((current) => {
+        const next = new Set(current);
+        next.delete(book.id);
+        return next;
+      });
+    }
+  };
+
   const saveBookUpdates = async (book, total, digitalUrl) => {
     const parsedTotal = Number(total);
     if (!Number.isInteger(parsedTotal) || parsedTotal < book.issued) {
@@ -212,6 +264,7 @@ export default function LibrarianUpdateStockPage() {
     >
       {selectedBook && <>
         <button type="button" className="stock-mobile-adjust-button" disabled={saving.has(selectedBook.id)} onClick={() => setDigitalEditBook(selectedBook)}>Update stock or digital link</button>
+        <button type="button" className="stock-mobile-adjust-button" disabled={saving.has(selectedBook.id)} onClick={() => { setBookToRemove(selectedBook); setSelectedBook(null); }}>Remove from catalog</button>
       </>}
     </LibrarianMobileDetailsModal>
     {digitalEditBook && <div className="stock-confirm-backdrop" role="presentation">
@@ -230,6 +283,36 @@ export default function LibrarianUpdateStockPage() {
         </form>
       </section>
     </div>}
+    {bookToRemove && <div className="stock-confirm-backdrop" role="presentation">
+      <section className="stock-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="remove-book-title">
+        <p className="stock-confirm-kicker">Catalog management</p>
+        <h2 id="remove-book-title">Remove “{bookToRemove.title}”?</h2>
+        <p>This will permanently remove this title from the catalog. Books with active loans or reservations cannot be removed.</p>
+        <div className="stock-confirm-actions">
+          <button type="button" className="stock-confirm-cancel" onClick={() => setBookToRemove(null)}>Cancel</button>
+          <button type="button" className="stock-confirm-save stock-danger-action" disabled={saving.has(bookToRemove.id)} onClick={() => removeBook(bookToRemove)}>
+            {saving.has(bookToRemove.id) ? "Removing..." : "Remove book"}
+          </button>
+        </div>
+      </section>
+    </div>}
+    {showAddBook && <div className="stock-confirm-backdrop" role="presentation">
+      <section className="stock-confirm-dialog stock-digital-dialog" role="dialog" aria-modal="true" aria-labelledby="add-book-title">
+        <p className="stock-confirm-kicker">Catalog management</p>
+        <h2 id="add-book-title">Add a new book</h2>
+        <form onSubmit={addBook}>
+          <label className="stock-popup-field">Title<input className="stock-digital-url-input" name="title" required /></label>
+          <label className="stock-popup-field">Author<input className="stock-digital-url-input" name="author" required /></label>
+          <label className="stock-popup-field">ISBN<input className="stock-digital-url-input" name="isbn" maxLength="17" inputMode="numeric" title="Enter a 10- or 13-digit ISBN, with optional hyphens or spaces." required /></label>
+          <label className="stock-popup-field">Initial copies<input className="stock-digital-url-input" name="totalCopies" type="number" min="0" defaultValue="1" required /></label>
+          <label className="stock-popup-field">Description<textarea className="stock-digital-url-input" name="description" rows="3" /></label>
+          <div className="stock-confirm-actions">
+            <button type="button" className="stock-confirm-cancel" onClick={() => setShowAddBook(false)}>Cancel</button>
+            <button type="submit" className="stock-confirm-save">Add book</button>
+          </div>
+        </form>
+      </section>
+    </div>}
     {pendingUpdate && <div className="stock-confirm-backdrop" role="presentation">
       <section className="stock-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="stock-confirm-title">
         <p className="stock-confirm-kicker">Confirm stock update</p>
@@ -242,15 +325,15 @@ export default function LibrarianUpdateStockPage() {
       </section>
     </div>}
     <main className="stock-page-container">
-    <header className="stock-header"><span className="stock-badge">Step 4 · Inventory</span><h1>Update book stock</h1><p>Changes save directly to the database. Stock cannot be reduced below copies currently on loan.</p></header>
+    <header className="stock-header"><span className="stock-badge">Step 4 · Inventory</span><h1>Manage book inventory</h1><p>Add new titles, update physical stock, or remove titles that have no active loans or reservations.</p></header>
     <section className="stock-metrics-grid" aria-label="Inventory summary">
       {[['Titles', stats.titles, ''], ['Physical copies', stats.copies, ''], ['Available now', stats.available, 'avail'], ['On loan', stats.issued, 'issued'], ['Low stock', stats.low, 'low']].map(([label, value, tone]) => <div className="stock-metric-card" key={label}><span className="stock-metric-label">{label}</span><strong className={`stock-metric-val ${tone}`}>{value}</strong></div>)}
     </section>
     <section className="stock-main-card">
-      <div className="stock-card-header"><div><h2>Catalog inventory</h2><p>{filtered.length} of {books.length} titles</p></div><button type="button" className="stock-btn-sync" disabled={loading} onClick={() => refresh(true)}>{loading ? "Refreshing…" : "Refresh inventory"}</button></div>
+      <div className="stock-card-header"><div><h2>Catalog inventory</h2><p>{filtered.length} of {books.length} titles</p></div><div><button type="button" className="stock-btn-sync" onClick={() => setShowAddBook(true)}>Add new book</button> <button type="button" className="stock-btn-sync" disabled={loading} onClick={() => refresh(true)}>{loading ? "Refreshing…" : "Refresh inventory"}</button></div></div>
       {notice && <div className={`stock-sync-alert ${notice.type === "error" ? "stock-alert-error" : ""}`} role="status">{typeof notice === "string" ? notice : notice.text}</div>}
       <div className="stock-filter-bar"><input className="stock-search-input" aria-label="Search catalog" placeholder="Search title, author, ISBN, or ID" value={search} onChange={(e) => setSearch(e.target.value)} /><select className="stock-select" value={category} onChange={(e) => setCategory(e.target.value)}><option value="all">All categories</option>{categories.map((name) => <option key={name}>{name}</option>)}</select><select className="stock-select" value={status} onChange={(e) => setStatus(e.target.value)}><option value="all">All stock</option><option value="available">Available</option><option value="low">Low stock (1–2)</option><option value="out">Out of stock</option></select></div>
-      {loading ? <div className="stock-empty-state"><p>Loading inventory…</p></div> : error ? <div className="stock-empty-state stock-error"><p>{error}</p><button type="button" className="stock-btn-sync" onClick={() => refresh()}>Try again</button></div> : !rows.length ? <div className="stock-empty-state"><p>No books match these filters.</p></div> : <><div className="stock-table-responsive"><table className="stock-table"><thead><tr><th>Book</th><th>Category / shelf</th><th>Total</th><th>Available</th><th>Issued</th><th>Digital</th><th>Update</th></tr></thead><tbody>{rows.map((book) => { const busy = saving.has(book.id); return <tr key={book.id}><td><span className="stock-font-mono">{book.code}</span><strong>{book.title}</strong><span className="stock-sub-text">{book.author} · ISBN {book.isbn}</span></td><td><span className="stock-category-badge">{book.category}</span><span className="stock-shelf-tag">{book.shelf}</span></td><td><span className="stock-table-value">{book.total}</span></td><td><span className={`stock-count-pill avail ${book.available === 0 ? 'zero' : ''}`}>{book.available}</span></td><td><span className="stock-count-pill issued">{book.issued}</span></td><td><span className={`stock-link-status ${book.digitalUrl ? "has-link" : ""}`}>{book.digitalUrl ? "Added" : "Not added"}</span></td><td><button type="button" className="stock-digital-button" disabled={busy} onClick={() => setDigitalEditBook(book)}>Update</button></td></tr>; })}</tbody></table></div><div className="librarian-mobile-records">{rows.map((book) => <button type="button" className="librarian-mobile-record" key={book.id} onClick={() => setSelectedBook(book)}><strong>{book.title}</strong><span>{book.author} · {book.available} available</span><em>›</em></button>)}</div></>}
+      {loading ? <div className="stock-empty-state"><p>Loading inventory…</p></div> : error ? <div className="stock-empty-state stock-error"><p>{error}</p><button type="button" className="stock-btn-sync" onClick={() => refresh()}>Try again</button></div> : !rows.length ? <div className="stock-empty-state"><p>No books match these filters.</p></div> : <><div className="stock-table-responsive"><table className="stock-table"><thead><tr><th>Book</th><th>Category / shelf</th><th>Total</th><th>Available</th><th>Issued</th><th>Digital</th><th>Manage</th></tr></thead><tbody>{rows.map((book) => { const busy = saving.has(book.id); return <tr key={book.id}><td><span className="stock-font-mono">{book.code}</span><strong>{book.title}</strong><span className="stock-sub-text">{book.author} · ISBN {book.isbn}</span></td><td><span className="stock-category-badge">{book.category}</span><span className="stock-shelf-tag">{book.shelf}</span></td><td><span className="stock-table-value">{book.total}</span></td><td><span className={`stock-count-pill avail ${book.available === 0 ? 'zero' : ''}`}>{book.available}</span></td><td><span className="stock-count-pill issued">{book.issued}</span></td><td><span className={`stock-link-status ${book.digitalUrl ? "has-link" : ""}`}>{book.digitalUrl ? "Added" : "Not added"}</span></td><td><button type="button" className="stock-digital-button" disabled={busy} onClick={() => setDigitalEditBook(book)}>Update</button><button type="button" className="stock-digital-button" disabled={busy} onClick={() => setBookToRemove(book)}>Remove</button></td></tr>; })}</tbody></table></div><div className="librarian-mobile-records">{rows.map((book) => <button type="button" className="librarian-mobile-record" key={book.id} onClick={() => setSelectedBook(book)}><strong>{book.title}</strong><span>{book.author} · {book.available} available</span><em>›</em></button>)}</div></>}
       {!loading && !error && filtered.length > pageSize && <div className="stock-pagination-bar"><span className="stock-page-info">Page {activePage} of {pages}</span><div className="stock-pagination-controls"><button type="button" className="stock-page-btn" disabled={activePage === 1} onClick={() => setPage(activePage - 1)}>Previous</button><button type="button" className="stock-page-btn" disabled={activePage === pages} onClick={() => setPage(activePage + 1)}>Next</button></div></div>}
     </section>
     </main>

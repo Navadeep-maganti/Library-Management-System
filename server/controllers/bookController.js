@@ -2,6 +2,8 @@ import prisma from "../config/db.js";
 import { notifyBookAvailability } from "../services/availabilityAlertService.js";
 import { validateDigitalUrl } from "../utils/digitalBookLinks.js";
 
+const normalizeIsbn = (value) => String(value || "").replace(/[-\s]/g, "");
+
 /**
  * @desc Get all books with optional search, category/department filter, and pagination
  * @route GET /api/books
@@ -179,7 +181,15 @@ export const createBook = async (req, res) => {
             });
         }
 
-        const cleanIsbn = isbn.toString().trim();
+        const cleanTitle = title.toString().trim();
+        const cleanAuthor = author.toString().trim();
+        const cleanIsbn = normalizeIsbn(isbn);
+        if (!cleanTitle || !cleanAuthor || !cleanIsbn) {
+            return res.status(400).json({ success: false, message: "Title, author, and ISBN cannot be blank." });
+        }
+        if (!/^\d{10}(\d{3})?$/.test(cleanIsbn)) {
+            return res.status(400).json({ success: false, message: "ISBN must contain exactly 10 or 13 digits." });
+        }
         const existingBook = await prisma.book.findUnique({ where: { isbn: cleanIsbn } });
         if (existingBook) {
             return res.status(409).json({
@@ -188,7 +198,10 @@ export const createBook = async (req, res) => {
             });
         }
 
-        const numCopies = Math.max(0, parseInt(totalCopies, 10) || 1);
+        const numCopies = Number(totalCopies);
+        if (!Number.isInteger(numCopies) || numCopies < 0) {
+            return res.status(400).json({ success: false, message: "Total copies must be a non-negative whole number." });
+        }
         const parsedShelfId = shelfId ? parseInt(shelfId, 10) : null;
         const parsedCategoryId = categoryId ? parseInt(categoryId, 10) : null;
         const parsedDepartmentId = departmentId ? parseInt(departmentId, 10) : null;
@@ -200,11 +213,15 @@ export const createBook = async (req, res) => {
 
         const newBook = await prisma.book.create({
             data: {
-                title: title.trim(),
-                author: author.trim(),
+                title: cleanTitle,
+                author: cleanAuthor,
                 isbn: cleanIsbn,
-                categoryId: parsedCategoryId && !isNaN(parsedCategoryId) ? parsedCategoryId : null,
-                departmentId: parsedDepartmentId && !isNaN(parsedDepartmentId) ? parsedDepartmentId : null,
+                ...(parsedCategoryId && !isNaN(parsedCategoryId)
+                    ? { category: { connect: { id: parsedCategoryId } } }
+                    : {}),
+                ...(parsedDepartmentId && !isNaN(parsedDepartmentId)
+                    ? { department: { connect: { id: parsedDepartmentId } } }
+                    : {}),
                 publishedYear: parsedYear && !isNaN(parsedYear) ? parsedYear : null,
                 description: description ? description.trim() : null,
                 digitalUrl: cleanDigitalUrl,
@@ -235,10 +252,17 @@ export const createBook = async (req, res) => {
 
     } catch (error) {
         console.error("Error creating book:", error);
+        if (error.code === "P2002") {
+            return res.status(409).json({ success: false, message: "A book with this ISBN already exists." });
+        }
+        if (error.code === "P2000") {
+            return res.status(400).json({ success: false, message: "One of the entered values is too long." });
+        }
         return res.status(500).json({
             success: false,
-            message: "Failed to create book.",
-            error: error.message
+            message: process.env.NODE_ENV === "production"
+                ? "Failed to create book. Check the entered details and try again."
+                : `Failed to create book: ${error.message}`
         });
     }
 };
