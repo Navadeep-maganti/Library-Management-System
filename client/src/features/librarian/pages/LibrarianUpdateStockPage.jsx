@@ -32,6 +32,8 @@ export default function LibrarianUpdateStockPage() {
   const [digitalEditBook, setDigitalEditBook] = useState(null);
   const [showAddBook, setShowAddBook] = useState(false);
   const [bookToRemove, setBookToRemove] = useState(null);
+  const [categoryOptions, setCategoryOptions] = useState([]);
+  const [shelfOptions, setShelfOptions] = useState([]);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
   const [status, setStatus] = useState("all");
@@ -41,10 +43,14 @@ export default function LibrarianUpdateStockPage() {
   const refresh = useCallback(async (withNotice = false) => {
     try {
       setLoading(true); setError("");
-      const [bookData, issuedData] = await Promise.all([
+      const [bookData, issuedData, categoryData, shelfData] = await Promise.all([
         request("/api/books?limit=all").then(getData),
         request("/api/issued-books?isReturned=false").then(getData),
+        request("/api/categories").then(getData),
+        request("/api/shelves").then(getData),
       ]);
+      setCategoryOptions(categoryData.categories || []);
+      setShelfOptions(shelfData.shelves || []);
       const issuedByBook = new Map();
       (issuedData.issuedBooks || []).forEach(({ bookId }) => issuedByBook.set(bookId, (issuedByBook.get(bookId) || 0) + 1));
       setBooks(bookData.books.map((book) => {
@@ -52,7 +58,9 @@ export default function LibrarianUpdateStockPage() {
         return {
           id: book.id, code: `BK-${String(book.id).padStart(4, "0")}`,
           title: book.title, author: book.author, isbn: book.isbn,
+          categoryId: book.categoryId || "",
           category: book.category?.name || book.category || "General",
+          shelfId: availability?.shelfId || "",
           shelf: availability?.shelf ? `${availability.shelf.section} (${availability.shelf.rackNumber})` : "General Stack",
           digitalUrl: book.digitalUrl || "",
           total: Number(availability?.totalCopies || 0),
@@ -224,15 +232,45 @@ export default function LibrarianUpdateStockPage() {
     }
   };
 
-  const saveBookUpdates = async (book, total, digitalUrl) => {
+  const saveBookUpdates = async (book, total, digitalUrl, categoryId, shelfId) => {
     const parsedTotal = Number(total);
     if (!Number.isInteger(parsedTotal) || parsedTotal < book.issued) {
       setNotice({ type: "error", text: `Total stock cannot be lower than the ${book.issued} copies currently on loan.` });
       return false;
     }
-    const stockSaved = await save(book, parsedTotal);
-    const linkSaved = await saveDigitalUrl(book, digitalUrl);
-    return stockSaved !== false && linkSaved !== false;
+    setSaving((old) => new Set(old).add(book.id)); setNotice(null);
+    try {
+      const data = await getData(await request(BOOK_ENDPOINT(book.id), {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          totalCopies: parsedTotal,
+          digitalUrl: digitalUrl.trim(),
+          categoryId: categoryId || null,
+          shelfId: shelfId || null,
+        }),
+      }));
+      const updatedAvailability = data.book?.availabilities?.[0];
+      const selectedCategory = categoryOptions.find((item) => String(item.id) === String(categoryId));
+      const selectedShelf = shelfOptions.find((item) => String(item.id) === String(shelfId));
+      setBooks((old) => old.map((item) => item.id === book.id ? {
+        ...item,
+        total: Number(updatedAvailability?.totalCopies ?? item.total),
+        available: Number(updatedAvailability?.availableCopies ?? item.available),
+        categoryId: categoryId || "",
+        category: selectedCategory?.name || "General",
+        shelfId: shelfId || "",
+        shelf: selectedShelf ? `${selectedShelf.section} (${selectedShelf.rackNumber})` : "General Stack",
+        digitalUrl: digitalUrl.trim(),
+      } : item));
+      setNotice({ type: "success", text: `Book details for “${book.title}” were updated.` });
+      return true;
+    } catch (err) {
+      setNotice({ type: "error", text: err.message || "Unable to update the book." });
+      return false;
+    } finally {
+      setSaving((old) => { const next = new Set(old); next.delete(book.id); return next; });
+    }
   };
 
   const stats = useMemo(() => ({
@@ -272,9 +310,11 @@ export default function LibrarianUpdateStockPage() {
         <p className="stock-confirm-kicker">Digital reading</p>
         <h2 id="digital-link-title">Update “{digitalEditBook.title}”</h2>
         <p>Use a trusted HTTPS link from Archive.org, Project Gutenberg, OpenStax, or MIT OpenCourseWare.</p>
-        <form onSubmit={(event) => { event.preventDefault(); saveBookUpdates(digitalEditBook, event.currentTarget.elements.totalCopies.value, event.currentTarget.elements.digitalUrl.value).then((saved) => saved && setDigitalEditBook(null)); }}>
+        <form onSubmit={(event) => { event.preventDefault(); saveBookUpdates(digitalEditBook, event.currentTarget.elements.totalCopies.value, event.currentTarget.elements.digitalUrl.value, event.currentTarget.elements.categoryId.value, event.currentTarget.elements.shelfId.value).then((saved) => saved && setDigitalEditBook(null)); }}>
           <label className="stock-popup-field">Total physical copies<input className="stock-digital-url-input" name="totalCopies" type="number" min={digitalEditBook.issued} defaultValue={digitalEditBook.total} required /></label>
           <span className="stock-popup-help">{digitalEditBook.issued} currently on loan; total cannot be lower than this.</span>
+          <label className="stock-popup-field">Category<select className="stock-digital-url-input" name="categoryId" defaultValue={digitalEditBook.categoryId}><option value="">General</option>{categoryOptions.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
+          <label className="stock-popup-field">Shelf<select className="stock-digital-url-input" name="shelfId" defaultValue={digitalEditBook.shelfId}><option value="">General stack</option>{shelfOptions.map((item) => <option key={item.id} value={item.id}>{item.section} ({item.rackNumber})</option>)}</select></label>
           <label className="stock-popup-field">Trusted digital reading URL<input className="stock-digital-url-input" name="digitalUrl" type="url" placeholder="https://..." defaultValue={digitalEditBook.digitalUrl} aria-label={`Digital reading URL for ${digitalEditBook.title}`} /></label>
           <div className="stock-confirm-actions">
             <button type="button" className="stock-confirm-cancel" onClick={() => setDigitalEditBook(null)}>Cancel</button>
